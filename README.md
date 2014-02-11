@@ -11,7 +11,7 @@ v0.6
 本地表情包
 
 
-![alt tag](http://imgur.com/oqX1iyA)
+![alt tag](http://imgur.com/oqX1iyA.png)
 
 
-![alt tag](http://imgur.com/gSWuqhJ)
+![alt tag](http://imgur.com/gSWuqhJ.png)
