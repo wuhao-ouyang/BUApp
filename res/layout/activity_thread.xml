@@ -1,0 +1,58 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ThreadActivity" >
+
+    <!-- Display View -->
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager_thread"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/blue_text_bg_light" >
+
+        <android.support.v4.view.PagerTitleStrip
+            android:id="@+id/pager_title_strip_thread"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:background="#000"
+            android:paddingBottom="4dp"
+            android:paddingTop="4dp"
+            android:textColor="#fff" />
+    </android.support.v4.view.ViewPager>
+    
+    <LinearLayout
+        android:id="@+id/reply_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#000"
+        android:orientation="horizontal"
+        android:padding="4dp"
+        android:gravity="fill_horizontal" >
+
+        <EditText
+            android:id="@+id/reply_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="#fff"
+            android:hint="请输入回复"
+            android:layout_weight="0.7"
+            android:textSize="20sp"
+            android:padding="6sp" />
+
+        <ImageButton
+            android:id="@+id/reply_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.03"
+            android:background="#000"
+            android:padding="2sp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_action_reply" />
+</LinearLayout>
+
+</FrameLayout>
