@@ -9,3 +9,6 @@ v0.6
 基本的浏览帖子和发帖功能，支持校园网和外网
 
 本地表情包
+
+
+![alt tag](https://github.com/martin-oy/BUApp/blob/master/thread.png)
