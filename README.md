@@ -11,4 +11,7 @@ v0.6
 本地表情包
 
 
-![alt tag](https://github.com/martin-oy/BUApp/blob/master/thread.png)
+![alt tag](http://imgur.com/oqX1iyA)
+
+
+![alt tag](http://imgur.com/gSWuqhJ)
