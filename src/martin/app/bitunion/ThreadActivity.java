@@ -16,6 +16,7 @@ import martin.app.bitunion.DisplayActivity.ReadPageTask;
 import martin.app.bitunion.DisplayActivity.UserLoginTask;
 import martin.app.bitunion.fragment.ForumFragment;
 import martin.app.bitunion.fragment.ThreadFragment;
+import martin.app.bitunion.fragment.UserInfoDialogFragment;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.BUPost;
 import martin.app.bitunion.util.BUThread;
@@ -126,13 +127,28 @@ public class ThreadActivity extends FragmentActivity {
 		// Show the Up button in the action bar.
 		getActionBar().setTitle(threadName);
 		getActionBar().setDisplayShowHomeEnabled(false);
-		
+
 		// Get reply View container and hide for current
 		replyContainer = (LinearLayout) findViewById(R.id.reply_layout);
 		replyContainer.setVisibility(View.GONE);
-		replyMessage = (EditText) replyContainer.findViewById(R.id.reply_message);
-		ImageButton replySubmit = (ImageButton) replyContainer.findViewById(R.id.reply_submit);
+		replyMessage = (EditText) replyContainer
+				.findViewById(R.id.reply_message);
+		ImageButton replySubmit = (ImageButton) replyContainer
+				.findViewById(R.id.reply_submit);
 		replySubmit.setOnClickListener(new MyReplySubmitListener());
+		ImageButton advreply = (ImageButton) replyContainer.findViewById(R.id.reply_advanced);
+		advreply.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(ThreadActivity.this, NewthreadActivity.class);
+				intent.putExtra("action", "newpost");
+				intent.putExtra("tid", threadId);
+				intent.putExtra("message", replyMessage.getText().toString());
+				startActivity(intent);
+				
+			}
+		});
 
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the app.
@@ -151,20 +167,22 @@ public class ThreadActivity extends FragmentActivity {
 		progressDialog.setMessage("读取中...");
 		progressDialog.show();
 
-//		if (intent.getBooleanExtra("new", false)) {
-//			currentpage = lastpage;
-//			readThreadPage(currentpage);
-//			readThreadPage(currentpage - 1);
-//		} else {
+		// if (intent.getBooleanExtra("new", false)) {
+		// currentpage = lastpage;
+		// readThreadPage(currentpage);
+		// readThreadPage(currentpage - 1);
+		// } else {
 		readThreadPage(0);
 		readThreadPage(1);
-//		}
+		// }
 
 	}
 
 	/**
 	 * Open a new thread to requesting data from server
-	 * @param page	The page you want to request
+	 * 
+	 * @param page
+	 *            The page you want to request
 	 */
 	public void readThreadPage(int page) {
 		if (page <= lastpage && page >= 0)
@@ -203,11 +221,27 @@ public class ThreadActivity extends FragmentActivity {
 				replyContainer.setVisibility(View.VISIBLE);
 			else
 				replyContainer.setVisibility(View.GONE);
-//			Log.v("ThreadActivity", "action_post>>"+replyContainer.isShown());
+			// Log.v("ThreadActivity",
+			// "action_post>>"+replyContainer.isShown());
 		}
 		return super.onOptionsItemSelected(item);
 	}
+
+	public void setQuoteText(BUPost quotePost) {
+		if (!replyContainer.isShown())
+			replyContainer.setVisibility(View.VISIBLE);
+		replyMessage.setText(replyMessage.getText().toString() + quotePost.toQuote());
+		replyMessage.setSelection(replyMessage.getText().toString().length());	// 设置光标到文本末尾
+	}
 	
+	public void displayUserInfo(int uid) {
+		UserInfoDialogFragment infoDialog = new UserInfoDialogFragment();
+		Bundle args = new Bundle();
+		args.putInt("uid", uid);
+		infoDialog.setArguments(args);
+		infoDialog.show(getSupportFragmentManager(), "Userinfo-" + uid);
+	}
+
 	@Override
 	public void onBackPressed() {
 		if (replyContainer.isShown()) {
@@ -231,7 +265,7 @@ public class ThreadActivity extends FragmentActivity {
 
 		@Override
 		public Fragment getItem(int position) {
-			if (registeredFragments.get(position) == null)
+			if (registeredFragments.get(position) == null){
 				registeredFragments.put(position, new ThreadFragment());
 			Bundle args = new Bundle();
 			ArrayList<String> singlepagelist = new ArrayList<String>();
@@ -240,7 +274,7 @@ public class ThreadActivity extends FragmentActivity {
 					singlepagelist.add(post.toString());
 			args.putStringArrayList("singlepagelist", singlepagelist);
 			args.putInt(ThreadFragment.ARG_PAGE_NUMBER, position);
-			registeredFragments.get(position).setArguments(args);
+			registeredFragments.get(position).setArguments(args);}
 			return registeredFragments.get(position);
 		}
 
@@ -442,12 +476,12 @@ public class ThreadActivity extends FragmentActivity {
 				Log.v("ThreadActivity", "success empty");
 				break;
 			case SUCCESS:
-//				Log.v("ThreadActivity", "raw jsonArray>>" + pageContent);
-				postList.put(this.page, BUAppUtils.jsonToPostlist(pageContent));
+				// Log.v("ThreadActivity", "raw jsonArray>>" + pageContent);
+				postList.put(this.page, BUAppUtils.jsonToPostlist(pageContent, this.page));
 				Log.v("ThreadActivity", "Page loaded>>" + this.page);
 				Log.v("ThreadActivity", "Post length>>" + pageContent.length());
 				mThreadAdapter.notifyDataSetChanged();
-//				mThreadAdapter.getFragment(this.page).update(postList.get(this.page));
+				// mThreadAdapter.getFragment(this.page).update(postList.get(this.page));
 				if (refreshingCurrentPage == true) {
 					mThreadAdapter.getFragment(currentpage).update(
 							postList.get(currentpage));
@@ -535,7 +569,7 @@ public class ThreadActivity extends FragmentActivity {
 		}
 
 	}
-	
+
 	private class RefreshingTask extends AsyncTask<Void, Void, Result> {
 
 		PostMethod postMethod = new PostMethod();
@@ -583,11 +617,12 @@ public class ThreadActivity extends FragmentActivity {
 			}
 			int currReplies = replies;
 			if (postMethod.jsonResponse != null)
-			try {
-				currReplies = Integer.parseInt(postMethod.jsonResponse.getString("tid_sum")) + 1;
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
+				try {
+					currReplies = Integer.parseInt(postMethod.jsonResponse
+							.getString("tid_sum")) + 1;
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
 			if (currReplies != replies) {
 				// update current page data
 				replies = currReplies;
@@ -599,27 +634,27 @@ public class ThreadActivity extends FragmentActivity {
 		}
 
 	}
-	
-	private class MyReplySubmitListener implements OnClickListener{
+
+	private class MyReplySubmitListener implements OnClickListener {
 
 		@Override
 		public void onClick(View v) {
-			String message = replyMessage.getText().toString() + "\n[i]from [b]BUApp Android[b][/i]";
-			if (message != null && !message.isEmpty()){
+			String message = replyMessage.getText().toString();
+			if (message != null && !message.isEmpty()) {
 				Log.v("ThreadActivity", "Reply sumitted>>" + message);
-				new NewPostTask(message).execute();
-				showToast(BUAppUtils.POSTEXECUTING);}
-			else
+				new NewPostTask(message + BUAppUtils.CLIENTMESSAGETAG)
+						.execute();
+				showToast(BUAppUtils.POSTEXECUTING);
+			} else
 				showToast("回复不能为空");
 		}
-		
 	}
-	
+
 	private class NewPostTask extends AsyncTask<Void, Void, Result> {
 
 		PostMethod postMethod = new PostMethod();
 		String message = "";
-		
+
 		public NewPostTask(String m) {
 			message = m;
 		}

@@ -41,10 +41,9 @@
         <item>生活会馆</item>
         
         <!-- 技术讨论 -->
-        <item>网络技术</item>
-        <item>硬件数码</item>
-        <item>GNU/Linux</item>
-        <item>嵌入式开发</item>
+        <item>网络技术与信息</item>
+        <item>GNU/Linux交流区</item>
+        <item>嵌入式开发技术</item>
         <item>-- 嵌入式 LiNUX 开发</item>
         <item>程序员集中营</item>
         <item>软件使用与交流</item>
@@ -96,7 +95,6 @@
         
         <!-- 技术讨论 -->
         <item>10</item>
-        <item>80</item>
         <item>84</item>
         <item>101</item>
         <item>113</item>
@@ -148,7 +146,6 @@
         <item>4</item>
         
         <!-- 技术讨论 -->
-        <item>2</item>
         <item>2</item>
         <item>2</item>
         <item>2</item>

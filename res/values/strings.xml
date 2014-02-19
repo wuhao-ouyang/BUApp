@@ -6,6 +6,7 @@
     <string name="action_login">登录</string>
     <string name="action_refresh">刷新</string>
     <string name="action_post">回复</string>
+    <string name="action_logout">登出</string>
     <string name="nettype_in">校园网</string>
     <string name="nettype_out">外网</string>
     <string name="prompt_username">用户名</string>
@@ -19,5 +20,8 @@
     <string name="title_section3">Section 3</string>
     <string name="read_progress_message">读取中</string>
     <string name="title_activity_thread">ThreadActivity</string>
+    <string name="title_activity_myinfo">MyinfoActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_newthread">NewthreadActivity</string>
 
 </resources>

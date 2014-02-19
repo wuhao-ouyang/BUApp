@@ -1,0 +1,109 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MyinfoActivity" >
+
+    <!-- progressing layout -->
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"
+        android:paddingLeft="25dp"
+        android:paddingRight="25dp"
+        android:paddingTop="25dp" >
+
+        <TableRow>
+
+            <ImageView
+                android:id="@+id/myinfo_avatar"
+                android:layout_width="100sp"
+                android:layout_height="150sp"
+                android:src="@drawable/ic_action_picture" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="30dp" >
+
+                <TextView
+                    android:id="@+id/myinfo_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3sp"
+                    android:text="用户名"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/myinfo_group"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3sp"
+                    android:text="用户组：null" />
+
+                <TextView
+                    android:id="@+id/myinfo_credit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="积分：null" />
+            </LinearLayout>
+        </TableRow>
+
+        <TableRow android:paddingTop="5dp" >
+
+            <TextView
+                android:id="@+id/myinfo_threadnum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:text="主题数：0" />
+
+            <TextView
+                android:id="@+id/myinfo_regdate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:gravity="right"
+                android:text="注册日期：0000-00-00" />
+        </TableRow>
+
+        <TableRow android:paddingTop="10dp" >
+
+            <TextView
+                android:id="@+id/myinfo_postnum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:text="发帖数：0" />
+
+            <TextView
+                android:id="@+id/myinfo_lastvisit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:gravity="right"
+                android:text="上次登录：0000-00-00" />
+        </TableRow>
+    </TableLayout>
+
+    <TextView
+        android:id="@+id/myinfo_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="25dp"
+        android:layout_span="3"
+        android:text="e-mail：" />
+
+    <TextView
+        android:id="@+id/myinfo_signature"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
+        android:layout_marginTop="20dp"
+        android:text="签名：\n" />
+
+</LinearLayout>

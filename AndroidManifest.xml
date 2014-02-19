@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="martin.app.bitunion"
-    android:versionCode="2"
-    android:versionName="0.6" >
+    android:versionCode="4"
+    android:versionName="0.8" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -44,6 +44,22 @@
         <activity
             android:name="martin.app.bitunion.ThreadActivity"
             android:label="@string/title_activity_thread"
+            android:parentActivityName="martin.app.bitunion.DisplayActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="martin.app.bitunion.DisplayActivity" />
+        </activity>
+        <activity
+            android:name="martin.app.bitunion.MyinfoActivity"
+            android:label="@string/title_activity_myinfo"
+            android:parentActivityName="com.netapp.bitunion.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.netapp.bitunion.MainActivity" />
+        </activity>
+        <activity
+            android:name="martin.app.bitunion.NewthreadActivity"
+            android:label="@string/title_activity_newthread"
             android:parentActivityName="martin.app.bitunion.DisplayActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

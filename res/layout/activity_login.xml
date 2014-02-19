@@ -4,47 +4,6 @@
     android:layout_height="match_parent"
     tools:context=".LoginActivity" >
 
-    <!-- Login progress -->
-
-    <LinearLayout
-        android:id="@+id/login_status"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:background="#BBBBBB"
-        android:gravity="center"
-        android:visibility="gone" >
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="@drawable/border"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal"
-            android:paddingLeft="10dp"
-            android:paddingRight="16dp"
-            android:paddingTop="5dp" >
-
-            <ProgressBar
-                style="?android:attr/progressBarStyleInverse"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp" />
-
-            <TextView
-                android:id="@+id/login_status_message"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
-                android:layout_marginTop="15dp"
-                android:fontFamily="sans-serif-light"
-                android:text="@string/login_progress_signing_in"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="#FFFFFF" />
-        </LinearLayout>
-    </LinearLayout>
-
     <!-- Login form -->
 
     <ScrollView

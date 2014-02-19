@@ -2,20 +2,27 @@ package martin.app.bitunion.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import martin.app.bitunion.MainActivity;
 import martin.app.bitunion.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.text.Html.ImageGetter;
+import android.os.AsyncTask;
+import android.text.Html;
+import android.util.Log;
 import android.widget.TextView;
 
 public class BUAppUtils {
@@ -44,6 +51,7 @@ public class BUAppUtils {
 	public static final String POSTEXECUTING = "消息发送中...";
 	public static final String USERNAME = "用户";
 	public static final String LOGINSUCCESS = "登录成功";
+	public static final String CLIENTMESSAGETAG = "\n\n发送自 [url=www.bitunion.org][b]BUApp Android[/b][/url]";
 
 	public String ROOTURL, BASEURL;
 	public String REQ_LOGGING, REQ_FORUM, REQ_THREAD, REQ_PROFILE, REQ_POST,
@@ -109,11 +117,12 @@ public class BUAppUtils {
 		return list;
 	}
 
-	public static ArrayList<BUPost> jsonToPostlist(JSONArray array) {
+	public static ArrayList<BUPost> jsonToPostlist(JSONArray array, int page) {
 		ArrayList<BUPost> list = new ArrayList<BUPost>();
+		int offset = page * POSTS_PER_PAGE + 1;
 		for (int i = 0; i < array.length(); i++)
 			try {
-				list.add(new BUPost(array.getJSONObject(i)));
+				list.add(new BUPost(array.getJSONObject(i), i + offset));
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -124,12 +133,15 @@ public class BUAppUtils {
 
 	public static InputStream getImageVewInputStream(String imagepath)
 			throws IOException {
+		if (imagepath.contains("bitunion.org/attachment.php?aid="))
+			return null;
+		
 		InputStream inputStream = null;
 		URL url = new URL(imagepath);
 		if (url != null) {
 			HttpURLConnection httpConnection = (HttpURLConnection) url
 					.openConnection();
-			httpConnection.setConnectTimeout(10000); // 设置连接超时
+			httpConnection.setConnectTimeout(5000); // 设置连接超时
 			httpConnection.setRequestMethod("GET");
 			if (httpConnection.getResponseCode() == 200) {
 				inputStream = httpConnection.getInputStream();
@@ -169,6 +181,125 @@ public class BUAppUtils {
 		htmlstring = htmlstring.replace("&lt;", "<");
 		htmlstring = htmlstring.replace("&gt;", ">");
 		return htmlstring;
+	}
+	
+	public static String hashImgUrl(String imgUrl) throws NoSuchAlgorithmException{
+		String imgKey = null;
+		MessageDigest m = MessageDigest.getInstance("MD5");
+		m.reset();
+		m.update(imgUrl.getBytes());
+		byte[] digest = m.digest();
+		BigInteger bigInt = new BigInteger(1, digest);
+		imgKey = bigInt.toString(16);
+		while (imgKey.length() < 32)
+			imgKey = "0" + imgKey;
+		return imgKey;
+	}
+	
+public static class HtmlImageGetter implements Html.ImageGetter {
+		
+		private static HashMap<String, Drawable> imgCache = new HashMap<String, Drawable>();
+		private TextView htmlTextView;
+		private Drawable defaultDrawable;
+		private Context mContext;
+
+		public HtmlImageGetter(Context c, TextView view) {
+			mContext = c;
+			htmlTextView = view;
+			defaultDrawable = mContext.getResources().getDrawable(
+					R.drawable.ic_action_picture);
+		}
+
+		@Override
+		public Drawable getDrawable(String imgUrl) {
+			// Get MD5 of imgUrl
+			String imgKey = null;
+			try {
+				imgKey = hashImgUrl(imgUrl);
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+				Log.e("HtmlImageGetter", "Hash error>>" + imgUrl);
+			}
+
+			// Check if image is in cache
+			if (imgCache.get(imgKey) != null)
+				return imgCache.get(imgKey);
+
+			Log.v("ImageGetter", "img not cached");
+			imgUrl = imgUrl.replaceAll("(http://)?((out.|kiss.|www.)?bitunion.org|btun.yi.org|10.1.10.253)", MainActivity.network.ROOTURL);
+			imgUrl = imgUrl.replace("..", MainActivity.network.ROOTURL);
+
+			Log.v("ImageGetter", "img Url>>" + imgUrl);
+			URLDrawable urlDrawable = new URLDrawable(defaultDrawable);
+			new AsyncThread(urlDrawable).execute(imgKey, imgUrl);
+			return urlDrawable;
+		}
+
+		private class AsyncThread extends AsyncTask<String, Integer, Drawable> {
+			private String imgKey;
+			private URLDrawable drawable;
+
+			public AsyncThread(URLDrawable drawable) {
+				this.drawable = drawable;
+			}
+
+			@Override
+			protected Drawable doInBackground(String... strings) {
+				imgKey = strings[0];
+				InputStream inps = null;
+				try {
+					inps = BUAppUtils.getImageVewInputStream(strings[1]);
+				} catch (IOException e) {
+					e.printStackTrace();
+					return null;
+				}
+				if (inps == null)
+					return null;
+				Drawable drawable = Drawable.createFromStream(inps, imgKey);
+				return drawable;
+			}
+
+			@Override
+			protected void onPostExecute(Drawable result) {
+				if (result == null)
+					return;
+				imgCache.put(imgKey, drawable);
+				drawable.setDrawable(result);
+				htmlTextView.setText(htmlTextView.getText());
+			}
+		}
+
+		public class URLDrawable extends BitmapDrawable {
+
+			private Drawable drawable;
+
+			public URLDrawable(Drawable defaultDraw) {
+				setDrawable(defaultDraw);
+			}
+
+			private void setDrawable(Drawable ndrawable) {
+				drawable = ndrawable;
+				float dpi = MainActivity.PIXDENSITY;
+				float scalingFactor = (float) htmlTextView.getMeasuredWidth()
+						/ drawable.getIntrinsicWidth();
+				if (drawable.getIntrinsicWidth() < 100) {
+					drawable.setBounds(0, 0, drawable.getIntrinsicWidth(),
+							drawable.getIntrinsicHeight());
+					setBounds(0, 0, drawable.getIntrinsicWidth(),
+							drawable.getIntrinsicHeight());
+					return;
+				}
+				drawable.setBounds(0, 0, htmlTextView.getMeasuredWidth(),
+						(int) (drawable.getIntrinsicHeight() * scalingFactor));
+				setBounds(0, 0, htmlTextView.getMeasuredWidth(),
+						(int) (drawable.getIntrinsicHeight() * scalingFactor));
+			}
+
+			@Override
+			public void draw(Canvas canvas) {
+				drawable.draw(canvas);
+			}
+		}
 	}
 
 }

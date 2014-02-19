@@ -5,7 +5,8 @@
     <color name="blue_light_text">#CCFFFF</color>
     <color name="blue_text_bg_light">#D8E2EF</color>
     <color name="blue_text_bg_dark">#C2D1E7</color>
-    <color name="blue_text_bg_mid">#92ACD3</color>
+    <color name="blue_text_bg_title">#92ACD3</color>
     <color name="blue_text">#284264</color>
     <color name="blue_view_selected">#FFA500</color>
+    <color name="blue_text_link">#00f</color>
 </resources>

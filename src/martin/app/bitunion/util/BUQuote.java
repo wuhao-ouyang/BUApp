@@ -21,16 +21,6 @@ public class BUQuote extends BUContent {
 			this.postdate = m.group(2);
 			this.message = this.message.replace(m.group(0), "");
 		}
-
-		if (this.message != null && !this.message.isEmpty()) {
-			// 保留超链接标签，去掉其他
-			this.message = this.message.replaceAll("<(?!(a href=[^>]+>)|(/a>|i>|/i>))[^>]+>", "");
-			// 替换html特殊字符
-			this.message = BUAppUtils.replaceHtmlChar(this.message);
-			// 截去最后换行符，并把所有换行符替换成html标记<br>
-			this.message = this.message.substring(0, message.length());
-			this.message = this.message.replace("\n", "<br>");
-		}
 	}
 
 	public BUQuote(String author, String postdate, String message) {

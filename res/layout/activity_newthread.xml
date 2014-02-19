@@ -1,0 +1,54 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue_text_bg_light"
+    android:orientation="vertical"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
+    android:paddingTop="5dp"
+    tools:context=".NewthreadActivity" >
+
+    <EditText
+        android:id="@+id/newthread_subject"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_weight="0.02"
+        android:background="@drawable/edittext_background"
+        android:hint="主题"
+        android:padding="5dp" />
+
+    <EditText
+        android:id="@+id/newthread_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.95"
+        android:background="@drawable/edittext_background"
+        android:gravity="top"
+        android:hint="内容"
+        android:padding="5dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="fill_horizontal"
+        android:layout_weight="0.02"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/newthread_clear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="清空" />
+
+        <Button
+            android:id="@+id/newthread_send"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="发送" />
+    </LinearLayout>
+
+</LinearLayout>

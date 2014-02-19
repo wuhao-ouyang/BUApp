@@ -10,9 +10,13 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import martin.app.bitunion.MainActivity;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.graphics.drawable.Drawable;
+import android.text.Html;
 import android.util.Log;
 
 public class BUPost extends BUContent {
@@ -33,12 +37,14 @@ public class BUPost extends BUContent {
 	private String username;
 	private String avatar;
 	private JSONObject json;
+	private int count;
 
 	private ArrayList<BUQuote> quote = new ArrayList<BUQuote>();
 	private ArrayList<String> images = new ArrayList<String>();
 
-	public BUPost(JSONObject jsonObject) {
+	public BUPost(JSONObject jsonObject, int count) {
 		json = jsonObject;
+		this.count = count;
 		try {
 			pid = jsonObject.getString("pid");
 			fid = jsonObject.getString("fid");
@@ -72,17 +78,24 @@ public class BUPost extends BUContent {
 			subject = BUAppUtils.replaceHtmlChar(subject);
 		} else
 			subject = null;
+
 		parseQuote();
 		parseMessage();
 	}
 
 	public void parseQuote() {
 		message = message.replace("\"", "'");
-		Pattern p = Pattern.compile(BUAppUtils.QUOTE_REGEX, Pattern.DOTALL);
+		Pattern p = Pattern.compile(BUAppUtils.QUOTE_REGEX);
 		Matcher m = p.matcher(message);
 		while (m.find()) {
-			message = message.replace(m.group(0), "");
-			quote.add(new BUQuote(m.group(1)));
+			BUQuote q = new BUQuote(m.group(1));
+			quote.add(q);
+			message = message.replace(
+					m.group(0),
+					"<table width='90%' style='border:1px dashed #698fc7;font-size:14px;margin:5px;'><tr><td>"
+							+ q.toString() + "\n</td></tr></table>");
+//			message = message.replace(m.group(0), "");
+//			Log.v("BUpost", "quote>>" + q.toString());
 			m = p.matcher(message);
 		}
 	}
@@ -90,22 +103,13 @@ public class BUPost extends BUContent {
 	public void parseMessage() {
 		parseAt();
 		parseImage();
+		message = message.replace("[复制到剪贴板]", "");
 		// 去掉除了特定标记外的其他所有html标签
-		message = message
-				.replaceAll(
-						"<(?!(a href=[^>]+>)|(/a>|i>|/i>|img src="
-								+ "|font color='(Blue|Red|Green|Purple|Maroon|Orange|Brown|Pink|Yellow|LimeGreen)'>"
-								+ "|/font>|u>|/u>))[^>]+>", "");
-		// 截去最后换行符，并把所有换行符替换成html标记<br>
-		message = message.substring(0, message.length());
-		message = message.replace("\n", "<br>");
-		message = message.replace("..::", "<br>..::");
-		// 如果有附件图，以html标记形式添加在最后
-		if (attachment != "null" && attachment != null && !attachment.isEmpty()) {
-			String format = attachment.substring(attachment.length() - 4);
-			if (".jpg.png.bmp.gif".contains(format))
-				message += "<br><img src='../" + attachment + "'>";
-		}
+//		message = message
+//				.replaceAll(
+//						"<(?!(a href=[^> ]+>)|(/a>|i>|/i>|img src="
+//								+ "|font color='(Blue|Red|Green|Purple|Maroon)'>"
+//								+ "|/font>|u>|/u>))[^>]+>", "");
 	}
 
 	public void parseAt() {
@@ -114,15 +118,30 @@ public class BUPost extends BUContent {
 				.compile("<font color='Blue'>@<a href='/[^>]+'>([^\\s]+?)</a></font>");
 		Matcher m = p.matcher(message);
 		while (m.find()) {
-			message = message.replace(m.group(0), "<font color='Blue'>@ <u>"
+			message = message.replace(m.group(0), "<font color='Blue'>@<u>"
 					+ m.group(1) + "</u></font>");
 		}
 	}
 
 	public void parseImage() {
-		// Pattern p = Pattern.compile("<img src='[^>]+>");
-		// Matcher m = p.matcher(message);
-		// while
+//		message = message.replace("src='..", "scr='" + MainActivity.network.ROOTURL);
+		// 处理表情文件
+		Pattern p = Pattern.compile("<img src='([^>']+)'[^>]*>");
+		Matcher m = p.matcher(message);
+		while (m.find()) {
+			String path = "<img src='" + parseLocalImage(m.group(1)) + "'>";
+			message = message.replace(m.group(0), path);
+		}
+	}
+	
+	public String parseLocalImage(String imgUrl) {
+		// 检查是否为本地表情文件
+		Pattern p = Pattern.compile("\\.\\./images/(smilies|bz)/(.+?)\\.gif");
+		Matcher m = p.matcher(imgUrl);
+		if (m.find()) {
+			imgUrl = m.group(1) + "_" + m.group(2);
+		}
+		return imgUrl;
 	}
 
 	public String getPid() {
@@ -154,6 +173,7 @@ public class BUPost extends BUContent {
 	}
 
 	public String getSubject() {
+		
 		return subject;
 	}
 
@@ -167,8 +187,20 @@ public class BUPost extends BUContent {
 	}
 
 	public String getMessage() {
-		// return Html.fromHtml("<br>" + message, , null);
-		return message;
+		String m = message;
+		// 如果有附件图，以html标记形式添加在最后
+		if (attachment != "null" && attachment != null && !attachment.isEmpty()) {
+			String attUrl = MainActivity.network.ROOTURL + "/" + attachment;
+			m += "<br>附件：<br>";
+			String format = attachment.substring(attachment.length() - 4);
+			if (".jpg.png.bmp.gif".contains(format))
+				m += "<a href='" + attUrl + "'><img src='" + attUrl
+						+ "'></a>";
+			else
+				m += "<a href='" + attUrl + "'>" + attUrl + "</a>";
+			Log.v("Attachment", ">>" + attUrl);
+		}
+		return m;
 	}
 
 	public String getUsesig() {
@@ -197,5 +229,49 @@ public class BUPost extends BUContent {
 
 	public String toString() {
 		return json.toString();
+	}
+
+	public String toQuote() {
+		String quote;
+		String parsedMessage = message;
+		
+		if (parsedMessage.length() > 250)
+			parsedMessage = parsedMessage.substring(0, 250) + "......";
+		
+		parsedMessage = parsedMessage.replace("<br>", "\n");
+		Pattern p = Pattern.compile("<a href='(.+?)'(?:.target='.+?')>(.+?)</a>");
+		Matcher m = p.matcher(parsedMessage);
+		while (m.find()) {
+			String discuz ="[url=" + m.group(1) +"]" + m.group(2) + "[/url]";
+			parsedMessage = parsedMessage.replace(m.group(0), discuz);
+			m = p.matcher(parsedMessage);
+		}
+		p = Pattern.compile("<img src='([^>])'>");
+		m = p.matcher(parsedMessage);
+		while (m.find()){
+			parsedMessage = parsedMessage.replace(m.group(0), "[img]" + m.group(1) + "[/img]");
+			m = p.matcher(parsedMessage);
+		}
+		parsedMessage = Html.fromHtml(parsedMessage).toString();
+		quote = "[quote=" + getPid() + "][b]" + getAuthor() + "[/b] "
+				+ getDateline() + "\n" + parsedMessage + "[/quote]\n";
+		return quote;
+	}
+	
+	public int getCount(){
+		return count;
+	}
+	
+	public String getHtmlLayout(){
+		String htmlcontent;
+			htmlcontent = "<p><div class='tdiv'>" +
+					"<table width='100%' style='background-color:#92ACD3;padding:2px 5px;font-size:14px;'>" +
+					"<tr><td>#" + Integer.toString(getCount()) + "&nbsp;<span onclick=authorOnClick(" + getAuthorid() +")>" + getAuthor() + 
+					"</span>&nbsp;&nbsp;&nbsp;<span onclick=referenceOnClick("+ getCount() +")><u>引用</u></span></td>" +
+					"<td style='text-align:right;'>" + getDateline() + "</td></tr></table>" +
+					"</div>" +
+					"<div class='mdiv' width='100%' style='padding:5px;word-break:break-all;'>" + 
+					getMessage() + "</div></p>";
+		return htmlcontent;
 	}
 }

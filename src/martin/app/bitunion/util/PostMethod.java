@@ -7,14 +7,11 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLDecoder;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
@@ -39,10 +36,10 @@ public class PostMethod {
 
 	public Result sendPost(String path, JSONObject jsonRequest) {
 		try {
-			if (path == NEWPOST){
+			if (path == NEWPOST || path == NEWTHREAD){
 				HttpParams httpParams = new BasicHttpParams();
-				HttpConnectionParams.setConnectionTimeout(httpParams, 8000);
-				HttpConnectionParams.setSoTimeout(httpParams, 10000);
+				HttpConnectionParams.setConnectionTimeout(httpParams, 5000);
+				HttpConnectionParams.setSoTimeout(httpParams, 8000);
 				HttpClient httpclient = new DefaultHttpClient(httpParams);
 				HttpPost httppost = new HttpPost(path);
 				MultipartEntityBuilder reqEntityBuilder = MultipartEntityBuilder.create();
@@ -67,7 +64,7 @@ public class PostMethod {
 			URL url = new URL(path);
 			HttpURLConnection urlConnection = (HttpURLConnection) url
 					.openConnection();
-			urlConnection.setConnectTimeout(10000);
+			urlConnection.setConnectTimeout(5000);
 			urlConnection.setDoInput(true);
 			urlConnection.setDoOutput(true);
 			byte[] postdata = jsonRequest.toString().getBytes();
@@ -92,8 +89,8 @@ public class PostMethod {
 				return Result.NETWRONG;
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return Result.NETWRONG;
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

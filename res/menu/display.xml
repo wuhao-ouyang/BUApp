@@ -6,5 +6,10 @@
         android:icon="@drawable/ic_action_refresh"
         android:showAsAction="ifRoom|collapseActionView"
         android:title="@string/action_refresh"/>
+    <item
+        android:id="@+id/action_newthread"
+        android:icon="@drawable/ic_action_post"
+        android:showAsAction="ifRoom|collapseActionView"
+        android:title="@string/action_post"/>
 
 </menu>

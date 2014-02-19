@@ -97,7 +97,7 @@ public class DisplayActivity extends FragmentActivity {
 		session = MainActivity.network.mSession;
 
 		// Show the Up button in the action bar.
-		getActionBar().setTitle(forumName);
+		getActionBar().setTitle(forumName.replace("-- ", ""));
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setDisplayShowHomeEnabled(false);
 
@@ -162,6 +162,13 @@ public class DisplayActivity extends FragmentActivity {
 			return true;
 		case R.id.action_refresh:
 			refreshCurrentPage();
+			return true;
+		case R.id.action_newthread:
+			Intent intent = new Intent(DisplayActivity.this, NewthreadActivity.class);
+			intent.putExtra("action", "newthread");
+			intent.putExtra("forumname", forumName);
+			intent.putExtra("fid", forumId);
+			startActivity(intent);
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -357,7 +364,7 @@ public class DisplayActivity extends FragmentActivity {
 					postMethod.setNetType(MainActivity.network.mNetType);
 					netStat = postMethod.sendPost(postMethod.REQ_THREAD,
 							postReq);
-					if (postMethod.jsonResponse.getJSONArray("threadlist") != null)
+					if (postMethod.jsonResponse != null)
 						pageContent = BUAppUtils.mergeJSONArray(pageContent,
 								postMethod.jsonResponse.getJSONArray("threadlist"));
 					threadsRemain = threadsRemain - 20;

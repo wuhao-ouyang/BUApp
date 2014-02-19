@@ -8,22 +8,38 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/blue_text_bg_mid"
+        android:background="@color/blue_text_bg_title"
+        android:gravity="center"
         android:orientation="horizontal" >
 
         <TextView
             android:id="@+id/post_title"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.6"
             android:padding="5dp"
-            android:text="#1\tAuthor"
+            android:text="#1\tmaomao15"
+            android:textColor="@color/blue_text" />
+
+        <TextView
+            android:id="@+id/post_ref_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" 引用 "
+            android:textColor="@color/blue_text" />
+
+        <TextView
+            android:id="@+id/post_viewauthor_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="查看 "
             android:textColor="@color/blue_text" />
 
         <TextView
             android:id="@+id/post_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:gravity="right"
             android:padding="5dp"
             android:text="2013-02-02 02:02:06"
             android:textColor="@color/blue_text" />
@@ -46,7 +62,7 @@
             android:text="subject"
             android:textColor="@color/blue_text" />
 
-        <TextView
+        <WebView
             android:id="@+id/post_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -54,6 +70,7 @@
             android:paddingTop="10sp"
             android:text="content"
             android:textColor="@color/blue_text"
+            android:textColorLink="@color/blue_text_link"
             android:textIsSelectable="true" />
     </LinearLayout>
 

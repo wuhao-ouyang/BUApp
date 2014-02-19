@@ -184,8 +184,7 @@ public class MainActivity extends Activity {
 	protected void onRestart() {
 		super.onRestart();
 		// 主要为login_activity结束后更新数据用
-		readConfig();
-		Log.v("MainActivity", "onRestart>>" + network.mSession);
+		Log.v("MainActivity", "Cookie>>" + network.mSession);
 	}
 
 	private void readConfig() {
@@ -207,8 +206,13 @@ public class MainActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()){
 		case R.id.action_login:
-			Intent intent = new Intent(this, LoginActivity.class);
-			startActivityForResult(intent, BUAppUtils.MAIN_REQ);
+			if (network.mUsername == null || network.mUsername.isEmpty()) {
+				Intent intent = new Intent(this, LoginActivity.class);
+				startActivityForResult(intent, BUAppUtils.MAIN_REQ);
+			} else {
+				Intent intent = new Intent(this, MyinfoActivity.class);
+				startActivity(intent);
+			}
 			break;
 		case R.id.action_settings:
 			//TODO
@@ -225,6 +229,7 @@ public class MainActivity extends Activity {
 		super.onActivityResult(requestCode, resultCode, data);
 		if (resultCode == BUAppUtils.MAIN_RESULT
 				&& requestCode == BUAppUtils.MAIN_REQ) {
+			readConfig();
 			network.mSession = data.getStringExtra("session");
 			showToast(BUAppUtils.USERNAME + " " + network.mUsername + " "
 					+ BUAppUtils.LOGINSUCCESS);
