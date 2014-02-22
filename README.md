@@ -18,7 +18,6 @@ v0.6
 本地表情包
 
 
-![alt tag](http://imgur.com/oqX1iyA.png)
+![alt tag](http://imgur.com/oqX1iyA.png) ![alt tag](http://imgur.com/gSWuqhJ.png)
 
-
-![alt tag](http://imgur.com/gSWuqhJ.png)
+![alt tag](http://imgur.com/almaRAA.png) ![alt tag](http://i.imgur.com/z5ly3Jv.png)
