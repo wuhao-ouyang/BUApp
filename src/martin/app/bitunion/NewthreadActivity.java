@@ -96,6 +96,10 @@ public class NewthreadActivity extends Activity {
 			messagebox.setError("回复不能为空");
 			return;
 		}
+		if (message.length() < 5) {
+			messagebox.setError("内容长度不能小于5");
+			return;
+		}
 		new NewContentTask(subject, message + BUAppUtils.CLIENTMESSAGETAG, fid).execute();
 	}
 	
@@ -172,24 +176,24 @@ public class NewthreadActivity extends Activity {
 				if (tid != null && !tid.isEmpty()) {
 					postReq.put("action", "newreply");
 					postReq.put("username", URLEncoder.encode(
-							MainActivity.network.mUsername, "utf-8"));
-					postReq.put("session", MainActivity.network.mSession);
+							MainActivity.settings.mUsername, "utf-8"));
+					postReq.put("session", MainActivity.settings.mSession);
 					postReq.put("tid", tid);
 					postReq.put("message", URLEncoder.encode(message, "utf-8"));
 					postReq.put("attachment", 0);
-					postMethod.setNetType(MainActivity.network.mNetType);
+					postMethod.setNetType(MainActivity.settings.mNetType);
 					return postMethod.sendPost(postMethod.NEWPOST, postReq);
 				}
 				if (fid != 0){
 					postReq.put("action", "newthread");
 					postReq.put("username", URLEncoder.encode(
-							MainActivity.network.mUsername, "utf-8"));
-					postReq.put("session", MainActivity.network.mSession);
+							MainActivity.settings.mUsername, "utf-8"));
+					postReq.put("session", MainActivity.settings.mSession);
 					postReq.put("fid", fid);
 					postReq.put("subject", URLEncoder.encode(subject, "utf-8"));
 					postReq.put("message", URLEncoder.encode(message, "utf-8"));
 					postReq.put("attachment", 0);
-					postMethod.setNetType(MainActivity.network.mNetType);
+					postMethod.setNetType(MainActivity.settings.mNetType);
 					return postMethod.sendPost(postMethod.NEWTHREAD, postReq);
 				}
 			} catch (JSONException e) {

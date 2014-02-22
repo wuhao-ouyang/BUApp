@@ -133,8 +133,9 @@ public class BUAppUtils {
 
 	public static InputStream getImageVewInputStream(String imagepath)
 			throws IOException {
-		if (imagepath.contains("bitunion.org/attachment.php?aid="))
-			return null;
+		if (imagepath.contains("bitunion.org"))
+			if (imagepath.contains(".php?"))
+				return null;
 		
 		InputStream inputStream = null;
 		URL url = new URL(imagepath);
@@ -226,8 +227,8 @@ public static class HtmlImageGetter implements Html.ImageGetter {
 				return imgCache.get(imgKey);
 
 			Log.v("ImageGetter", "img not cached");
-			imgUrl = imgUrl.replaceAll("(http://)?((out.|kiss.|www.)?bitunion.org|btun.yi.org|10.1.10.253)", MainActivity.network.ROOTURL);
-			imgUrl = imgUrl.replace("..", MainActivity.network.ROOTURL);
+			imgUrl = imgUrl.replaceAll("(http://)?((out.|kiss.|www.)?bitunion.org|btun.yi.org|10.1.10.253)", MainActivity.settings.ROOTURL);
+			imgUrl = imgUrl.replace("..", MainActivity.settings.ROOTURL);
 
 			Log.v("ImageGetter", "img Url>>" + imgUrl);
 			URLDrawable urlDrawable = new URLDrawable(defaultDrawable);

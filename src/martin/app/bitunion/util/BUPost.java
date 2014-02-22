@@ -15,7 +15,6 @@ import martin.app.bitunion.MainActivity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.util.Log;
 
@@ -92,7 +91,7 @@ public class BUPost extends BUContent {
 			quote.add(q);
 			message = message.replace(
 					m.group(0),
-					"<table width='90%' style='border:1px dashed #698fc7;font-size:14px;margin:5px;'><tr><td>"
+					"<table width='90%' style='border:1px dashed #698fc7;font-size:"+ MainActivity.settings.titletextsize +"px;margin:5px;'><tr><td>"
 							+ q.toString() + "\n</td></tr></table>");
 //			message = message.replace(m.group(0), "");
 //			Log.v("BUpost", "quote>>" + q.toString());
@@ -104,12 +103,6 @@ public class BUPost extends BUContent {
 		parseAt();
 		parseImage();
 		message = message.replace("[复制到剪贴板]", "");
-		// 去掉除了特定标记外的其他所有html标签
-//		message = message
-//				.replaceAll(
-//						"<(?!(a href=[^> ]+>)|(/a>|i>|/i>|img src="
-//								+ "|font color='(Blue|Red|Green|Purple|Maroon)'>"
-//								+ "|/font>|u>|/u>))[^>]+>", "");
 	}
 
 	public void parseAt() {
@@ -124,12 +117,15 @@ public class BUPost extends BUContent {
 	}
 
 	public void parseImage() {
-//		message = message.replace("src='..", "scr='" + MainActivity.network.ROOTURL);
-		// 处理表情文件
-		Pattern p = Pattern.compile("<img src='([^>']+)'[^>]*>");
+//		message = message.replace("src='..", "scr='" + MainActivity.settings.ROOTURL);
+		// 处理图片标签
+		Pattern p = Pattern.compile("<img src='([^>']+)'[^>]*(width>)?[^>]*'>");
 		Matcher m = p.matcher(message);
 		while (m.find()) {
 			String path = "<img src='" + parseLocalImage(m.group(1)) + "'>";
+			// 统一站内地址
+			path = path.replaceAll("(http://)?((out.|kiss.|www.)?" +
+					"bitunion.org|btun.yi.org|10.1.10.253)", MainActivity.settings.ROOTURL);
 			message = message.replace(m.group(0), path);
 		}
 	}
@@ -189,8 +185,9 @@ public class BUPost extends BUContent {
 	public String getMessage() {
 		String m = message;
 		// 如果有附件图，以html标记形式添加在最后
+		// 如果附件不为图片，以超链接形式添加
 		if (attachment != "null" && attachment != null && !attachment.isEmpty()) {
-			String attUrl = MainActivity.network.ROOTURL + "/" + attachment;
+			String attUrl = MainActivity.settings.ROOTURL + "/" + attachment;
 			m += "<br>附件：<br>";
 			String format = attachment.substring(attachment.length() - 4);
 			if (".jpg.png.bmp.gif".contains(format))
@@ -232,29 +229,37 @@ public class BUPost extends BUContent {
 	}
 
 	public String toQuote() {
-		String quote;
-		String parsedMessage = message;
+		String quote = message;
 		
-		if (parsedMessage.length() > 250)
-			parsedMessage = parsedMessage.substring(0, 250) + "......";
+		// Cut down the message if it's too long
+		if (quote.length() > 250)
+			quote = quote.substring(0, 250) + "......";
 		
-		parsedMessage = parsedMessage.replace("<br>", "\n");
+		// Clear other quotes in message
+		quote = quote.replaceAll("<table width='90%' style='border:1px dashed #698fc7;font-size:"+ MainActivity.settings.titletextsize +"px;margin:5px;'><tr><td>" +
+				"[.\n]*\n</td></tr></table>", "");
+		
+		// Change <br> to \n
+		quote = quote.replace("<br>", "\n");
+		// Change hypertext reference to Discuz style
 		Pattern p = Pattern.compile("<a href='(.+?)'(?:.target='.+?')>(.+?)</a>");
-		Matcher m = p.matcher(parsedMessage);
+		Matcher m = p.matcher(quote);
 		while (m.find()) {
 			String discuz ="[url=" + m.group(1) +"]" + m.group(2) + "[/url]";
-			parsedMessage = parsedMessage.replace(m.group(0), discuz);
-			m = p.matcher(parsedMessage);
+			quote = quote.replace(m.group(0), discuz);
+			m = p.matcher(quote);
 		}
+		// Change image to Discuz style
 		p = Pattern.compile("<img src='([^>])'>");
-		m = p.matcher(parsedMessage);
+		m = p.matcher(quote);
 		while (m.find()){
-			parsedMessage = parsedMessage.replace(m.group(0), "[img]" + m.group(1) + "[/img]");
-			m = p.matcher(parsedMessage);
+			quote = quote.replace(m.group(0), "[img]" + m.group(1) + "[/img]");
+			m = p.matcher(quote);
 		}
-		parsedMessage = Html.fromHtml(parsedMessage).toString();
+		// Clear other HTML marks
+		quote = Html.fromHtml(quote).toString();
 		quote = "[quote=" + getPid() + "][b]" + getAuthor() + "[/b] "
-				+ getDateline() + "\n" + parsedMessage + "[/quote]\n";
+				+ getDateline() + "\n" + quote + "[/quote]\n";
 		return quote;
 	}
 	
@@ -262,10 +267,14 @@ public class BUPost extends BUContent {
 		return count;
 	}
 	
+	/**
+	 * Change HTML message returned from server to application style.
+	 * @return String of costumed HTML style for layout
+	 */
 	public String getHtmlLayout(){
 		String htmlcontent;
 			htmlcontent = "<p><div class='tdiv'>" +
-					"<table width='100%' style='background-color:#92ACD3;padding:2px 5px;font-size:14px;'>" +
+					"<table width='100%' style='background-color:#92ACD3;padding:2px 5px;font-size:"+ MainActivity.settings.titletextsize +"px;'>" +
 					"<tr><td>#" + Integer.toString(getCount()) + "&nbsp;<span onclick=authorOnClick(" + getAuthorid() +")>" + getAuthor() + 
 					"</span>&nbsp;&nbsp;&nbsp;<span onclick=referenceOnClick("+ getCount() +")><u>引用</u></span></td>" +
 					"<td style='text-align:right;'>" + getDateline() + "</td></tr></table>" +

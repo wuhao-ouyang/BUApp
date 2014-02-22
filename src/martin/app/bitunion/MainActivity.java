@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import martin.app.bitunion.util.BUAppSettings;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.BUAppUtils.Result;
 import martin.app.bitunion.util.BUForum;
@@ -18,6 +19,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
@@ -52,7 +54,7 @@ public class MainActivity extends Activity {
 	ForumListAdapter adapter;
 
 	// 静态变量在整个应用中传递网络连接参数，包括session, username, password信息
-	public static BUAppUtils network = new BUAppUtils();
+	public static BUAppSettings settings = new BUAppSettings();
 	// 上次按返回键的时间
 	long touchTime = 0;
 
@@ -113,7 +115,7 @@ public class MainActivity extends Activity {
 		listView.setAdapter(new ForumListAdapter());
 
 		readConfig();
-		if (network.mUsername != null && !network.mUsername.isEmpty()) {
+		if (settings.mUsername != null && !settings.mUsername.isEmpty()) {
 			mLoginTask = new UserLoginTask();
 			mLoginTask.execute((Void) null);
 		}
@@ -134,9 +136,9 @@ public class MainActivity extends Activity {
 			try {
 				postReq.put("action", "login");
 				postReq.put("username",
-						URLEncoder.encode(network.mUsername, "utf-8"));
-				postReq.put("password", network.mPassword);
-				postMethod.setNetType(network.mNetType);
+						URLEncoder.encode(settings.mUsername, "utf-8"));
+				postReq.put("password", settings.mPassword);
+				postMethod.setNetType(settings.mNetType);
 				return postMethod.sendPost(postMethod.REQ_LOGGING, postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -164,10 +166,10 @@ public class MainActivity extends Activity {
 				return;
 			case SUCCESS:
 			}
-			showToast(BUAppUtils.USERNAME + " " + network.mUsername + " "
+			showToast(BUAppUtils.USERNAME + " " + settings.mUsername + " "
 					+ BUAppUtils.LOGINSUCCESS);
 			try {
-				network.mSession = postMethod.jsonResponse.getString("session");
+				settings.mSession = postMethod.jsonResponse.getString("session");
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -184,14 +186,25 @@ public class MainActivity extends Activity {
 	protected void onRestart() {
 		super.onRestart();
 		// 主要为login_activity结束后更新数据用
-		Log.v("MainActivity", "Cookie>>" + network.mSession);
+		Log.v("MainActivity", "Cookie>>" + settings.mSession);
+	}
+	
+	@Override
+	protected void onStop() {
+		SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
+		SharedPreferences.Editor editor = config.edit();
+		editor.putInt("nettype", settings.mNetType);
+		editor.commit();
+		super.onStop();
 	}
 
 	private void readConfig() {
 		SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
-		network.mNetType = config.getInt("nettype", BUAppUtils.OUTNET);
-		network.mUsername = config.getString("username", null);
-		network.mPassword = config.getString("password", null);
+		settings.mNetType = config.getInt("nettype", BUAppUtils.OUTNET);
+		settings.mUsername = config.getString("username", null);
+		settings.mPassword = config.getString("password", null);
+		settings.titletextsize = config.getInt("titletextsize", (PIXDENSITY > DisplayMetrics.DENSITY_HIGH)? 14 : 12);
+		settings.contenttextsize = config.getInt("contenttextsize", (PIXDENSITY > DisplayMetrics.DENSITY_HIGH)? 14 : 12);
 	}
 
 	@Override
@@ -206,7 +219,7 @@ public class MainActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()){
 		case R.id.action_login:
-			if (network.mUsername == null || network.mUsername.isEmpty()) {
+			if (settings.mUsername == null || settings.mUsername.isEmpty()) {
 				Intent intent = new Intent(this, LoginActivity.class);
 				startActivityForResult(intent, BUAppUtils.MAIN_REQ);
 			} else {
@@ -215,8 +228,8 @@ public class MainActivity extends Activity {
 			}
 			break;
 		case R.id.action_settings:
-			//TODO
-			showToast("功能还未添加");
+			Intent intent = new Intent(this, SettingsActivity.class);
+			startActivity(intent);
 			break;
 		default:}
 		return true;
@@ -230,8 +243,8 @@ public class MainActivity extends Activity {
 		if (resultCode == BUAppUtils.MAIN_RESULT
 				&& requestCode == BUAppUtils.MAIN_REQ) {
 			readConfig();
-			network.mSession = data.getStringExtra("session");
-			showToast(BUAppUtils.USERNAME + " " + network.mUsername + " "
+			settings.mSession = data.getStringExtra("session");
+			showToast(BUAppUtils.USERNAME + " " + settings.mUsername + " "
 					+ BUAppUtils.LOGINSUCCESS);
 		}
 	}
@@ -256,9 +269,9 @@ public class MainActivity extends Activity {
 			textView.setBackgroundColor(getResources().getColor(
 					R.color.blue_light));
 			if (fArrayList.get(groupPosition).get(childPosition).getName().contains("--"))
-				textView.setTextSize(16);
+				textView.setTextSize(settings.titletextsize + 2);
 			else
-				textView.setTextSize(20);
+				textView.setTextSize(settings.titletextsize + 2 + 4);
 			textView.setPadding(60, 10, 0, 10);
 			textView.setText(fArrayList.get(groupPosition).get(childPosition)
 					.getName());
@@ -296,7 +309,7 @@ public class MainActivity extends Activity {
 
 				@Override
 				public void onClick(View v) {
-					if (network.mUsername != null && network.mPassword != null) {
+					if (settings.mUsername != null && settings.mPassword != null) {
 						Intent intent = new Intent(MainActivity.this,
 								DisplayActivity.class);
 						intent.putExtra("fid", ((BUForum) v.getTag()).getFid());
@@ -335,7 +348,7 @@ public class MainActivity extends Activity {
 			final TextView textView = new TextView(MainActivity.this);
 			textView.setBackgroundColor(getResources().getColor(
 					R.color.blue_dark));
-			textView.setTextSize(25);
+			textView.setTextSize(settings.titletextsize + 2 + 4 + 5);
 			textView.setPadding(60, 10, 0, 10);
 			textView.setText(groupList.get(groupPosition));
 			return textView;

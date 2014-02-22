@@ -3,15 +3,12 @@ package martin.app.bitunion;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.net.URLEncoder;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
-import martin.app.bitunion.fragment.LogoutAlertDialogFragment;
-import martin.app.bitunion.fragment.LogoutAlertDialogFragment.LogoutAlertDialogListener;
+
+import martin.app.bitunion.fragment.ConfirmDialogFragment;
+import martin.app.bitunion.fragment.ConfirmDialogFragment.ConfirmDialogListener;
 import martin.app.bitunion.util.BUAppUtils.Result;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.BUUserInfo;
@@ -20,8 +17,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
@@ -29,15 +24,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 
 public class MyinfoActivity extends FragmentActivity implements
-		LogoutAlertDialogListener {
+		ConfirmDialogListener {
 
 	ImageView mAvatar;
 	TextView mUsername;
@@ -52,7 +45,7 @@ public class MyinfoActivity extends FragmentActivity implements
 
 	ProgressDialog progressDialog = null;
 
-	LogoutAlertDialogFragment mAlertFragment = null;
+	ConfirmDialogFragment mAlertFragment = null;
 
 	private static Drawable imageDrawable;
 
@@ -80,8 +73,8 @@ public class MyinfoActivity extends FragmentActivity implements
 		mEmail = (TextView) findViewById(R.id.myinfo_email);
 		mSignt = (TextView) findViewById(R.id.myinfo_signature);
 
-		if (MainActivity.network.mSession != null
-				&& !MainActivity.network.mSession.isEmpty()) {
+		if (MainActivity.settings.mSession != null
+				&& !MainActivity.settings.mSession.isEmpty()) {
 			progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
 			progressDialog.setMessage("读取中...");
 			progressDialog.show();
@@ -116,14 +109,14 @@ public class MyinfoActivity extends FragmentActivity implements
 
 		public GetAvatarTask(ImageView v, String url) {
 			mView = v;
-			MainActivity.network.setNetType(MainActivity.network.mNetType);
+			MainActivity.settings.setNetType(MainActivity.settings.mNetType);
 			path = url;
 			path = path.replaceAll("(http://)?(www|v6|kiss|out).bitunion.org",
-					MainActivity.network.ROOTURL);
-			path = path.replaceAll("^images/", MainActivity.network.ROOTURL
+					MainActivity.settings.ROOTURL);
+			path = path.replaceAll("^images/", MainActivity.settings.ROOTURL
 					+ "/images/");
 			path = path.replaceAll("^attachments/",
-					MainActivity.network.ROOTURL + "/attachments/");
+					MainActivity.settings.ROOTURL + "/attachments/");
 			Log.v("MyinfoActivity", "GetAvatarTask>>" + path);
 		}
 
@@ -171,11 +164,11 @@ public class MyinfoActivity extends FragmentActivity implements
 			try {
 				postReq.put("action", "profile");
 				postReq.put("username", URLEncoder.encode(
-						MainActivity.network.mUsername, "utf-8"));
-				postReq.put("session", MainActivity.network.mSession);
+						MainActivity.settings.mUsername, "utf-8"));
+				postReq.put("session", MainActivity.settings.mSession);
 				postReq.put("queryusername", URLEncoder.encode(
-						MainActivity.network.mUsername, "utf-8"));
-				postMethod.setNetType(MainActivity.network.mNetType);
+						MainActivity.settings.mUsername, "utf-8"));
+				postMethod.setNetType(MainActivity.settings.mNetType);
 				return postMethod.sendPost(postMethod.REQ_PROFILE, postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -235,15 +228,19 @@ public class MyinfoActivity extends FragmentActivity implements
 			finish();
 			return true;
 		case R.id.action_refresh:
-			if (MainActivity.network.mSession == null
-					|| MainActivity.network.mSession.isEmpty()) {
+			if (MainActivity.settings.mSession == null
+					|| MainActivity.settings.mSession.isEmpty()) {
 				new UserLoginTask().execute();
 				progressDialog.show();
 			} else
 				new MyinfoReadTask().execute();
 			return true;
 		case R.id.action_logout:
-			mAlertFragment = new LogoutAlertDialogFragment();
+			mAlertFragment = new ConfirmDialogFragment();
+			Bundle args = new Bundle();
+			args.putString("title", "登出");
+			args.putString("message", "确定要登出吗？");
+			mAlertFragment.setArguments(args);
 			mAlertFragment.show(getSupportFragmentManager(), "LogoutAlert");
 			return true;
 		}
@@ -252,8 +249,10 @@ public class MyinfoActivity extends FragmentActivity implements
 
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog) {
-		new UserLogoutTask();
+		new UserLogoutTask().execute();
 	}
+	@Override
+	public void onDialogPositiveClick(DialogFragment dialog, String arg) {}
 
 	/**
 	 * Represents an asynchronous login/registration task used to authenticate
@@ -270,9 +269,9 @@ public class MyinfoActivity extends FragmentActivity implements
 			try {
 				postReq.put("action", "login");
 				postReq.put("username", URLEncoder.encode(
-						MainActivity.network.mUsername, "utf-8"));
-				postReq.put("password", MainActivity.network.mPassword);
-				postMethod.setNetType(MainActivity.network.mNetType);
+						MainActivity.settings.mUsername, "utf-8"));
+				postReq.put("password", MainActivity.settings.mPassword);
+				postMethod.setNetType(MainActivity.settings.mNetType);
 				return postMethod.sendPost(postMethod.REQ_LOGGING, postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -300,7 +299,7 @@ public class MyinfoActivity extends FragmentActivity implements
 			case SUCCESS:
 			}
 			try {
-				MainActivity.network.mSession = postMethod.jsonResponse
+				MainActivity.settings.mSession = postMethod.jsonResponse
 						.getString("session");
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -320,10 +319,10 @@ public class MyinfoActivity extends FragmentActivity implements
 			try {
 				postReq.put("action", "logout");
 				postReq.put("username", URLEncoder.encode(
-						MainActivity.network.mUsername, "utf-8"));
-				postReq.put("password", MainActivity.network.mPassword);
-				postReq.put("session", MainActivity.network.mSession);
-				postMethod.setNetType(MainActivity.network.mNetType);
+						MainActivity.settings.mUsername, "utf-8"));
+				postReq.put("password", MainActivity.settings.mPassword);
+				postReq.put("session", MainActivity.settings.mSession);
+				postMethod.setNetType(MainActivity.settings.mNetType);
 				return postMethod.sendPost(postMethod.REQ_LOGGING, postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -359,10 +358,10 @@ public class MyinfoActivity extends FragmentActivity implements
 	public void cleareConfig() {
 		SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
 		SharedPreferences.Editor editor = config.edit();
-		MainActivity.network.mUsername = null;
-		MainActivity.network.mPassword = null;
-		MainActivity.network.mSession = null;
-		MainActivity.network.mNetType = BUAppUtils.OUTNET;
+		MainActivity.settings.mUsername = null;
+		MainActivity.settings.mPassword = null;
+		MainActivity.settings.mSession = null;
+		MainActivity.settings.mNetType = BUAppUtils.OUTNET;
 		editor.putInt("nettype", BUAppUtils.OUTNET);
 		editor.putString("username", null);
 		editor.putString("password", null);

@@ -124,14 +124,14 @@ public class UserInfoDialogFragment extends DialogFragment {
 
 		public GetAvatarTask(ImageView v, String url) {
 			mView = v;
-			MainActivity.network.setNetType(MainActivity.network.mNetType);
+			MainActivity.settings.setNetType(MainActivity.settings.mNetType);
 			path = url;
 			path = path.replaceAll("(http://)?(www|v6|kiss|out).bitunion.org",
-					MainActivity.network.ROOTURL);
-			path = path.replaceAll("^images/", MainActivity.network.ROOTURL
+					MainActivity.settings.ROOTURL);
+			path = path.replaceAll("^images/", MainActivity.settings.ROOTURL
 					+ "/images/");
 			path = path.replaceAll("^attachments/",
-					MainActivity.network.ROOTURL + "/attachments/");
+					MainActivity.settings.ROOTURL + "/attachments/");
 			Log.v("Userinfo", "GetAvatarTask>>" + path);
 		}
 
@@ -184,10 +184,10 @@ public class UserInfoDialogFragment extends DialogFragment {
 			try {
 				postReq.put("action", "profile");
 				postReq.put("username", URLEncoder.encode(
-						MainActivity.network.mUsername, "utf-8"));
-				postReq.put("session", MainActivity.network.mSession);
+						MainActivity.settings.mUsername, "utf-8"));
+				postReq.put("session", MainActivity.settings.mSession);
 				postReq.put("uid", uid);
-				postMethod.setNetType(MainActivity.network.mNetType);
+				postMethod.setNetType(MainActivity.settings.mNetType);
 				return postMethod.sendPost(postMethod.REQ_PROFILE, postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();

@@ -11,15 +11,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import martin.app.bitunion.DisplayActivity.MyOnPageChangeListener;
-import martin.app.bitunion.DisplayActivity.ReadPageTask;
-import martin.app.bitunion.DisplayActivity.UserLoginTask;
-import martin.app.bitunion.fragment.ForumFragment;
+import martin.app.bitunion.fragment.ConfirmDialogFragment;
+import martin.app.bitunion.fragment.ConfirmDialogFragment.ConfirmDialogListener;
 import martin.app.bitunion.fragment.ThreadFragment;
 import martin.app.bitunion.fragment.UserInfoDialogFragment;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.BUPost;
-import martin.app.bitunion.util.BUThread;
 import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 
@@ -27,11 +24,12 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.NavUtils;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -39,7 +37,6 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,6 +45,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.View.OnTouchListener;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -58,16 +57,9 @@ import android.widget.Toast;
  * @author Strider_oy
  * 
  */
-public class ThreadActivity extends FragmentActivity {
+public class ThreadActivity extends FragmentActivity implements ConfirmDialogListener {
 
-	/**
-	 * The {@link android.support.v4.view.PagerAdapter} that will provide
-	 * fragments for each of the sections. We use a
-	 * {@link android.support.v4.app.FragmentPagerAdapter} derivative, which
-	 * will keep every loaded fragment in memory. If this becomes too memory
-	 * intensive, it may be best to switch to a
-	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-	 */
+	
 	ThreadPagerAdapter mThreadAdapter;
 
 	/**
@@ -113,7 +105,7 @@ public class ThreadActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_thread);
-
+		
 		Intent intent = getIntent();
 		threadId = intent.getStringExtra("tid");
 		threadName = intent.getStringExtra("subject");
@@ -124,7 +116,7 @@ public class ThreadActivity extends FragmentActivity {
 			lastpage = replies / BUAppUtils.POSTS_PER_PAGE;
 		Log.v("ThreadActivity", "lastpage>>>>>" + lastpage);
 
-		// Show the Up button in the action bar.
+		// Setup the action bar.
 		getActionBar().setTitle(threadName);
 		getActionBar().setDisplayShowHomeEnabled(false);
 
@@ -133,6 +125,7 @@ public class ThreadActivity extends FragmentActivity {
 		replyContainer.setVisibility(View.GONE);
 		replyMessage = (EditText) replyContainer
 				.findViewById(R.id.reply_message);
+		// Button calls reply window to front
 		ImageButton replySubmit = (ImageButton) replyContainer
 				.findViewById(R.id.reply_submit);
 		replySubmit.setOnClickListener(new MyReplySubmitListener());
@@ -151,10 +144,10 @@ public class ThreadActivity extends FragmentActivity {
 		});
 
 		// Create the adapter that will return a fragment for each of the three
-		// primary sections of the app.
+		// primary sections of the application.
 		mThreadAdapter = new ThreadPagerAdapter(getSupportFragmentManager());
 
-		// Set up the ViewPager with the sections adapter.
+		// Setup the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.viewpager_thread);
 		mPagerTitleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip_thread);
 		mPagerTitleStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
@@ -167,14 +160,9 @@ public class ThreadActivity extends FragmentActivity {
 		progressDialog.setMessage("读取中...");
 		progressDialog.show();
 
-		// if (intent.getBooleanExtra("new", false)) {
-		// currentpage = lastpage;
-		// readThreadPage(currentpage);
-		// readThreadPage(currentpage - 1);
-		// } else {
+		// Read first two page.
 		readThreadPage(0);
 		readThreadPage(1);
-		// }
 
 	}
 
@@ -182,7 +170,7 @@ public class ThreadActivity extends FragmentActivity {
 	 * Open a new thread to requesting data from server
 	 * 
 	 * @param page
-	 *            The page you want to request
+	 *            Which page to request
 	 */
 	public void readThreadPage(int page) {
 		if (page <= lastpage && page >= 0)
@@ -221,8 +209,6 @@ public class ThreadActivity extends FragmentActivity {
 				replyContainer.setVisibility(View.VISIBLE);
 			else
 				replyContainer.setVisibility(View.GONE);
-			// Log.v("ThreadActivity",
-			// "action_post>>"+replyContainer.isShown());
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -255,7 +241,7 @@ public class ThreadActivity extends FragmentActivity {
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
 	 * one of the sections/tabs/pages.
 	 */
-	public class ThreadPagerAdapter extends FragmentPagerAdapter {
+	public class ThreadPagerAdapter extends FragmentStatePagerAdapter {
 
 		SparseArray<ThreadFragment> registeredFragments = new SparseArray<ThreadFragment>();
 
@@ -274,7 +260,8 @@ public class ThreadActivity extends FragmentActivity {
 					singlepagelist.add(post.toString());
 			args.putStringArrayList("singlepagelist", singlepagelist);
 			args.putInt(ThreadFragment.ARG_PAGE_NUMBER, position);
-			registeredFragments.get(position).setArguments(args);}
+			registeredFragments.get(position).setArguments(args);
+			Log.d("PagerAdapter", "Fragment create>>" + position);}
 			return registeredFragments.get(position);
 		}
 
@@ -301,24 +288,32 @@ public class ThreadActivity extends FragmentActivity {
 
 		@Override
 		public void destroyItem(ViewGroup container, int position, Object object) {
-			registeredFragments.remove(position);
+//			registeredFragments.remove(position);
 			super.destroyItem(container, position, object);
 		}
 
 		public ThreadFragment getFragment(int position) {
 			return registeredFragments.get(position);
 		}
+		
 	}
 
+	/**
+	 * Listener to swipe activity. Double one-direction swiping will kill
+	 * current activity thus lead to upper level of this application.
+	 * @author Strider_oy
+	 */
 	class MyOnTouchListener implements OnTouchListener {
 
 		double lastx = -1;
-		long lastswipetime = 0;
-		boolean swipetrig = false;
+		long lastswipetimeright = 0;
+		long lastswipetimeleft = 0;
+		boolean rightswipetrig = false;
+		boolean leftswipetrig = false;
 
 		@Override
 		public boolean onTouch(View v, MotionEvent motion) {
-			if (currentpage == 0)
+			if (currentpage == 0 || currentpage == lastpage)
 				switch (motion.getAction()) {
 				case MotionEvent.ACTION_MOVE:
 					int dpMoved = 0;
@@ -326,18 +321,31 @@ public class ThreadActivity extends FragmentActivity {
 						dpMoved = BUAppUtils.px2dip(getApplication(),
 								(float) (motion.getX() - lastx));
 					lastx = motion.getX();
-					if (dpMoved > 24)
-						swipetrig = true;
+//					Log.i("TouchEvent", "dpmoved>>" + dpMoved);
+					if (dpMoved > 24 && currentpage == 0)
+						rightswipetrig = true;
+					else if (dpMoved < -24 && currentpage == lastpage)
+						leftswipetrig = true;
 					break;
 				case MotionEvent.ACTION_UP:
 					lastx = -1;
-					if (swipetrig) {
-						if ((System.currentTimeMillis() - lastswipetime) >= BUAppUtils.EXIT_WAIT_TIME) {
+					if (rightswipetrig) {
+						if ((System.currentTimeMillis() - lastswipetimeright) >= BUAppUtils.EXIT_WAIT_TIME) {
 							showToast("再次右滑返回");
-							lastswipetime = System.currentTimeMillis();
+							lastswipetimeright = System.currentTimeMillis();
+							lastswipetimeleft = 0;
 						} else
 							finish();
-						swipetrig = false;
+						rightswipetrig = false;
+					}
+					if (leftswipetrig) {
+						if ((System.currentTimeMillis() - lastswipetimeleft) >= BUAppUtils.EXIT_WAIT_TIME) {
+							showToast("再次左滑返回");
+							lastswipetimeleft = System.currentTimeMillis();
+							lastswipetimeright = 0;
+						} else
+							finish();
+						leftswipetrig = false;
 					}
 					break;
 				default:
@@ -346,6 +354,12 @@ public class ThreadActivity extends FragmentActivity {
 		}
 	}
 
+	/**
+	 * Listen to the {@link ViewPager}, pre-load pages will be useful next to
+	 * current view.
+	 * 
+	 * @author Strider_oy
+	 */
 	class MyOnPageChangeListener implements OnPageChangeListener {
 
 		private int position;
@@ -434,16 +448,15 @@ public class ThreadActivity extends FragmentActivity {
 					}
 					postReq.put("action", "post");
 					postReq.put("username", URLEncoder.encode(
-							MainActivity.network.mUsername, "utf-8"));
-					postReq.put("session", MainActivity.network.mSession);
+							MainActivity.settings.mUsername, "utf-8"));
+					postReq.put("session", MainActivity.settings.mSession);
 					postReq.put("tid", threadId);
 					postReq.put("from", from);
 					postReq.put("to", to);
-					postMethod.setNetType(MainActivity.network.mNetType);
+					postMethod.setNetType(MainActivity.settings.mNetType);
 					netStat = postMethod.sendPost(postMethod.REQ_POST, postReq);
-					if (netStat == Result.SUCCESS_EMPTY)
-						break;
-					if (postMethod.jsonResponse != null)
+					if (netStat != Result.SUCCESS)
+						return netStat;
 						pageContent = BUAppUtils.mergeJSONArray(pageContent,
 								postMethod.jsonResponse
 										.getJSONArray("postlist"));
@@ -522,9 +535,9 @@ public class ThreadActivity extends FragmentActivity {
 			try {
 				postReq.put("action", "login");
 				postReq.put("username", URLEncoder.encode(
-						MainActivity.network.mUsername, "utf-8"));
-				postReq.put("password", MainActivity.network.mPassword);
-				postMethod.setNetType(MainActivity.network.mNetType);
+						MainActivity.settings.mUsername, "utf-8"));
+				postReq.put("password", MainActivity.settings.mPassword);
+				postMethod.setNetType(MainActivity.settings.mNetType);
 				return postMethod.sendPost(postMethod.REQ_LOGGING, postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -557,11 +570,12 @@ public class ThreadActivity extends FragmentActivity {
 			case SUCCESS:
 			}
 			try {
-				MainActivity.network.mSession = postMethod.jsonResponse
+				MainActivity.settings.mSession = postMethod.jsonResponse
 						.getString("session");
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
+			Log.i("DisplayActivity", "session refreshed");
 			// Rest session refresh counter
 			refreshCnt = 2;
 			// Retry after session refreshed
@@ -580,10 +594,10 @@ public class ThreadActivity extends FragmentActivity {
 			JSONObject postReq = new JSONObject();
 			try {
 				postReq.put("username", URLEncoder.encode(
-						MainActivity.network.mUsername, "utf-8"));
-				postReq.put("session", MainActivity.network.mSession);
+						MainActivity.settings.mUsername, "utf-8"));
+				postReq.put("session", MainActivity.settings.mSession);
 				postReq.put("tid", threadId);
-				postMethod.setNetType(MainActivity.network.mNetType);
+				postMethod.setNetType(MainActivity.settings.mNetType);
 				return postMethod.sendPost(postMethod.REQ_FID_TID_SUM, postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -623,32 +637,43 @@ public class ThreadActivity extends FragmentActivity {
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-			if (currReplies != replies) {
 				// update current page data
 				replies = currReplies;
+				lastpage = (replies -1) / BUAppUtils.POSTS_PER_PAGE;
 				readThreadPage(currentpage);
 				refreshingCurrentPage = true;
 				Log.v("displayActivity", "refreshCurrentPage");
-			} else
-				progressDialog.dismiss();
 		}
 
 	}
 
 	private class MyReplySubmitListener implements OnClickListener {
 
+		ConfirmDialogFragment mAlertFragment;
+		
 		@Override
 		public void onClick(View v) {
 			String message = replyMessage.getText().toString();
 			if (message != null && !message.isEmpty()) {
-				Log.v("ThreadActivity", "Reply sumitted>>" + message);
-				new NewPostTask(message + BUAppUtils.CLIENTMESSAGETAG)
-						.execute();
-				showToast(BUAppUtils.POSTEXECUTING);
+				mAlertFragment = new ConfirmDialogFragment();
+				Bundle args = new Bundle();
+				args.putString("title", "发送消息");
+				args.putString("message", "确认要发送吗？");
+				args.putString("reply", message);
+				mAlertFragment.setArguments(args);
+				mAlertFragment.show(getSupportFragmentManager(), "LogoutAlert");
 			} else
 				showToast("回复不能为空");
 		}
 	}
+	
+	@Override
+	public void onDialogPositiveClick(DialogFragment dialog, String message) {
+		Log.i("MyReplySubmitListener", "Reply sumitted>>" + message);
+		new NewPostTask(message + BUAppUtils.CLIENTMESSAGETAG).execute();
+	}
+	@Override
+	public void onDialogPositiveClick(DialogFragment dialog) {}
 
 	private class NewPostTask extends AsyncTask<Void, Void, Result> {
 
@@ -665,12 +690,12 @@ public class ThreadActivity extends FragmentActivity {
 			try {
 				postReq.put("action", "newreply");
 				postReq.put("username", URLEncoder.encode(
-						MainActivity.network.mUsername, "utf-8"));
-				postReq.put("session", MainActivity.network.mSession);
+						MainActivity.settings.mUsername, "utf-8"));
+				postReq.put("session", MainActivity.settings.mSession);
 				postReq.put("tid", threadId);
 				postReq.put("message", URLEncoder.encode(message, "utf-8"));
 				postReq.put("attachment", 0);
-				postMethod.setNetType(MainActivity.network.mNetType);
+				postMethod.setNetType(MainActivity.settings.mNetType);
 				return postMethod.sendPost(postMethod.NEWPOST, postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -701,8 +726,12 @@ public class ThreadActivity extends FragmentActivity {
 
 	}
 
+	private Toast toast = null;
 	private void showToast(String text) {
-		Toast.makeText(ThreadActivity.this, text, Toast.LENGTH_SHORT).show();
+		if (toast != null)
+			toast.cancel();
+		toast = Toast.makeText(ThreadActivity.this, text, Toast.LENGTH_SHORT);
+		toast.show();
 	}
 
 }

@@ -94,7 +94,7 @@ public class DisplayActivity extends FragmentActivity {
 		Intent intent = getIntent();
 		forumId = intent.getIntExtra("fid", 27);
 		forumName = intent.getStringExtra("name");
-		session = MainActivity.network.mSession;
+		session = MainActivity.settings.mSession;
 
 		// Show the Up button in the action bar.
 		getActionBar().setTitle(forumName.replace("-- ", ""));
@@ -356,15 +356,16 @@ public class DisplayActivity extends FragmentActivity {
 					}
 					postReq.put("action", "thread");
 					postReq.put("username", URLEncoder.encode(
-							MainActivity.network.mUsername, "utf-8"));
-					postReq.put("session", MainActivity.network.mSession);
+							MainActivity.settings.mUsername, "utf-8"));
+					postReq.put("session", MainActivity.settings.mSession);
 					postReq.put("fid", forumId);
 					postReq.put("from", from);
 					postReq.put("to", to);
-					postMethod.setNetType(MainActivity.network.mNetType);
+					postMethod.setNetType(MainActivity.settings.mNetType);
 					netStat = postMethod.sendPost(postMethod.REQ_THREAD,
 							postReq);
-					if (postMethod.jsonResponse != null)
+					if (netStat != Result.SUCCESS)
+						return netStat;
 						pageContent = BUAppUtils.mergeJSONArray(pageContent,
 								postMethod.jsonResponse.getJSONArray("threadlist"));
 					threadsRemain = threadsRemain - 20;
@@ -376,7 +377,6 @@ public class DisplayActivity extends FragmentActivity {
 					e.printStackTrace();
 				}
 			}
-
 			return netStat;
 		}
 
@@ -436,9 +436,9 @@ public class DisplayActivity extends FragmentActivity {
 			try {
 				postReq.put("action", "login");
 				postReq.put("username", URLEncoder.encode(
-						MainActivity.network.mUsername, "utf-8"));
-				postReq.put("password", MainActivity.network.mPassword);
-				postMethod.setNetType(MainActivity.network.mNetType);
+						MainActivity.settings.mUsername, "utf-8"));
+				postReq.put("password", MainActivity.settings.mPassword);
+				postMethod.setNetType(MainActivity.settings.mNetType);
 				return postMethod.sendPost(postMethod.REQ_LOGGING, postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -472,7 +472,7 @@ public class DisplayActivity extends FragmentActivity {
 			}
 
 			try {
-				MainActivity.network.mSession = postMethod.jsonResponse
+				MainActivity.settings.mSession = postMethod.jsonResponse
 						.getString("session");
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -480,36 +480,9 @@ public class DisplayActivity extends FragmentActivity {
 			// Rest session refresh counter
 			refreshCnt = 2;
 			readPage(pageRequested);
-			// finish();
+			Log.i("DisplayActivity", "session refreshed");
 		}
 
-	}
-
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-	private void showProgress(final boolean show) {
-		// On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-		// for very easy animations. If available, use these APIs to fade-in
-		// the progress spinner.
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-			int shortAnimTime = getResources().getInteger(
-					android.R.integer.config_shortAnimTime);
-
-			mReadingStatus.setVisibility(View.VISIBLE);
-			mReadingStatus.animate().setDuration(shortAnimTime)
-					.alpha(show ? 1 : 0)
-					.setListener(new AnimatorListenerAdapter() {
-						@Override
-						public void onAnimationEnd(Animator animation) {
-							mReadingStatus.setVisibility(show ? View.VISIBLE
-									: View.GONE);
-						}
-					});
-		} else {
-			// The ViewPropertyAnimator APIs are not available, so simply show
-			// and hide the relevant UI components.
-			mReadingStatus.setVisibility(show ? View.VISIBLE : View.GONE);
-			mReadingStatus.setVisibility(show ? View.GONE : View.VISIBLE);
-		}
 	}
 	
 	private void showToast(String text) {

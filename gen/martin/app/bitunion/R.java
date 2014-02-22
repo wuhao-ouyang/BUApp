@@ -388,14 +388,14 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int smilies_wink=0x7f020153;
     }
     public static final class id {
-        public static final int action_login=0x7f0a003e;
-        public static final int action_logout=0x7f0a003f;
-        public static final int action_newthread=0x7f0a003c;
-        public static final int action_post=0x7f0a0040;
-        public static final int action_refresh=0x7f0a003b;
-        public static final int action_settings=0x7f0a003d;
-        public static final int additional_info=0x7f0a0029;
-        public static final int forum_listview=0x7f0a001e;
+        public static final int action_login=0x7f0a0043;
+        public static final int action_logout=0x7f0a0044;
+        public static final int action_newthread=0x7f0a0041;
+        public static final int action_post=0x7f0a0045;
+        public static final int action_refresh=0x7f0a0040;
+        public static final int action_settings=0x7f0a0042;
+        public static final int additional_info=0x7f0a002e;
+        public static final int forum_listview=0x7f0a0023;
         public static final int listview=0x7f0a0009;
         public static final int login_form=0x7f0a0002;
         public static final int myinfo_avatar=0x7f0a000a;
@@ -408,51 +408,56 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int myinfo_signature=0x7f0a0013;
         public static final int myinfo_threadnum=0x7f0a000e;
         public static final int myinfo_username=0x7f0a000b;
+        public static final int netswitch=0x7f0a001c;
         public static final int newthread_clear=0x7f0a0016;
         public static final int newthread_message=0x7f0a0015;
         public static final int newthread_send=0x7f0a0017;
         public static final int newthread_subject=0x7f0a0014;
         public static final int pager_title_strip=0x7f0a0001;
-        public static final int pager_title_strip_thread=0x7f0a0019;
+        public static final int pager_title_strip_thread=0x7f0a001e;
         public static final int password=0x7f0a0004;
-        public static final int post_content=0x7f0a0027;
-        public static final int post_content_container=0x7f0a0025;
-        public static final int post_date=0x7f0a0024;
-        public static final int post_ref_button=0x7f0a0022;
-        public static final int post_subject=0x7f0a0026;
-        public static final int post_title=0x7f0a0021;
-        public static final int post_viewauthor_button=0x7f0a0023;
+        public static final int post_content=0x7f0a002c;
+        public static final int post_content_container=0x7f0a002a;
+        public static final int post_date=0x7f0a0029;
+        public static final int post_ref_button=0x7f0a0027;
+        public static final int post_subject=0x7f0a002b;
+        public static final int post_title=0x7f0a0026;
+        public static final int post_viewauthor_button=0x7f0a0028;
         public static final int radioGroup1=0x7f0a0005;
         public static final int radio_in=0x7f0a0006;
         public static final int radio_out=0x7f0a0007;
-        public static final int reading_status=0x7f0a0020;
-        public static final int reply_advanced=0x7f0a001b;
-        public static final int reply_layout=0x7f0a001a;
-        public static final int reply_message=0x7f0a001c;
-        public static final int reply_submit=0x7f0a001d;
-        public static final int section_label=0x7f0a001f;
+        public static final int reading_status=0x7f0a0025;
+        public static final int reply_advanced=0x7f0a0020;
+        public static final int reply_layout=0x7f0a001f;
+        public static final int reply_message=0x7f0a0021;
+        public static final int reply_submit=0x7f0a0022;
+        public static final int section_label=0x7f0a0024;
+        public static final int seekbar_contenttextsize=0x7f0a001b;
+        public static final int seekbar_titletextsize=0x7f0a0019;
+        public static final int setting_contenttextview=0x7f0a001a;
+        public static final int setting_titletextview=0x7f0a0018;
         public static final int sign_in_button=0x7f0a0008;
-        public static final int thread_replies=0x7f0a002a;
-        public static final int thread_subject=0x7f0a0028;
-        public static final int thread_views=0x7f0a002b;
-        public static final int userinfo_avatar=0x7f0a002e;
-        public static final int userinfo_birth=0x7f0a0035;
-        public static final int userinfo_contentform=0x7f0a002d;
-        public static final int userinfo_credit=0x7f0a0031;
-        public static final int userinfo_email=0x7f0a0039;
-        public static final int userinfo_group=0x7f0a0030;
-        public static final int userinfo_lastvisit=0x7f0a0037;
-        public static final int userinfo_postnum=0x7f0a0034;
-        public static final int userinfo_reading_status=0x7f0a002c;
-        public static final int userinfo_regdate=0x7f0a0036;
-        public static final int userinfo_signature=0x7f0a003a;
-        public static final int userinfo_site=0x7f0a0038;
-        public static final int userinfo_threadnum=0x7f0a0033;
-        public static final int userinfo_uid=0x7f0a0032;
-        public static final int userinfo_username=0x7f0a002f;
+        public static final int thread_replies=0x7f0a002f;
+        public static final int thread_subject=0x7f0a002d;
+        public static final int thread_views=0x7f0a0030;
+        public static final int userinfo_avatar=0x7f0a0033;
+        public static final int userinfo_birth=0x7f0a003a;
+        public static final int userinfo_contentform=0x7f0a0032;
+        public static final int userinfo_credit=0x7f0a0036;
+        public static final int userinfo_email=0x7f0a003e;
+        public static final int userinfo_group=0x7f0a0035;
+        public static final int userinfo_lastvisit=0x7f0a003c;
+        public static final int userinfo_postnum=0x7f0a0039;
+        public static final int userinfo_reading_status=0x7f0a0031;
+        public static final int userinfo_regdate=0x7f0a003b;
+        public static final int userinfo_signature=0x7f0a003f;
+        public static final int userinfo_site=0x7f0a003d;
+        public static final int userinfo_threadnum=0x7f0a0038;
+        public static final int userinfo_uid=0x7f0a0037;
+        public static final int userinfo_username=0x7f0a0034;
         public static final int username=0x7f0a0003;
         public static final int viewpager=0x7f0a0000;
-        public static final int viewpager_thread=0x7f0a0018;
+        public static final int viewpager_thread=0x7f0a001d;
     }
     public static final class layout {
         public static final int activity_display=0x7f030000;
@@ -460,13 +465,14 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int activity_main=0x7f030002;
         public static final int activity_myinfo=0x7f030003;
         public static final int activity_newthread=0x7f030004;
-        public static final int activity_thread=0x7f030005;
-        public static final int fragment_display_dummy=0x7f030006;
-        public static final int fragment_thread_dummy=0x7f030007;
-        public static final int processing_display=0x7f030008;
-        public static final int singlepostitem=0x7f030009;
-        public static final int singlethreaditem=0x7f03000a;
-        public static final int userinfo_fragment=0x7f03000b;
+        public static final int activity_settings=0x7f030005;
+        public static final int activity_thread=0x7f030006;
+        public static final int fragment_display_dummy=0x7f030007;
+        public static final int fragment_thread_dummy=0x7f030008;
+        public static final int processing_display=0x7f030009;
+        public static final int singlepostitem=0x7f03000a;
+        public static final int singlethreaditem=0x7f03000b;
+        public static final int userinfo_fragment=0x7f03000c;
     }
     public static final class menu {
         public static final int display=0x7f090000;
@@ -474,7 +480,8 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int main=0x7f090002;
         public static final int myinfo=0x7f090003;
         public static final int newthread=0x7f090004;
-        public static final int thread=0x7f090005;
+        public static final int settings=0x7f090005;
+        public static final int thread=0x7f090006;
     }
     public static final class string {
         public static final int action_login=0x7f070002;
@@ -495,6 +502,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int title_activity_display=0x7f07000d;
         public static final int title_activity_myinfo=0x7f070013;
         public static final int title_activity_newthread=0x7f070015;
+        public static final int title_activity_settings=0x7f070016;
         public static final int title_activity_thread=0x7f070012;
         public static final int title_section1=0x7f07000e;
         public static final int title_section2=0x7f07000f;
@@ -502,6 +510,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
     }
     public static final class style {
         public static final int AlertDialog=0x7f080004;
+        public static final int AlertWindowTitleStyle=0x7f080005;
         /** 
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
@@ -530,7 +539,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
  All customizations that are NOT specific to a particular API-level can go here. 
          */
         public static final int AppTheme=0x7f080001;
-        public static final int CustomActionBarTheme=0x7f080005;
+        public static final int CustomActionBarTheme=0x7f080006;
         public static final int LoginFormContainer=0x7f080002;
         public static final int ProgressDialog=0x7f080003;
     }

@@ -23,5 +23,6 @@
     <string name="title_activity_myinfo">MyinfoActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_newthread">NewthreadActivity</string>
+    <string name="title_activity_settings">设置</string>
 
 </resources>

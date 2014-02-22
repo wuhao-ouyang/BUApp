@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -139,9 +140,13 @@ public class ForumFragment extends Fragment {
 			// TextView textView = new TextView(DisplayActivity.this);
 			BUThread threadItem = list.get(position);
 			subjView.setText(threadItem.getSubject());
+			subjView.setTextSize(TypedValue.COMPLEX_UNIT_SP, MainActivity.settings.titletextsize);
 			addinfoView.setText(threadItem.getAuthor());
+			addinfoView.setTextSize(TypedValue.COMPLEX_UNIT_SP, MainActivity.settings.titletextsize - 2);
 			repliesView.setText(threadItem.getReplies());
+			repliesView.setTextSize(TypedValue.COMPLEX_UNIT_SP, MainActivity.settings.titletextsize - 2);
 			viewsView.setText(threadItem.getViews());
+			viewsView.setTextSize(TypedValue.COMPLEX_UNIT_SP, MainActivity.settings.titletextsize - 2);
 			view.setTag(threadItem);
 			view.setOnClickListener(new OnClickListener() {
 
