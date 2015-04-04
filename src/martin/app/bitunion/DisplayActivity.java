@@ -11,13 +11,11 @@ import org.json.JSONObject;
 
 import martin.app.bitunion.fragment.ForumFragment;
 import martin.app.bitunion.util.BUAppUtils;
-import martin.app.bitunion.util.BUThread;
+import martin.app.bitunion.model.BUThread;
 import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 
 import android.app.ProgressDialog;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -43,194 +41,194 @@ import android.widget.Toast;
 
 public class DisplayActivity extends FragmentActivity {
 
-	/**
-	 * The {@link android.support.v4.view.PagerAdapter} that will provide
-	 * fragments for each of the sections. We use a
-	 * {@link android.support.v4.app.FragmentPagerAdapter} derivative, which
-	 * will keep every loaded fragment in memory. If this becomes too memory
-	 * intensive, it may be best to switch to a
-	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-	 */
-	ThreadsPagerAdapter mPagerAdapter;
-	// MyPagerAdapter mPagerAdapter;
+    /**
+     * The {@link android.support.v4.view.PagerAdapter} that will provide
+     * fragments for each of the sections. We use a
+     * {@link android.support.v4.app.FragmentPagerAdapter} derivative, which
+     * will keep every loaded fragment in memory. If this becomes too memory
+     * intensive, it may be best to switch to a
+     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
+     */
+    ThreadsPagerAdapter mPagerAdapter;
+    // MyPagerAdapter mPagerAdapter;
 
-	/**
-	 * The {@link ViewPager} that will host the section contents.
-	 */
-	ViewPager mViewPager;
-	PagerTitleStrip mPagerTitleStrip;
-	View mReadingStatus;
-	LayoutInflater inflater = null;
-	ProgressDialog progressDialog = null;
+    /**
+     * The {@link ViewPager} that will host the section contents.
+     */
+    ViewPager mViewPager;
+    PagerTitleStrip mPagerTitleStrip;
+    View mReadingStatus;
+    LayoutInflater inflater = null;
+    ProgressDialog progressDialog = null;
 
-	// ReadPageTask mReadPageTask;
+    // ReadPageTask mReadPageTask;
 
-	int forumId;
-	String forumName;
+    int forumId;
+    String forumName;
 
-	SparseArray<ArrayList<BUThread>> pageList = new SparseArray<ArrayList<BUThread>>(); // À˘”–Ã˚◊”¡–±Ì
-	// SparseArray<ForumFragment> fragmentList = new
-	// SparseArray<ForumFragment>();
-	SparseBooleanArray pReqFlags = new SparseBooleanArray(); //  «∑Ò’˝‘⁄∂¡»°∏√“≥Ã˚◊”¡–±Ì
-	Deque<Integer> reqDeck = new ArrayDeque<Integer>();
-	Result netStatus = null; // Õ¯¬Á¡¨Ω”∑µªÿΩ·π˚
-	int currentpage = 0;
-	int refreshCnt = 2; // À¢–¬session◊Ó¥Û¥Œ ˝
-	boolean refreshFlag = false; //  «∑Ò’˝‘⁄À¢–¬session
-	boolean refreshingCurrentPage = false;
+    SparseArray<ArrayList<BUThread>> pageList = new SparseArray<ArrayList<BUThread>>(); // ÊâÄÊúâÂ∏ñÂ≠êÂàóË°®
+    // SparseArray<ForumFragment> fragmentList = new
+    // SparseArray<ForumFragment>();
+    SparseBooleanArray pReqFlags = new SparseBooleanArray(); // ÊòØÂê¶Ê≠£Âú®ËØªÂèñËØ•È°µÂ∏ñÂ≠êÂàóË°®
+    Deque<Integer> reqDeck = new ArrayDeque<Integer>();
+    Result netStatus = null; // ÁΩëÁªúËøûÊé•ËøîÂõûÁªìÊûú
+    int currentpage = 0;
+    int refreshCnt = 2; // Âà∑Êñ∞sessionÊúÄÂ§ßÊ¨°Êï∞
+    boolean refreshFlag = false; // ÊòØÂê¶Ê≠£Âú®Âà∑Êñ∞session
+    boolean refreshingCurrentPage = false;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_display);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_display);
 
-		Intent intent = getIntent();
-		forumId = intent.getIntExtra("fid", 27);
-		forumName = intent.getStringExtra("name");
-		
-		if (savedInstanceState != null && !savedInstanceState.isEmpty()) {
-			forumId = savedInstanceState.getInt("fid");
-			forumName = savedInstanceState.getString("name");
-		}
+        Intent intent = getIntent();
+        forumId = intent.getIntExtra("fid", 27);
+        forumName = intent.getStringExtra("name");
 
-		// Show the Up button in the action bar.
-		getActionBar().setTitle(forumName.replace("-- ", ""));
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-		getActionBar().setDisplayShowHomeEnabled(false);
+        if (savedInstanceState != null && !savedInstanceState.isEmpty()) {
+            forumId = savedInstanceState.getInt("fid");
+            forumName = savedInstanceState.getString("name");
+        }
 
-		// mPagerAdapter = new MyPagerAdapter();
-		mPagerAdapter = new ThreadsPagerAdapter(getSupportFragmentManager());
+        // Show the Up button in the action bar.
+        getActionBar().setTitle(forumName.replace("-- ", ""));
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setDisplayShowHomeEnabled(false);
 
-		inflater = LayoutInflater.from(DisplayActivity.this);
-		mReadingStatus = inflater.inflate(R.layout.processing_display, null);
+        // mPagerAdapter = new MyPagerAdapter();
+        mPagerAdapter = new ThreadsPagerAdapter(getSupportFragmentManager());
 
-		// Set up the ViewPager with the sections adapter.
-		mViewPager = (ViewPager) findViewById(R.id.viewpager);
-		mPagerTitleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip);
-		mPagerTitleStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-		// mPagerTabStrip = (PagerTabStrip) findViewById(R.id.pager_tab_strip);
-		mViewPager.setAdapter(mPagerAdapter);
-		mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
-		mViewPager.setOnTouchListener(new MyOnTouchListener());
-		
-		progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
-		progressDialog.setMessage("∂¡»°÷–...");
-		progressDialog.show();
-		
+        inflater = LayoutInflater.from(DisplayActivity.this);
+        mReadingStatus = inflater.inflate(R.layout.processing_display, null);
+
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = (ViewPager) findViewById(R.id.viewpager);
+        mPagerTitleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip);
+        mPagerTitleStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        // mPagerTabStrip = (PagerTabStrip) findViewById(R.id.pager_tab_strip);
+        mViewPager.setAdapter(mPagerAdapter);
+        mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
+        mViewPager.setOnTouchListener(new MyOnTouchListener());
+
+        progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
+        progressDialog.setMessage("ËØªÂèñ‰∏≠...");
+        progressDialog.show();
+
 //		showProgress(true);
-		
-		readPage(0);
-		readPage(1);
+
+        readPage(0);
+        readPage(1);
 //		currenpage = 2;
 //		if (mViewPager.getCurrentItem() != currenpage)
 //			mViewPager.setCurrentItem(currenpage);
 
-	}
-	
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		// TODO states needs checked
-		outState.putInt("fid", forumId);
-		outState.putString("name", forumName);
-	}
+    }
 
-	public void readPage(int page) {
-		if (!pReqFlags.get(page)) {
-			pReqFlags.put(page, true);
-			new ReadPageTask().execute(page);
-		}
-	}
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // TODO states needs checked
+        outState.putInt("fid", forumId);
+        outState.putString("name", forumName);
+    }
 
-	private void refreshCurrentPage() {
-		progressDialog.setMessage("À¢–¬÷–...");
-		progressDialog.show();
-		readPage(currentpage);
-		refreshingCurrentPage = true;
-		Log.v("displayActivity", "refreshCurrentPage");
-		// update current page view
+    public void readPage(int page) {
+        if (!pReqFlags.get(page)) {
+            pReqFlags.put(page, true);
+            new ReadPageTask().execute(page);
+        }
+    }
+
+    private void refreshCurrentPage() {
+        progressDialog.setMessage("Âà∑Êñ∞‰∏≠...");
+        progressDialog.show();
+        readPage(currentpage);
+        refreshingCurrentPage = true;
+        Log.v("displayActivity", "refreshCurrentPage");
+        // update current page view
 //		mViewPager.addView(mPagerAdapter.getFragment(currenpage).getView(), currenpage, null);
-	}
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.display, menu);
-		return true;
-	}
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.display, menu);
+        return true;
+    }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			finish();
-			break;
-		case R.id.action_refresh:
-			refreshCurrentPage();
-			break;
-		case R.id.action_newthread:
-			Intent intent = new Intent(DisplayActivity.this, NewthreadActivity.class);
-			intent.putExtra("action", "newthread");
-			intent.putExtra("forumname", forumName);
-			intent.putExtra("fid", forumId);
-			startActivity(intent);
-			break;
-		}
-		return super.onOptionsItemSelected(item);
-	}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                break;
+            case R.id.action_refresh:
+                refreshCurrentPage();
+                break;
+            case R.id.action_newthread:
+                Intent intent = new Intent(DisplayActivity.this, NewthreadActivity.class);
+                intent.putExtra("action", "newthread");
+                intent.putExtra("forumname", forumName);
+                intent.putExtra("fid", forumId);
+                startActivity(intent);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-	/**
-	 * A {@link FragmentStatePagerAdapter} that returns a fragment corresponding to
-	 * one of the sections/tabs/pages.
-	 */
-	public class ThreadsPagerAdapter extends FragmentStatePagerAdapter {
-		
-		SparseArray<ForumFragment> registeredFragments = new SparseArray<ForumFragment>();
+    /**
+     * A {@link FragmentStatePagerAdapter} that returns a fragment corresponding to
+     * one of the sections/tabs/pages.
+     */
+    public class ThreadsPagerAdapter extends FragmentStatePagerAdapter {
 
-		public ThreadsPagerAdapter(FragmentManager fm) {
-			super(fm);
-		}
+        SparseArray<ForumFragment> registeredFragments = new SparseArray<ForumFragment>();
 
-		@Override
-		public Fragment getItem(int position) {
+        public ThreadsPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
 //			Log.v("adapter", "getItem>>"+position);
-			if (registeredFragments.get(position) == null)
-				registeredFragments.put(position, new ForumFragment());
-			Bundle args = new Bundle();
-			ArrayList<String> threadlist = new ArrayList<String>();
-			if (pageList.get(position) != null)
-				for (BUThread thread : pageList.get(position))
-					threadlist.add(thread.toString());
-			args.putStringArrayList("threadlist", threadlist);
-			args.putInt(ForumFragment.ARG_PAGE_NUMBER, position);
-			args.putInt("fid", forumId);
-			registeredFragments.get(position).setArguments(args);
-			return registeredFragments.get(position);
-		}
+            if (registeredFragments.get(position) == null)
+                registeredFragments.put(position, new ForumFragment());
+            Bundle args = new Bundle();
+            ArrayList<String> threadlist = new ArrayList<String>();
+            if (pageList.get(position) != null)
+                for (BUThread thread : pageList.get(position))
+                    threadlist.add(thread.toString());
+            args.putStringArrayList("threadlist", threadlist);
+            args.putInt(ForumFragment.ARG_PAGE_NUMBER, position);
+            args.putInt("fid", forumId);
+            registeredFragments.get(position).setArguments(args);
+            return registeredFragments.get(position);
+        }
 
-		@Override
-		public int getCount() {
-			return pageList.size();
-		}
+        @Override
+        public int getCount() {
+            return pageList.size();
+        }
 
-		@Override
-		public CharSequence getPageTitle(int position) {
-			return Integer.toString(position + 1);
-		}
-		@Override
-		public Object instantiateItem(ViewGroup container, int position) {
-			ForumFragment fragment = (ForumFragment) super.instantiateItem(container, position);
-			registeredFragments.put(position, fragment);
-			return fragment;
-		}
-		@Override
-		public void destroyItem(ViewGroup container, int position, Object object) {
-			registeredFragments.remove(position);
-			super.destroyItem(container, position, object);
-		}
-		public ForumFragment getFragment(int position){
-			return registeredFragments.get(position);
-		}
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return Integer.toString(position + 1);
+        }
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            ForumFragment fragment = (ForumFragment) super.instantiateItem(container, position);
+            registeredFragments.put(position, fragment);
+            return fragment;
+        }
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            registeredFragments.remove(position);
+            super.destroyItem(container, position, object);
+        }
+        public ForumFragment getFragment(int position){
+            return registeredFragments.get(position);
+        }
 //		@Override
 //		public int getItemPosition(Object object) {
 //			ForumFragment fragment = (ForumFragment) object;
@@ -240,251 +238,251 @@ public class DisplayActivity extends FragmentActivity {
 //			else
 //				return POSITION_NONE;
 //		}
-	}
-	
-	class MyOnTouchListener implements OnTouchListener{
+    }
 
-		double lastx = -1;
-		long lastswipetime = 0;
-		boolean swipetrig = false;
-		
-		@Override
-		public boolean onTouch(View v, MotionEvent motion) {
-			if (currentpage == 0)
-				switch (motion.getAction()) {
-				case MotionEvent.ACTION_MOVE:
-					int dpMoved = 0;
-					if (lastx != -1)
-						dpMoved = BUAppUtils.px2dip(getApplication(),
-								(float) (motion.getX() - lastx));
-					lastx = motion.getX();
-					if (dpMoved > 24)
-						swipetrig = true;
-					break;
-				case MotionEvent.ACTION_UP:
-					lastx = -1;
-					if (swipetrig) {
-						if ((System.currentTimeMillis() - lastswipetime) >= BUAppUtils.EXIT_WAIT_TIME) {
-							showToast("‘Ÿ¥Œ”“ª¨∑µªÿ");
-							lastswipetime = System.currentTimeMillis();
-						} else
-							finish();
-						swipetrig = false;
-					}
-					break;
-				default:
-				}
-			return false;
-		}
-	}
+    class MyOnTouchListener implements OnTouchListener{
 
-	class MyOnPageChangeListener implements OnPageChangeListener {
+        double lastx = -1;
+        long lastswipetime = 0;
+        boolean swipetrig = false;
 
-		private int position;
+        @Override
+        public boolean onTouch(View v, MotionEvent motion) {
+            if (currentpage == 0)
+                switch (motion.getAction()) {
+                    case MotionEvent.ACTION_MOVE:
+                        int dpMoved = 0;
+                        if (lastx != -1)
+                            dpMoved = BUAppUtils.px2dip(getApplication(),
+                                    (float) (motion.getX() - lastx));
+                        lastx = motion.getX();
+                        if (dpMoved > 24)
+                            swipetrig = true;
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        lastx = -1;
+                        if (swipetrig) {
+                            if ((System.currentTimeMillis() - lastswipetime) >= BUAppUtils.EXIT_WAIT_TIME) {
+                                showToast("ÂÜçÊ¨°Âè≥ÊªëËøîÂõû");
+                                lastswipetime = System.currentTimeMillis();
+                            } else
+                                finish();
+                            swipetrig = false;
+                        }
+                        break;
+                    default:
+                }
+            return false;
+        }
+    }
 
-		@Override
-		public void onPageScrollStateChanged(int state) {
-			// Log.v("onPageScrollStateChanged", "--state-->>>" + state);
-			if (state == ViewPager.SCROLL_STATE_DRAGGING) {
-				switch (position) {
-				default:
-					if (pageList.get(position - 2) == null
-							|| pageList.get(position - 2).isEmpty())
-						if (!pReqFlags.get(position - 2)) {
-							readPage(position - 2);
-						}
-				case 1:
-					if (pageList.get(position - 1) == null
-							|| pageList.get(position - 1).isEmpty())
-						if (!pReqFlags.get(position - 1)) {
-							readPage(position - 1);
-						}
-				case 0:
-				}
-				if (pageList.get(position + 2) == null
-						|| pageList.get(position + 2).isEmpty())
-					if (!pReqFlags.get(position + 2)) {
-						readPage(position + 2);
-					}
-				if (pageList.get(position + 1) == null
-						|| pageList.get(position + 1).isEmpty())
-					if (!pReqFlags.get(position + 1)) {
-						readPage(position + 1);
-					}
-			} else if (state == ViewPager.SCROLL_STATE_IDLE)
-				currentpage = position;
-		}
+    class MyOnPageChangeListener implements OnPageChangeListener {
 
-		@Override
-		public void onPageScrolled(int pos, float per, int arg2) {
-			position = pos;
-		}
+        private int position;
 
-		@Override
-		public void onPageSelected(int arg0) {
-			// TODO Auto-generated method stub
-			// Log.v("onPageSelected", "--arg0-->>>" + arg0);
-		}
-	}
+        @Override
+        public void onPageScrollStateChanged(int state) {
+            // Log.v("onPageScrollStateChanged", "--state-->>>" + state);
+            if (state == ViewPager.SCROLL_STATE_DRAGGING) {
+                switch (position) {
+                    default:
+                        if (pageList.get(position - 2) == null
+                                || pageList.get(position - 2).isEmpty())
+                            if (!pReqFlags.get(position - 2)) {
+                                readPage(position - 2);
+                            }
+                    case 1:
+                        if (pageList.get(position - 1) == null
+                                || pageList.get(position - 1).isEmpty())
+                            if (!pReqFlags.get(position - 1)) {
+                                readPage(position - 1);
+                            }
+                    case 0:
+                }
+                if (pageList.get(position + 2) == null
+                        || pageList.get(position + 2).isEmpty())
+                    if (!pReqFlags.get(position + 2)) {
+                        readPage(position + 2);
+                    }
+                if (pageList.get(position + 1) == null
+                        || pageList.get(position + 1).isEmpty())
+                    if (!pReqFlags.get(position + 1)) {
+                        readPage(position + 1);
+                    }
+            } else if (state == ViewPager.SCROLL_STATE_IDLE)
+                currentpage = position;
+        }
 
-	/**
-	 * @author Martin Read content of certain page from server. After reading,
-	 *         data will be put into list.
-	 */
-	public class ReadPageTask extends AsyncTask<Integer, Void, Result> {
+        @Override
+        public void onPageScrolled(int pos, float per, int arg2) {
+            position = pos;
+        }
 
-		PostMethod postMethod = new PostMethod();
-		JSONArray pageContent = new JSONArray();
-		int page;
+        @Override
+        public void onPageSelected(int arg0) {
+            // TODO Auto-generated method stub
+            // Log.v("onPageSelected", "--arg0-->>>" + arg0);
+        }
+    }
 
-		@Override
-		protected Result doInBackground(Integer... params) {
+    /**
+     * @author Martin Read content of certain page from server. After reading,
+     *         data will be put into list.
+     */
+    public class ReadPageTask extends AsyncTask<Integer, Void, Result> {
 
-			int threadsRemain = BUAppUtils.THREADS_PER_PAGE;
-			int from = params[0] * BUAppUtils.THREADS_PER_PAGE;
-			int to;
-			Result netStat = Result.SUCCESS;
-			this.page = params[0];
+        PostMethod postMethod = new PostMethod();
+        JSONArray pageContent = new JSONArray();
+        int page;
 
-			while (threadsRemain > 0 && netStat == Result.SUCCESS) {
-				JSONObject postReq = new JSONObject();
-				try {
-					if (threadsRemain >= 20) {
-						to = from + 20;
-					} else {
-						to = from + threadsRemain;
-					}
-					postReq.put("action", "thread");
-					postReq.put("username", URLEncoder.encode(
-							MainActivity.settings.mUsername, "utf-8"));
-					postReq.put("session", MainActivity.settings.mSession);
-					postReq.put("fid", forumId);
-					postReq.put("from", from);
-					postReq.put("to", to);
-					netStat = postMethod.sendPost(BUAppUtils.getUrl(
-							MainActivity.settings.mNetType,
-							BUAppUtils.REQ_THREAD), postReq);
-					if (netStat != Result.SUCCESS)
-						return netStat;
-						pageContent = BUAppUtils.mergeJSONArray(pageContent,
-								postMethod.jsonResponse.getJSONArray("threadlist"));
-					threadsRemain = threadsRemain - 20;
-					from = from + 20;
+        @Override
+        protected Result doInBackground(Integer... params) {
 
-				} catch (JSONException e) {
-					e.printStackTrace();
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-			}
-			return netStat;
-		}
+            int threadsRemain = BUAppUtils.THREADS_PER_PAGE;
+            int from = params[0] * BUAppUtils.THREADS_PER_PAGE;
+            int to;
+            Result netStat = Result.SUCCESS;
+            this.page = params[0];
 
-		@Override
-		protected void onPostExecute(Result result) {
-			switch (result) {
-			default:
-				break;
-			case FAILURE:
-				// »Áπ˚∂¡»° ß∞‹≥¢ ‘À¢–¬session
-				if (refreshCnt > 0 && !refreshFlag) {
-					new UserLoginTask(this.page).execute();
-				}
-				break;
-			case NETWRONG:
-				showToast(BUAppUtils.NETWRONG);
-				break;
-			case SUCCESS:
-				pageList.put(this.page,
-						BUAppUtils.jsonToThreadlist(pageContent));
-				mPagerAdapter.notifyDataSetChanged();
-				if (refreshingCurrentPage == true){
-					mPagerAdapter.getFragment(currentpage).update(pageList.get(currentpage));
-					refreshingCurrentPage = false;
-					}
-				if (progressDialog.isShowing())
-					progressDialog.dismiss();
-			}
-			pReqFlags.put(this.page, false);
-		}
+            while (threadsRemain > 0 && netStat == Result.SUCCESS) {
+                JSONObject postReq = new JSONObject();
+                try {
+                    if (threadsRemain >= 20) {
+                        to = from + 20;
+                    } else {
+                        to = from + threadsRemain;
+                    }
+                    postReq.put("action", "thread");
+                    postReq.put("username", URLEncoder.encode(
+                            MainActivity.settings.mUsername, "utf-8"));
+                    postReq.put("session", MainActivity.settings.mSession);
+                    postReq.put("fid", forumId);
+                    postReq.put("from", from);
+                    postReq.put("to", to);
+                    netStat = postMethod.sendPost(BUAppUtils.getUrl(
+                            MainActivity.settings.mNetType,
+                            BUAppUtils.REQ_THREAD), postReq);
+                    if (netStat != Result.SUCCESS)
+                        return netStat;
+                    pageContent = BUAppUtils.mergeJSONArray(pageContent,
+                            postMethod.jsonResponse.getJSONArray("threadlist"));
+                    threadsRemain = threadsRemain - 20;
+                    from = from + 20;
 
-		@Override
-		protected void onCancelled() {
-			super.onCancelled();
-			pReqFlags.put(this.page, false);
-		}
-	}
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+            return netStat;
+        }
 
-	/**
-	 * Represents an asynchronous login/registration task used to authenticate
-	 * the user.
-	 */
-	public class UserLoginTask extends AsyncTask<Void, Void, Result> {
+        @Override
+        protected void onPostExecute(Result result) {
+            switch (result) {
+                default:
+                    break;
+                case FAILURE:
+                    // Â¶ÇÊûúËØªÂèñÂ§±Ë¥•Â∞ùËØïÂà∑Êñ∞session
+                    if (refreshCnt > 0 && !refreshFlag) {
+                        new UserLoginTask(this.page).execute();
+                    }
+                    break;
+                case NETWRONG:
+                    showToast(BUAppUtils.NETWRONG);
+                    break;
+                case SUCCESS:
+                    pageList.put(this.page,
+                            BUAppUtils.jsonToThreadlist(pageContent));
+                    mPagerAdapter.notifyDataSetChanged();
+                    if (refreshingCurrentPage == true){
+                        mPagerAdapter.getFragment(currentpage).update(pageList.get(currentpage));
+                        refreshingCurrentPage = false;
+                    }
+                    if (progressDialog.isShowing())
+                        progressDialog.dismiss();
+            }
+            pReqFlags.put(this.page, false);
+        }
 
-		PostMethod postMethod = new PostMethod();
-		int pageRequested = 0;
-		
-		public UserLoginTask(int page) {
-			pageRequested = page;
-		}
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            pReqFlags.put(this.page, false);
+        }
+    }
 
-		@Override
-		protected Result doInBackground(Void... params) {
-			// ±Íº«session’˝‘⁄À¢–¬
-			refreshFlag = true;
-			JSONObject postReq = new JSONObject();
-			try {
-				postReq.put("action", "login");
-				postReq.put("username", URLEncoder.encode(
-						MainActivity.settings.mUsername, "utf-8"));
-				postReq.put("password", MainActivity.settings.mPassword);
-				return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
+    /**
+     * Represents an asynchronous login/registration task used to authenticate
+     * the user.
+     */
+    public class UserLoginTask extends AsyncTask<Void, Void, Result> {
 
-		@Override
-		protected void onPostExecute(final Result result) {
-			// ±Íº«sessionÀ¢–¬ÕÍ±œ
-			refreshFlag = false;
-			switch (result) {
-			default:
-				return;
-			case FAILURE:
-				// ‘Ÿ¥Œ≥¢ ‘À¢–¬session≤¢«“÷ÿ÷√À¢–¬¥Œ ˝º∆ ˝∆˜
-				if (refreshCnt > 0 && !refreshFlag) {
-					refreshCnt -= 1;
-					new UserLoginTask(pageRequested).execute();
-				} else
-					showToast(BUAppUtils.LOGINFAIL);
-				return;
-			case NETWRONG:
-				showToast(BUAppUtils.NETWRONG);
-				return;
-			case UNKNOWN:
-				return;
-			case SUCCESS:
-			}
+        PostMethod postMethod = new PostMethod();
+        int pageRequested = 0;
 
-			try {
-				MainActivity.settings.mSession = postMethod.jsonResponse
-						.getString("session");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			// Rest session refresh counter
-			refreshCnt = 2;
-			readPage(pageRequested);
-			Log.i("DisplayActivity", "session refreshed");
-		}
+        public UserLoginTask(int page) {
+            pageRequested = page;
+        }
 
-	}
-	
-	private void showToast(String text) {
-		Toast.makeText(DisplayActivity.this, text, Toast.LENGTH_SHORT).show();
-	}
+        @Override
+        protected Result doInBackground(Void... params) {
+            // Ê†áËÆ∞sessionÊ≠£Âú®Âà∑Êñ∞
+            refreshFlag = true;
+            JSONObject postReq = new JSONObject();
+            try {
+                postReq.put("action", "login");
+                postReq.put("username", URLEncoder.encode(
+                        MainActivity.settings.mUsername, "utf-8"));
+                postReq.put("password", MainActivity.settings.mPassword);
+                return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(final Result result) {
+            // Ê†áËÆ∞sessionÂà∑Êñ∞ÂÆåÊØï
+            refreshFlag = false;
+            switch (result) {
+                default:
+                    return;
+                case FAILURE:
+                    // ÂÜçÊ¨°Â∞ùËØïÂà∑Êñ∞sessionÂπ∂‰∏îÈáçÁΩÆÂà∑Êñ∞Ê¨°Êï∞ËÆ°Êï∞Âô®
+                    if (refreshCnt > 0 && !refreshFlag) {
+                        refreshCnt -= 1;
+                        new UserLoginTask(pageRequested).execute();
+                    } else
+                        showToast(BUAppUtils.LOGINFAIL);
+                    return;
+                case NETWRONG:
+                    showToast(BUAppUtils.NETWRONG);
+                    return;
+                case UNKNOWN:
+                    return;
+                case SUCCESS:
+            }
+
+            try {
+                MainActivity.settings.mSession = postMethod.jsonResponse
+                        .getString("session");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            // Rest session refresh counter
+            refreshCnt = 2;
+            readPage(pageRequested);
+            Log.i("DisplayActivity", "session refreshed");
+        }
+
+    }
+
+    private void showToast(String text) {
+        Toast.makeText(DisplayActivity.this, text, Toast.LENGTH_SHORT).show();
+    }
 }

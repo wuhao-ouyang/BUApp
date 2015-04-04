@@ -5,6 +5,10 @@
 *.pydevproject
 .project
 .metadata
+.idea/
+.gradle/
+**/build/
+*.iml
 bin/
 tmp/
 gen/

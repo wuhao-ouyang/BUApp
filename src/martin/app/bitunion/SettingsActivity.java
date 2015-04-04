@@ -23,209 +23,209 @@ import android.support.v4.app.NavUtils;
 
 public class SettingsActivity extends Activity {
 
-	private TextView titleTextView;
-	private SeekBar titleSeekBar;
-	private TextView contentTextView;
-	private SeekBar contentSeekBar;
-	private Switch nettypeSwitch;
-	private CheckBox showsig;
-	private CheckBox showimg;
-	private CheckBox referat;
+    private TextView titleTextView;
+    private SeekBar titleSeekBar;
+    private TextView contentTextView;
+    private SeekBar contentSeekBar;
+    private Switch nettypeSwitch;
+    private CheckBox showsig;
+    private CheckBox showimg;
+    private CheckBox referat;
 
-	private int titletextsize;
-	private int contenttextsize;
-	private boolean sig;
-	private boolean img;
-	private boolean ref;
-	private int RECOMMENDTITESIZE;
-	private int RECOMMENDCONTENTSIZE;
+    private int titletextsize;
+    private int contenttextsize;
+    private boolean sig;
+    private boolean img;
+    private boolean ref;
+    private int RECOMMENDTITESIZE;
+    private int RECOMMENDCONTENTSIZE;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_settings);
-		// Show the Up button in the action bar.
-		setupActionBar();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_settings);
+        // Show the Up button in the action bar.
+        setupActionBar();
 
-		if (MainActivity.PIXDENSITY > DisplayMetrics.DENSITY_HIGH) {
-			RECOMMENDTITESIZE = 14;
-			RECOMMENDCONTENTSIZE = 14;
-		} else {
-			RECOMMENDTITESIZE = 12;
-			RECOMMENDCONTENTSIZE = 12;
-		}
-		titletextsize = MainActivity.settings.titletextsize;
-		contenttextsize = MainActivity.settings.contenttextsize;
-		sig = MainActivity.settings.showsigature;
-		img = MainActivity.settings.showimage;
-		ref = MainActivity.settings.referenceat;
-		
-		TextView mVersion = (TextView) findViewById(R.id.settings_version);
-		try {
-			mVersion.setText(mVersion.getText().toString() +  getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
-		} catch (NameNotFoundException e) {
-			Log.e("SettingsActivity", "Version name not found!");
-			e.printStackTrace();
-		}
+        if (MainActivity.PIXDENSITY > DisplayMetrics.DENSITY_HIGH) {
+            RECOMMENDTITESIZE = 14;
+            RECOMMENDCONTENTSIZE = 14;
+        } else {
+            RECOMMENDTITESIZE = 12;
+            RECOMMENDCONTENTSIZE = 12;
+        }
+        titletextsize = MainActivity.settings.titletextsize;
+        contenttextsize = MainActivity.settings.contenttextsize;
+        sig = MainActivity.settings.showsigature;
+        img = MainActivity.settings.showimage;
+        ref = MainActivity.settings.referenceat;
 
-		titleTextView = (TextView) findViewById(R.id.setting_titletextview);
-		titleSeekBar = (SeekBar) findViewById(R.id.seekbar_titletextsize);
-		contentTextView = (TextView) findViewById(R.id.setting_contenttextview);
-		contentSeekBar = (SeekBar) findViewById(R.id.seekbar_contenttextsize);
-		showsig = (CheckBox) findViewById(R.id.setting_showsig);
-		showimg = (CheckBox) findViewById(R.id.setting_showimg);
-		referat = (CheckBox) findViewById(R.id.setting_refat);
-		nettypeSwitch = (Switch) findViewById(R.id.netswitch);
+        TextView mVersion = (TextView) findViewById(R.id.settings_version);
+        try {
+            mVersion.setText(mVersion.getText().toString() +  getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
+        } catch (NameNotFoundException e) {
+            Log.e("SettingsActivity", "Version name not found!");
+            e.printStackTrace();
+        }
 
-		nettypeSwitch.setChecked(MainActivity.settings.mNetType == 1);
-		titleSeekBar
-				.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        titleTextView = (TextView) findViewById(R.id.setting_titletextview);
+        titleSeekBar = (SeekBar) findViewById(R.id.seekbar_titletextsize);
+        contentTextView = (TextView) findViewById(R.id.setting_contenttextview);
+        contentSeekBar = (SeekBar) findViewById(R.id.seekbar_contenttextsize);
+        showsig = (CheckBox) findViewById(R.id.setting_showsig);
+        showimg = (CheckBox) findViewById(R.id.setting_showimg);
+        referat = (CheckBox) findViewById(R.id.setting_refat);
+        nettypeSwitch = (Switch) findViewById(R.id.netswitch);
 
-					@Override
-					public void onStopTrackingTouch(SeekBar seekBar) {
-					}
+        nettypeSwitch.setChecked(MainActivity.settings.mNetType == 1);
+        titleSeekBar
+                .setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
-					@Override
-					public void onStartTrackingTouch(SeekBar seekBar) {
-					}
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                    }
 
-					@Override
-					public void onProgressChanged(SeekBar seekBar,
-							int progress, boolean fromUser) {
-						titletextsize = progress + 10;
-						titleTextView.setText("Ã˚◊”±ÍÃ‚◊÷ÃÂ¥Û–°" + titletextsize
-								+ "\t(Õ∆ºˆ" + RECOMMENDTITESIZE + ")");
-						titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
-								titletextsize);
-					}
-				});
-		titleSeekBar.setProgress(titletextsize - 10);
-		// contentTextView.setText("Ã˚◊”ƒ⁄»›Œƒ±æ¥Û–°" + contenttextsize + "\t(Õ∆ºˆ"+
-		// RECOMMENDCONTENTSIZE +")");
-		// contentTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
-		// contenttextsize);
-		contentSeekBar
-				.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                    }
 
-					@Override
-					public void onStopTrackingTouch(SeekBar seekBar) {
-					}
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar,
+                                                  int progress, boolean fromUser) {
+                        titletextsize = progress + 10;
+                        titleTextView.setText("Â∏ñÂ≠êÊ†áÈ¢òÂ≠ó‰ΩìÂ§ßÂ∞è" + titletextsize
+                                + "\t(Êé®Ëçê" + RECOMMENDTITESIZE + ")");
+                        titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+                                titletextsize);
+                    }
+                });
+        titleSeekBar.setProgress(titletextsize - 10);
+        // contentTextView.setText("Â∏ñÂ≠êÂÜÖÂÆπÊñáÊú¨Â§ßÂ∞è" + contenttextsize + "\t(Êé®Ëçê"+
+        // RECOMMENDCONTENTSIZE +")");
+        // contentTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+        // contenttextsize);
+        contentSeekBar
+                .setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
-					@Override
-					public void onStartTrackingTouch(SeekBar seekBar) {
-					}
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                    }
 
-					@Override
-					public void onProgressChanged(SeekBar seekBar,
-							int progress, boolean fromUser) {
-						contenttextsize = progress + 10;
-						contentTextView.setText("Ã˚◊”ƒ⁄»›◊÷ÃÂ¥Û–°" + contenttextsize
-								+ "\t(Õ∆ºˆ" + RECOMMENDCONTENTSIZE + ")");
-						contentTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
-								contenttextsize);
-					}
-				});
-		contentSeekBar.setProgress(contenttextsize - 10);
-		nettypeSwitch
-				.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                    }
 
-					@Override
-					public void onCheckedChanged(CompoundButton buttonView,
-							boolean isChecked) {
-						Log.i("SettingsActivity", "Õ‚Õ¯ƒ£ Ω>>" + isChecked);
-						MainActivity.settings.mNetType = isChecked ? 1 : 0;
-					}
-				});
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar,
+                                                  int progress, boolean fromUser) {
+                        contenttextsize = progress + 10;
+                        contentTextView.setText("Â∏ñÂ≠êÂÜÖÂÆπÂ≠ó‰ΩìÂ§ßÂ∞è" + contenttextsize
+                                + "\t(Êé®Ëçê" + RECOMMENDCONTENTSIZE + ")");
+                        contentTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+                                contenttextsize);
+                    }
+                });
+        contentSeekBar.setProgress(contenttextsize - 10);
+        nettypeSwitch
+                .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
-		showsig.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView,
+                                                 boolean isChecked) {
+                        Log.i("SettingsActivity", "Â§ñÁΩëÊ®°Âºè>>" + isChecked);
+                        MainActivity.settings.mNetType = isChecked ? 1 : 0;
+                    }
+                });
 
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView,
-					boolean isChecked) {
-				Log.i("SettingsActivity", "œ‘ æ«©√˚>>" + isChecked);
-				sig = isChecked;
-			}
-		});
-		showsig.setChecked(sig);
-		showimg.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        showsig.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView,
-					boolean isChecked) {
-				Log.i("SettingsActivity", "œ‘ æÕº∆¨>>" + isChecked);
-				img = isChecked;
-			}
-		});
-		showimg.setChecked(img);
-		referat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,
+                                         boolean isChecked) {
+                Log.i("SettingsActivity", "ÊòæÁ§∫Á≠æÂêç>>" + isChecked);
+                sig = isChecked;
+            }
+        });
+        showsig.setChecked(sig);
+        showimg.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView,
-					boolean isChecked) {
-				Log.i("SettingsActivity", "“˝”√At>>" + isChecked);
-				ref = isChecked;
-			}
-		});
-		referat.setChecked(ref);
-	}
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,
+                                         boolean isChecked) {
+                Log.i("SettingsActivity", "ÊòæÁ§∫ÂõæÁâá>>" + isChecked);
+                img = isChecked;
+            }
+        });
+        showimg.setChecked(img);
+        referat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
-	protected void onDestroy() {
-		MainActivity.settings.titletextsize = titletextsize;
-		MainActivity.settings.contenttextsize = contenttextsize;
-		MainActivity.settings.showsigature = sig;
-		MainActivity.settings.showimage = img;
-		MainActivity.settings.referenceat = ref;
-		SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
-		SharedPreferences.Editor editor = config.edit();
-		editor.putInt("titletextsize", titletextsize);
-		editor.putInt("contenttextsize", contenttextsize);
-		editor.putBoolean("showsigature", sig);
-		editor.putBoolean("showimage", img);
-		editor.putBoolean("referenceat", ref);
-		editor.commit();
-		Log.i("SettingActivity", "Config Saved>>" + titletextsize + ">>"
-				+ contenttextsize);
-		super.onDestroy();
-	}
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,
+                                         boolean isChecked) {
+                Log.i("SettingsActivity", "ÂºïÁî®At>>" + isChecked);
+                ref = isChecked;
+            }
+        });
+        referat.setChecked(ref);
+    }
 
-	/**
-	 * Set up the {@link android.app.ActionBar}.
-	 */
-	private void setupActionBar() {
+    protected void onDestroy() {
+        MainActivity.settings.titletextsize = titletextsize;
+        MainActivity.settings.contenttextsize = contenttextsize;
+        MainActivity.settings.showsigature = sig;
+        MainActivity.settings.showimage = img;
+        MainActivity.settings.referenceat = ref;
+        SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
+        SharedPreferences.Editor editor = config.edit();
+        editor.putInt("titletextsize", titletextsize);
+        editor.putInt("contenttextsize", contenttextsize);
+        editor.putBoolean("showsigature", sig);
+        editor.putBoolean("showimage", img);
+        editor.putBoolean("referenceat", ref);
+        editor.commit();
+        Log.i("SettingActivity", "Config Saved>>" + titletextsize + ">>"
+                + contenttextsize);
+        super.onDestroy();
+    }
 
-		getActionBar().setDisplayHomeAsUpEnabled(true);
+    /**
+     * Set up the {@link android.app.ActionBar}.
+     */
+    private void setupActionBar() {
 
-	}
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.settings, menu);
-		return true;
-	}
+    }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			finish();
-		case R.id.action_info:
-			new AlertDialog.Builder(this)
-					.setMessage(Html.fromHtml("◊˜’ﬂ£∫Martin<br>E-mail£∫martin_oy@qq.com"))
-					.setNegativeButton("Œ““™∆¿º€£°", new DialogInterface.OnClickListener() {
-						
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							Intent i = new Intent(Intent.ACTION_VIEW, 
-									Uri.parse("https://play.google.com/store/apps/details?id=martin.app.bitunion"));
-					        startActivity(i);
-						}
-					})
-					.setPositiveButton("»∑∂®", null)
-					.setTitle("πÿ”⁄BUApp").create().show();
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.settings, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+            case R.id.action_info:
+                new AlertDialog.Builder(this)
+                        .setMessage(Html.fromHtml("‰ΩúËÄÖÔºöMartin<br>E-mailÔºömartin_oy@qq.com"))
+                        .setNegativeButton("ÊàëË¶ÅËØÑ‰ª∑ÔºÅ", new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent i = new Intent(Intent.ACTION_VIEW,
+                                        Uri.parse("https://play.google.com/store/apps/details?id=martin.app.bitunion"));
+                                startActivity(i);
+                            }
+                        })
+                        .setPositiveButton("Á°ÆÂÆö", null)
+                        .setTitle("ÂÖ≥‰∫éBUApp").create().show();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
 }

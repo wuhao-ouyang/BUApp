@@ -10,7 +10,7 @@ import org.json.JSONObject;
 import martin.app.bitunion.MainActivity;
 import martin.app.bitunion.R;
 import martin.app.bitunion.util.BUAppUtils;
-import martin.app.bitunion.util.BUUserInfo;
+import martin.app.bitunion.model.BUUserInfo;
 import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 import android.app.AlertDialog;
@@ -31,191 +31,191 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class UserInfoDialogFragment extends DialogFragment {
-	
-	ImageView mAvatar;
-	TextView mUsername;
-	TextView mGroup;
-	TextView mCredit;
-	TextView mUid;
-	TextView mThreadnum;
-	TextView mPostnum;
-	TextView mBirth;
-	TextView mRegdate;
-	TextView mLastactive;
-	TextView mSite;
-	TextView mEmail;
-	TextView mSignt;
-	
-	ScrollView userinfoForm;
-	LinearLayout readingstatusForm;
-	
-	private int uid;
-	private Drawable imageDrawable;
-	
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		uid = getArguments().getInt("uid");
-	}
-	
-	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		LayoutInflater inflater = getActivity().getLayoutInflater();
-		
-		View view = inflater.inflate(R.layout.userinfo_fragment, null);
-		userinfoForm = (ScrollView) view.findViewById(R.id.userinfo_contentform);
-		readingstatusForm = (LinearLayout) view.findViewById(R.id.userinfo_reading_status);
-		
-		mAvatar = (ImageView) view.findViewById(R.id.userinfo_avatar);
-		mUsername = (TextView) view.findViewById(R.id.userinfo_username);
-		mGroup = (TextView) view.findViewById(R.id.userinfo_group);
-		mCredit = (TextView) view.findViewById(R.id.userinfo_credit);
-		mUid = (TextView) view.findViewById(R.id.userinfo_uid);
-		mThreadnum = (TextView) view.findViewById(R.id.userinfo_threadnum);
-		mPostnum = (TextView) view.findViewById(R.id.userinfo_postnum);
-		mBirth = (TextView) view.findViewById(R.id.userinfo_birth);
-		mRegdate = (TextView) view.findViewById(R.id.userinfo_regdate);
-		mLastactive = (TextView) view.findViewById(R.id.userinfo_lastvisit);
-		mSite = (TextView) view.findViewById(R.id.userinfo_site);
-		mEmail = (TextView) view.findViewById(R.id.userinfo_email);
-		mSignt = (TextView) view.findViewById(R.id.userinfo_signature);
-		
-		builder.setView(view).setPositiveButton("»∑∂®", new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {	
-			}
-		});
-		
-		new MyinfoReadTask().execute();
-		Log.d("UserinfoDialog", "Dialog created");
-		return builder.create();
-	}
-	
-	public void setTextContent(BUUserInfo info){
-		new GetAvatarTask(mAvatar, info.getAvatar()).execute();
-		mUsername.setText(info.getUsername());
-		mGroup.setText("”√ªß◊È£∫" + info.getStatus());
-		mCredit.setText("ª˝∑÷£∫" + info.getCredit());
-		mUid.setText("UID£∫" + info.getUid());
-		mThreadnum.setText("÷˜Ã‚ ˝£∫" + info.getThreadnum());
-		mPostnum.setText("∑¢Ã˚ ˝£∫" + info.getPostnum());
-		mBirth.setText("…˙»’£∫" + info.getBday());
-		mRegdate.setText("◊¢≤·»’∆⁄£∫" + info.getRegdateLong());
-		mLastactive.setText("…œ¥Œµ«¬º£∫" + info.getLastvisitLong());
-		mSite.setText("∏ˆ»À÷˜“≥£∫" + info.getSite());
-		mEmail.setText("E-mail£∫" + info.getEmail());
-		mSignt.setText(Html.fromHtml("«©√˚£∫<br>" + info.getSignature(),
-				new BUAppUtils.HtmlImageGetter(getActivity(), mSignt), null));
-		mSignt.setMovementMethod(LinkMovementMethod.getInstance());
-		readingstatusForm.setVisibility(View.GONE);
-		userinfoForm.setVisibility(View.VISIBLE);
-	}
-	
-	class GetAvatarTask extends AsyncTask<Void, Void, Boolean> {
 
-		String path;
-		ImageView mView;
+    ImageView mAvatar;
+    TextView mUsername;
+    TextView mGroup;
+    TextView mCredit;
+    TextView mUid;
+    TextView mThreadnum;
+    TextView mPostnum;
+    TextView mBirth;
+    TextView mRegdate;
+    TextView mLastactive;
+    TextView mSite;
+    TextView mEmail;
+    TextView mSignt;
 
-		public GetAvatarTask(ImageView v, String url) {
-			mView = v;
-			MainActivity.settings.setNetType(MainActivity.settings.mNetType);
-			path = url;
-			path = path.replaceAll("(http://)?(www|v6|kiss|out).bitunion.org",
-					MainActivity.settings.ROOTURL);
-			path = path.replaceAll("^images/", MainActivity.settings.ROOTURL
-					+ "/images/");
-			path = path.replaceAll("^attachments/",
-					MainActivity.settings.ROOTURL + "/attachments/");
-			Log.v("Userinfo", "GetAvatarTask>>" + path);
-		}
+    ScrollView userinfoForm;
+    LinearLayout readingstatusForm;
 
-		@Override
-		protected Boolean doInBackground(Void... arg0) {
+    private int uid;
+    private Drawable imageDrawable;
 
-			InputStream is = null;
-			try {
-				is = BUAppUtils.getImageVewInputStream(path);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return false;
-			}
-			Drawable drawable = Drawable.createFromStream(is, path);
-			if (drawable == null){
-				drawable = getResources().getDrawable(R.drawable.noavatar);}
-			float asratio = (float) drawable.getIntrinsicWidth()
-					/ drawable.getIntrinsicHeight();
-			if (asratio > 0.7)
-				drawable.setBounds(0, 0, mAvatar.getWidth(),
-						(int) (mAvatar.getWidth() / asratio));
-			else
-				drawable.setBounds(0, 0, (int) (mAvatar.getHeight() * asratio),
-						mAvatar.getHeight());
-			imageDrawable = drawable;
-			return false;
-		}
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        uid = getArguments().getInt("uid");
+    }
 
-		@Override
-		protected void onPostExecute(Boolean result) {
-			if (getActivity() != null)
-				updateImage();
-		}
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
 
-	}
-	
-	private void updateImage() {
-		mAvatar.setImageDrawable(imageDrawable);
-	}
-	
-	class MyinfoReadTask extends AsyncTask<Void, Void, Result> {
+        View view = inflater.inflate(R.layout.userinfo_fragment, null);
+        userinfoForm = (ScrollView) view.findViewById(R.id.userinfo_contentform);
+        readingstatusForm = (LinearLayout) view.findViewById(R.id.userinfo_reading_status);
 
-		PostMethod postMethod = new PostMethod();
+        mAvatar = (ImageView) view.findViewById(R.id.userinfo_avatar);
+        mUsername = (TextView) view.findViewById(R.id.userinfo_username);
+        mGroup = (TextView) view.findViewById(R.id.userinfo_group);
+        mCredit = (TextView) view.findViewById(R.id.userinfo_credit);
+        mUid = (TextView) view.findViewById(R.id.userinfo_uid);
+        mThreadnum = (TextView) view.findViewById(R.id.userinfo_threadnum);
+        mPostnum = (TextView) view.findViewById(R.id.userinfo_postnum);
+        mBirth = (TextView) view.findViewById(R.id.userinfo_birth);
+        mRegdate = (TextView) view.findViewById(R.id.userinfo_regdate);
+        mLastactive = (TextView) view.findViewById(R.id.userinfo_lastvisit);
+        mSite = (TextView) view.findViewById(R.id.userinfo_site);
+        mEmail = (TextView) view.findViewById(R.id.userinfo_email);
+        mSignt = (TextView) view.findViewById(R.id.userinfo_signature);
 
-		@Override
-		protected Result doInBackground(Void... params) {
-			Log.d("ReadInfoTask", "Userinfo requested");
-			JSONObject postReq = new JSONObject();
-			try {
-				postReq.put("action", "profile");
-				postReq.put("username", URLEncoder.encode(
-						MainActivity.settings.mUsername, "utf-8"));
-				postReq.put("session", MainActivity.settings.mSession);
-				postReq.put("uid", uid);
-				return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_PROFILE), postReq);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
+        builder.setView(view).setPositiveButton("Á°ÆÂÆö", new DialogInterface.OnClickListener() {
 
-		@Override
-		protected void onPostExecute(Result result) {
-			Log.d("ReadInfoTask", "Result>>" + result);
-			switch (result) {
-			default:
-				return;
-			case FAILURE:
-				return;
-			case NETWRONG:
-				return;
-			case UNKNOWN:
-				return;
-			case SUCCESS:
-			}
-			try {
-				BUUserInfo info = new BUUserInfo(
-						postMethod.jsonResponse.getJSONObject("memberinfo"));
-				if (getActivity() != null)
-					setTextContent(info);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
 
-	}
+        new MyinfoReadTask().execute();
+        Log.d("UserinfoDialog", "Dialog created");
+        return builder.create();
+    }
+
+    public void setTextContent(BUUserInfo info){
+        new GetAvatarTask(mAvatar, info.getAvatar()).execute();
+        mUsername.setText(info.getUsername());
+        mGroup.setText("Áî®Êà∑ÁªÑÔºö" + info.getStatus());
+        mCredit.setText("ÁßØÂàÜÔºö" + info.getCredit());
+        mUid.setText("UIDÔºö" + info.getUid());
+        mThreadnum.setText("‰∏ªÈ¢òÊï∞Ôºö" + info.getThreadnum());
+        mPostnum.setText("ÂèëÂ∏ñÊï∞Ôºö" + info.getPostnum());
+        mBirth.setText("ÁîüÊó•Ôºö" + info.getBday());
+        mRegdate.setText("Ê≥®ÂÜåÊó•ÊúüÔºö" + info.getRegdateLong());
+        mLastactive.setText("‰∏äÊ¨°ÁôªÂΩïÔºö" + info.getLastvisitLong());
+        mSite.setText("‰∏™‰∫∫‰∏ªÈ°µÔºö" + info.getSite());
+        mEmail.setText("E-mailÔºö" + info.getEmail());
+        mSignt.setText(Html.fromHtml("Á≠æÂêçÔºö<br>" + info.getSignature(),
+                new BUAppUtils.HtmlImageGetter(getActivity(), mSignt), null));
+        mSignt.setMovementMethod(LinkMovementMethod.getInstance());
+        readingstatusForm.setVisibility(View.GONE);
+        userinfoForm.setVisibility(View.VISIBLE);
+    }
+
+    class GetAvatarTask extends AsyncTask<Void, Void, Boolean> {
+
+        String path;
+        ImageView mView;
+
+        public GetAvatarTask(ImageView v, String url) {
+            mView = v;
+            MainActivity.settings.setNetType(MainActivity.settings.mNetType);
+            path = url;
+            path = path.replaceAll("(http://)?(www|v6|kiss|out).bitunion.org",
+                    MainActivity.settings.ROOTURL);
+            path = path.replaceAll("^images/", MainActivity.settings.ROOTURL
+                    + "/images/");
+            path = path.replaceAll("^attachments/",
+                    MainActivity.settings.ROOTURL + "/attachments/");
+            Log.v("Userinfo", "GetAvatarTask>>" + path);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... arg0) {
+
+            InputStream is = null;
+            try {
+                is = BUAppUtils.getImageVewInputStream(path);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return false;
+            }
+            Drawable drawable = Drawable.createFromStream(is, path);
+            if (drawable == null){
+                drawable = getResources().getDrawable(R.drawable.noavatar);}
+            float asratio = (float) drawable.getIntrinsicWidth()
+                    / drawable.getIntrinsicHeight();
+            if (asratio > 0.7)
+                drawable.setBounds(0, 0, mAvatar.getWidth(),
+                        (int) (mAvatar.getWidth() / asratio));
+            else
+                drawable.setBounds(0, 0, (int) (mAvatar.getHeight() * asratio),
+                        mAvatar.getHeight());
+            imageDrawable = drawable;
+            return false;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (getActivity() != null)
+                updateImage();
+        }
+
+    }
+
+    private void updateImage() {
+        mAvatar.setImageDrawable(imageDrawable);
+    }
+
+    class MyinfoReadTask extends AsyncTask<Void, Void, Result> {
+
+        PostMethod postMethod = new PostMethod();
+
+        @Override
+        protected Result doInBackground(Void... params) {
+            Log.d("ReadInfoTask", "Userinfo requested");
+            JSONObject postReq = new JSONObject();
+            try {
+                postReq.put("action", "profile");
+                postReq.put("username", URLEncoder.encode(
+                        MainActivity.settings.mUsername, "utf-8"));
+                postReq.put("session", MainActivity.settings.mSession);
+                postReq.put("uid", uid);
+                return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_PROFILE), postReq);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Result result) {
+            Log.d("ReadInfoTask", "Result>>" + result);
+            switch (result) {
+                default:
+                    return;
+                case FAILURE:
+                    return;
+                case NETWRONG:
+                    return;
+                case UNKNOWN:
+                    return;
+                case SUCCESS:
+            }
+            try {
+                BUUserInfo info = new BUUserInfo(
+                        postMethod.jsonResponse.getJSONObject("memberinfo"));
+                if (getActivity() != null)
+                    setTextContent(info);
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+    }
 }

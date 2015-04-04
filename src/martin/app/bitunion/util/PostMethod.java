@@ -24,93 +24,93 @@ import martin.app.bitunion.util.BUAppUtils.Result;
 
 public class PostMethod {
 
-	public JSONObject jsonResponse = null;
+    public JSONObject jsonResponse = null;
 
-	public PostMethod() {
-		// TODO Auto-generated constructor stub
-	}
+    public PostMethod() {
+        // TODO Auto-generated constructor stub
+    }
 
-	public Result sendPost(String path, JSONObject jsonRequest) {
-		try {
-			if (path.contains("/bu_newpost.php")){
-				HttpParams httpParams = new BasicHttpParams();
-				HttpConnectionParams.setConnectionTimeout(httpParams, 5000);
-				HttpConnectionParams.setSoTimeout(httpParams, 8000);
-				HttpClient httpclient = new DefaultHttpClient(httpParams);
-				HttpPost httppost = new HttpPost(path);
-				MultipartEntityBuilder reqEntityBuilder = MultipartEntityBuilder.create();
-				reqEntityBuilder.addTextBody("json", jsonRequest.toString());
-				
-				httppost.setEntity(reqEntityBuilder.build());
-				HttpResponse response = httpclient.execute(httppost);
-				
-				if (response.getStatusLine().getStatusCode() == 200){
-					String serverResponse = getServerResponse(response.getEntity().getContent());
-					jsonResponse = new JSONObject(serverResponse);
-					if (jsonResponse.getString("result").equals("success"))
-						return Result.SUCCESS_EMPTY;
-					else
-						return Result.FAILURE;
-					}
-				else 
-					return Result.NETWRONG;
-			}
-			
-			URL url = new URL(path);
-			HttpURLConnection urlConnection = (HttpURLConnection) url
-					.openConnection();
-			urlConnection.setConnectTimeout(5000);
-			urlConnection.setDoInput(true);
-			urlConnection.setDoOutput(true);
-			byte[] postdata = jsonRequest.toString().getBytes();
-			urlConnection.setRequestProperty("Content-Type",
-					"application/x-www-form-urlencoded");
-			urlConnection.setRequestProperty("Content-Length",
-					String.valueOf(postdata.length));
-			OutputStream outputStream = urlConnection.getOutputStream();
-			outputStream.write(postdata);
-			if (urlConnection.getResponseCode() == 200) {
-				this.jsonResponse = new JSONObject(
-						getServerResponse(urlConnection.getInputStream()));
-				String result = jsonResponse.getString("result");
-				if (result.equals("success"))
-					if (jsonResponse.length() <= 1)
-						return Result.SUCCESS_EMPTY;
-					else
-						return Result.SUCCESS;
-				else if (result.equals("fail"))
-					return Result.FAILURE;
-			} else {
-				return Result.NETWRONG;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			return Result.NETWRONG;
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return Result.UNKNOWN;
-	}
+    public Result sendPost(String path, JSONObject jsonRequest) {
+        try {
+            if (path.contains("/bu_newpost.php")){
+                HttpParams httpParams = new BasicHttpParams();
+                HttpConnectionParams.setConnectionTimeout(httpParams, 5000);
+                HttpConnectionParams.setSoTimeout(httpParams, 8000);
+                HttpClient httpclient = new DefaultHttpClient(httpParams);
+                HttpPost httppost = new HttpPost(path);
+                MultipartEntityBuilder reqEntityBuilder = MultipartEntityBuilder.create();
+                reqEntityBuilder.addTextBody("json", jsonRequest.toString());
 
-	public String getServerResponse(InputStream inputStream)
-			throws UnsupportedEncodingException {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		byte[] data = new byte[1024];
-		int len = 0;
-		String result = "";
-		if (inputStream != null) {
-			try {
-				while ((len = inputStream.read(data)) != -1) {
-					outputStream.write(data, 0, len);
-				}
-				result = new String(outputStream.toByteArray());
-			} catch (IOException e) {
-				e.printStackTrace();
-				Log.e("PostMethod", "getServerResponse(): Transform error!");
-			}
-		}
-		return result;
-	}
+                httppost.setEntity(reqEntityBuilder.build());
+                HttpResponse response = httpclient.execute(httppost);
+
+                if (response.getStatusLine().getStatusCode() == 200){
+                    String serverResponse = getServerResponse(response.getEntity().getContent());
+                    jsonResponse = new JSONObject(serverResponse);
+                    if (jsonResponse.getString("result").equals("success"))
+                        return Result.SUCCESS_EMPTY;
+                    else
+                        return Result.FAILURE;
+                }
+                else
+                    return Result.NETWRONG;
+            }
+
+            URL url = new URL(path);
+            HttpURLConnection urlConnection = (HttpURLConnection) url
+                    .openConnection();
+            urlConnection.setConnectTimeout(5000);
+            urlConnection.setDoInput(true);
+            urlConnection.setDoOutput(true);
+            byte[] postdata = jsonRequest.toString().getBytes();
+            urlConnection.setRequestProperty("Content-Type",
+                    "application/x-www-form-urlencoded");
+            urlConnection.setRequestProperty("Content-Length",
+                    String.valueOf(postdata.length));
+            OutputStream outputStream = urlConnection.getOutputStream();
+            outputStream.write(postdata);
+            if (urlConnection.getResponseCode() == 200) {
+                this.jsonResponse = new JSONObject(
+                        getServerResponse(urlConnection.getInputStream()));
+                String result = jsonResponse.getString("result");
+                if (result.equals("success"))
+                    if (jsonResponse.length() <= 1)
+                        return Result.SUCCESS_EMPTY;
+                    else
+                        return Result.SUCCESS;
+                else if (result.equals("fail"))
+                    return Result.FAILURE;
+            } else {
+                return Result.NETWRONG;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Result.NETWRONG;
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return Result.UNKNOWN;
+    }
+
+    public String getServerResponse(InputStream inputStream)
+            throws UnsupportedEncodingException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] data = new byte[1024];
+        int len = 0;
+        String result = "";
+        if (inputStream != null) {
+            try {
+                while ((len = inputStream.read(data)) != -1) {
+                    outputStream.write(data, 0, len);
+                }
+                result = new String(outputStream.toByteArray());
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e("PostMethod", "getServerResponse(): Transform error!");
+            }
+        }
+        return result;
+    }
 
 }

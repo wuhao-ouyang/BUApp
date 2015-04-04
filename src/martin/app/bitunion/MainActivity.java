@@ -9,7 +9,7 @@ import org.json.JSONObject;
 import martin.app.bitunion.util.BUAppSettings;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.BUAppUtils.Result;
-import martin.app.bitunion.util.BUForum;
+import martin.app.bitunion.model.BUForum;
 import martin.app.bitunion.util.PostMethod;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -36,357 +36,357 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
-	
-	public static int SCREENWIDTH;  
-	public static int SCREENHEIGHT; 
-	public static float PIXDENSITY;
-	
 
-	// ÂÛÌ³ÁĞ±íÊÓÍ¼
-	ExpandableListView listView;
-	// µ¥×éÂÛÌ³ÁĞ±íÊı¾İ
-	ArrayList<BUForum> forumList = new ArrayList<BUForum>();
-	// ËùÓĞÂÛÌ³ÁĞ±íÊı¾İ
-	ArrayList<ArrayList<BUForum>> fArrayList = new ArrayList<ArrayList<BUForum>>();
-	// ·Ö×éÊı¾İ
-	ArrayList<String> groupList;
-	ForumListAdapter adapter;
+    public static int SCREENWIDTH;
+    public static int SCREENHEIGHT;
+    public static float PIXDENSITY;
 
-	// ¾²Ì¬±äÁ¿ÔÚÕû¸öÓ¦ÓÃÖĞ´«µİÍøÂçÁ¬½Ó²ÎÊı£¬°üÀ¨session, username, passwordĞÅÏ¢
-	public static BUAppSettings settings = new BUAppSettings();
-	// ÉÏ´Î°´·µ»Ø¼üµÄÊ±¼ä
-	long touchTime = 0;
 
-	private UserLoginTask mLoginTask = null;
+    // è®ºå›åˆ—è¡¨è§†å›¾
+    ExpandableListView listView;
+    // å•ç»„è®ºå›åˆ—è¡¨æ•°æ®
+    ArrayList<BUForum> forumList = new ArrayList<BUForum>();
+    // æ‰€æœ‰è®ºå›åˆ—è¡¨æ•°æ®
+    ArrayList<ArrayList<BUForum>> fArrayList = new ArrayList<ArrayList<BUForum>>();
+    // åˆ†ç»„æ•°æ®
+    ArrayList<String> groupList;
+    ForumListAdapter adapter;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
-		setContentView(R.layout.activity_main);
-		
-		getActionBar().setTitle("±±ÀíFTPÁªÃË");
-		 
-		Point size = new Point();
-		WindowManager w = getWindowManager();
+    // é™æ€å˜é‡åœ¨æ•´ä¸ªåº”ç”¨ä¸­ä¼ é€’ç½‘ç»œè¿æ¥å‚æ•°ï¼ŒåŒ…æ‹¬session, username, passwordä¿¡æ¯
+    public static BUAppSettings settings = new BUAppSettings();
+    // ä¸Šæ¬¡æŒ‰è¿”å›é”®çš„æ—¶é—´
+    long touchTime = 0;
 
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)    {
-		    w.getDefaultDisplay().getSize(size);
-		    SCREENWIDTH = size.x;
-		    SCREENHEIGHT = size.y; 
-		}else{
-		    Display d = w.getDefaultDisplay(); 
-		    SCREENWIDTH = d.getWidth(); 
-		    SCREENHEIGHT = d.getHeight(); 
-		}
-		PIXDENSITY = getResources().getDisplayMetrics().densityDpi;
-		
+    private UserLoginTask mLoginTask = null;
 
-		listView = (ExpandableListView) this.findViewById(R.id.listview);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+        setContentView(R.layout.activity_main);
 
-		// ExpandableListViewµÄ·Ö×éĞÅÏ¢
-		groupList = new ArrayList<String>();
-		groupList.add(0, "ÏµÍ³¹ÜÀíÇø");
-		groupList.add(1, "Ö±Í¨Àí¹¤Çø");
-		groupList.add(2, "¼¼ÊõÌÖÂÛÇø");
-		groupList.add(3, "¿àÖĞ×÷ÀÖÇø");
-		groupList.add(4, "Ê±ÉĞÉú»îÇø");
-		groupList.add(5, "ÆäËû¹¦ÄÜ");
+        getActionBar().setTitle("åŒ—ç†FTPè”ç›Ÿ");
 
-		// ¶ÁÈ¡ÂÛÌ³ÁĞ±íĞÅÏ¢
-		String[] forumNames = getResources().getStringArray(R.array.forums);
-		int[] forumFids = getResources().getIntArray(R.array.fids);
-		int[] forumTypes = getResources().getIntArray(R.array.types);
-		for (int i = 0; i < forumNames.length; i++) {
-			forumList.add(new BUForum(forumNames[i], forumFids[i],
-					forumTypes[i]));
-		}
-		// ×ª»»ÂÛÌ³ÁĞ±íĞÅÏ¢Îª¶şÎ¬Êı×é£¬·½±ãListViewAdapter¶ÁÈë
-		for (int i = 0; i < groupList.size(); i++) {
-			ArrayList<BUForum> forums = new ArrayList<BUForum>();
-			for (BUForum forum : forumList) {
-				if (i == forum.getType()) {
-					forums.add(forum);
-				}
-			}
-			fArrayList.add(forums);
-		}
-		// Log.v("martin", fArrayList.get(0).get(0).getName());
-		listView.setAdapter(new ForumListAdapter());
+        Point size = new Point();
+        WindowManager w = getWindowManager();
 
-		readConfig();
-		if (settings.mUsername != null && !settings.mUsername.isEmpty()) {
-			mLoginTask = new UserLoginTask();
-			mLoginTask.execute((Void) null);
-		}
-	}
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)    {
+            w.getDefaultDisplay().getSize(size);
+            SCREENWIDTH = size.x;
+            SCREENHEIGHT = size.y;
+        }else{
+            Display d = w.getDefaultDisplay();
+            SCREENWIDTH = d.getWidth();
+            SCREENHEIGHT = d.getHeight();
+        }
+        PIXDENSITY = getResources().getDisplayMetrics().densityDpi;
 
-	/**
-	 * Represents an asynchronous login/registration task used to authenticate
-	 * the user.
-	 */
-	private class UserLoginTask extends AsyncTask<Void, Void, Result> {
 
-		PostMethod postMethod = new PostMethod();
+        listView = (ExpandableListView) this.findViewById(R.id.listview);
 
-		@Override
-		protected Result doInBackground(Void... params) {
+        // ExpandableListViewçš„åˆ†ç»„ä¿¡æ¯
+        groupList = new ArrayList<String>();
+        groupList.add(0, "ç³»ç»Ÿç®¡ç†åŒº");
+        groupList.add(1, "ç›´é€šç†å·¥åŒº");
+        groupList.add(2, "æŠ€æœ¯è®¨è®ºåŒº");
+        groupList.add(3, "è‹¦ä¸­ä½œä¹åŒº");
+        groupList.add(4, "æ—¶å°šç”Ÿæ´»åŒº");
+        groupList.add(5, "å…¶ä»–åŠŸèƒ½");
 
-			JSONObject postReq = new JSONObject();
-			try {
-				postReq.put("action", "login");
-				postReq.put("username",
-						URLEncoder.encode(settings.mUsername, "utf-8"));
-				postReq.put("password", settings.mPassword);
-				return postMethod.sendPost(BUAppUtils.getUrl(settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
+        // è¯»å–è®ºå›åˆ—è¡¨ä¿¡æ¯
+        String[] forumNames = getResources().getStringArray(R.array.forums);
+        int[] forumFids = getResources().getIntArray(R.array.fids);
+        int[] forumTypes = getResources().getIntArray(R.array.types);
+        for (int i = 0; i < forumNames.length; i++) {
+            forumList.add(new BUForum(forumNames[i], forumFids[i],
+                    forumTypes[i]));
+        }
+        // è½¬æ¢è®ºå›åˆ—è¡¨ä¿¡æ¯ä¸ºäºŒç»´æ•°ç»„ï¼Œæ–¹ä¾¿ListViewAdapterè¯»å…¥
+        for (int i = 0; i < groupList.size(); i++) {
+            ArrayList<BUForum> forums = new ArrayList<BUForum>();
+            for (BUForum forum : forumList) {
+                if (i == forum.getType()) {
+                    forums.add(forum);
+                }
+            }
+            fArrayList.add(forums);
+        }
+        // Log.v("martin", fArrayList.get(0).get(0).getName());
+        listView.setAdapter(new ForumListAdapter());
 
-		// ´¦ÀíµÇÂ¼½á¹û²¢µ¯³ötoastÏÔÊ¾
-		@Override
-		protected void onPostExecute(final Result result) {
-			mLoginTask = null;
+        readConfig();
+        if (settings.mUsername != null && !settings.mUsername.isEmpty()) {
+            mLoginTask = new UserLoginTask();
+            mLoginTask.execute((Void) null);
+        }
+    }
 
-			switch (result) {
-			default:
-				return;
-			case FAILURE:
-				showToast(BUAppUtils.LOGINFAIL);
-				return;
-			case NETWRONG:
-				showToast(BUAppUtils.NETWRONG);
-				return;
-			case UNKNOWN:
-				return;
-			case SUCCESS:
-			}
-			showToast(BUAppUtils.USERNAME + " " + settings.mUsername + " "
-					+ BUAppUtils.LOGINSUCCESS);
-			try {
-				settings.mSession = postMethod.jsonResponse.getString("session");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			// finish();
-		}
+    /**
+     * Represents an asynchronous login/registration task used to authenticate
+     * the user.
+     */
+    private class UserLoginTask extends AsyncTask<Void, Void, Result> {
 
-		@Override
-		protected void onCancelled() {
-			mLoginTask = null;
-		}
-	}
+        PostMethod postMethod = new PostMethod();
 
-	@Override
-	protected void onRestart() {
-		super.onRestart();
-		// Ö÷ÒªÎªlogin_activity½áÊøºó¸üĞÂÊı¾İÓÃ
-		Log.v("MainActivity", "Cookie>>" + settings.mSession);
-	}
-	
-	@Override
-	protected void onStop() {
-		SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
-		SharedPreferences.Editor editor = config.edit();
-		editor.putInt("nettype", settings.mNetType);
-		editor.commit();
-		super.onStop();
-	}
+        @Override
+        protected Result doInBackground(Void... params) {
 
-	private void readConfig() {
-		SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
-		settings.mNetType = config.getInt("nettype", BUAppUtils.OUTNET);
-		settings.mUsername = config.getString("username", null);
-		settings.mPassword = config.getString("password", null);
-		settings.titletextsize = config.getInt("titletextsize", (PIXDENSITY > DisplayMetrics.DENSITY_HIGH)? 14 : 12);
-		settings.contenttextsize = config.getInt("contenttextsize", (PIXDENSITY > DisplayMetrics.DENSITY_HIGH)? 14 : 12);
-		settings.showsigature = config.getBoolean("showsigature", true);
-		settings.showimage = config.getBoolean("showimage", true);
-		settings.referenceat = config.getBoolean("referenceat", false);
-		settings.setNetType(settings.mNetType);
-		Log.i("MainActivity", "readConfig>>Settings loaded!");
-	}
+            JSONObject postReq = new JSONObject();
+            try {
+                postReq.put("action", "login");
+                postReq.put("username",
+                        URLEncoder.encode(settings.mUsername, "utf-8"));
+                postReq.put("password", settings.mPassword);
+                return postMethod.sendPost(BUAppUtils.getUrl(settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
+        // å¤„ç†ç™»å½•ç»“æœå¹¶å¼¹å‡ºtoastæ˜¾ç¤º
+        @Override
+        protected void onPostExecute(final Result result) {
+            mLoginTask = null;
 
-	// µÇÂ¼°´Å¥Ìø×ªÖÁlogin_activity
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()){
-		case R.id.action_login:
-			if (settings.mUsername == null || settings.mUsername.isEmpty()) {
-				Intent intent = new Intent(this, LoginActivity.class);
-				startActivityForResult(intent, BUAppUtils.MAIN_REQ);
-			} else {
-				Intent intent = new Intent(this, MyinfoActivity.class);
-				startActivity(intent);
-			}
-			break;
-		case R.id.action_settings:
-			Intent intent = new Intent(this, SettingsActivity.class);
-			startActivity(intent);
-			break;
-		default:}
-		return true;
-		// return super.onOptionsItemSelected(item);
-	}
+            switch (result) {
+                default:
+                    return;
+                case FAILURE:
+                    showToast(BUAppUtils.LOGINFAIL);
+                    return;
+                case NETWRONG:
+                    showToast(BUAppUtils.NETWRONG);
+                    return;
+                case UNKNOWN:
+                    return;
+                case SUCCESS:
+            }
+            showToast(BUAppUtils.USERNAME + " " + settings.mUsername + " "
+                    + BUAppUtils.LOGINSUCCESS);
+            try {
+                settings.mSession = postMethod.jsonResponse.getString("session");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            // finish();
+        }
 
-	// µÃµ½login_activity·µ»ØµÄcookies
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		if (resultCode == BUAppUtils.MAIN_RESULT
-				&& requestCode == BUAppUtils.MAIN_REQ) {
-			readConfig();
-			settings.mSession = data.getStringExtra("session");
-			showToast(BUAppUtils.USERNAME + " " + settings.mUsername + " "
-					+ BUAppUtils.LOGINSUCCESS);
-		}
-	}
+        @Override
+        protected void onCancelled() {
+            mLoginTask = null;
+        }
+    }
 
-	// ExpandableListViewµÄÊı¾İ½Ó¿Ú
-	private class ForumListAdapter extends BaseExpandableListAdapter {
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        // ä¸»è¦ä¸ºlogin_activityç»“æŸåæ›´æ–°æ•°æ®ç”¨
+        Log.v("MainActivity", "Cookie>>" + settings.mSession);
+    }
 
-		@Override
-		public Object getChild(int groupPosition, int childPosition) {
-			return fArrayList.get(groupPosition).get(childPosition);
-		}
+    @Override
+    protected void onStop() {
+        SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
+        SharedPreferences.Editor editor = config.edit();
+        editor.putInt("nettype", settings.mNetType);
+        editor.commit();
+        super.onStop();
+    }
 
-		@Override
-		public long getChildId(int groupPosition, int childPosition) {
-			return childPosition;
-		}
+    private void readConfig() {
+        SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
+        settings.mNetType = config.getInt("nettype", BUAppUtils.OUTNET);
+        settings.mUsername = config.getString("username", null);
+        settings.mPassword = config.getString("password", null);
+        settings.titletextsize = config.getInt("titletextsize", (PIXDENSITY > DisplayMetrics.DENSITY_HIGH)? 14 : 12);
+        settings.contenttextsize = config.getInt("contenttextsize", (PIXDENSITY > DisplayMetrics.DENSITY_HIGH)? 14 : 12);
+        settings.showsigature = config.getBoolean("showsigature", true);
+        settings.showimage = config.getBoolean("showimage", true);
+        settings.referenceat = config.getBoolean("referenceat", false);
+        settings.setNetType(settings.mNetType);
+        Log.i("MainActivity", "readConfig>>Settings loaded!");
+    }
 
-		@Override
-		public View getChildView(int groupPosition, int childPosition,
-				boolean isLastChild, View convertView, ViewGroup parent) {
-			TextView textView = new TextView(MainActivity.this);
-			textView.setBackgroundColor(getResources().getColor(
-					R.color.blue_light));
-			if (fArrayList.get(groupPosition).get(childPosition).getName().contains("--"))
-				textView.setTextSize(settings.titletextsize + 2);
-			else
-				textView.setTextSize(settings.titletextsize + 2 + 4);
-			textView.setPadding(60, 10, 0, 10);
-			textView.setText(fArrayList.get(groupPosition).get(childPosition)
-					.getName());
-			textView.setTag(fArrayList.get(groupPosition).get(childPosition));
-			// Log.v("martin", Integer.toString(textView.getId()));
-			// ´¥Ãşµã»÷·´À¡£¬°´ÏÂÊ±±äÉ«£¬ÉÏÏÂ»¬¶¯»òËÉ¿ªÔò»Ö¸´
-			textView.setOnTouchListener(new OnTouchListener() {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
 
-				double y;
+    // ç™»å½•æŒ‰é’®è·³è½¬è‡³login_activity
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()){
+            case R.id.action_login:
+                if (settings.mUsername == null || settings.mUsername.isEmpty()) {
+                    Intent intent = new Intent(this, LoginActivity.class);
+                    startActivityForResult(intent, BUAppUtils.MAIN_REQ);
+                } else {
+                    Intent intent = new Intent(this, MyinfoActivity.class);
+                    startActivity(intent);
+                }
+                break;
+            case R.id.action_settings:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                break;
+            default:}
+        return true;
+        // return super.onOptionsItemSelected(item);
+    }
 
-				@Override
-				public boolean onTouch(View v, MotionEvent motion) {
-					if (motion.getAction() == MotionEvent.ACTION_DOWN) {
-						v.setBackgroundColor(getResources().getColor(
-								R.color.blue_view_selected));
-						y = motion.getY();
-					} else if (motion.getAction() == MotionEvent.ACTION_UP
-							|| motion.getAction() == MotionEvent.ACTION_CANCEL) {
-						v.setBackgroundColor(getResources().getColor(
-								R.color.blue_light));
-						return false;
-					} else if (motion.getAction() == MotionEvent.ACTION_MOVE) {
-						double disMoved;
-						disMoved = Math.abs(y - motion.getY());
-						if (disMoved > 5) {
-							v.setBackgroundColor(getResources().getColor(
-									R.color.blue_light));
-						}
-					}
-					return false;
-				}
-			});
-			// ×¢²áOnClickÊÂ¼ş£¬´¥Ãşµã»÷×ªÖÁDisplayActivity
-			textView.setOnClickListener(new OnClickListener() {
+    // å¾—åˆ°login_activityè¿”å›çš„cookies
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == BUAppUtils.MAIN_RESULT
+                && requestCode == BUAppUtils.MAIN_REQ) {
+            readConfig();
+            settings.mSession = data.getStringExtra("session");
+            showToast(BUAppUtils.USERNAME + " " + settings.mUsername + " "
+                    + BUAppUtils.LOGINSUCCESS);
+        }
+    }
 
-				@Override
-				public void onClick(View v) {
-					if (settings.mUsername != null && settings.mPassword != null) {
-						if ( ((BUForum) v.getTag()).getFid() == -1){
-							// TODO ×îĞÂÌû×Ó
-							return;}
-						if ( ((BUForum) v.getTag()).getFid() == -2){
-							// TODO ÊÕ²Ø¼Ğ
-							return;}
-						Intent intent = new Intent(MainActivity.this,
-								DisplayActivity.class);
-						intent.putExtra("fid", ((BUForum) v.getTag()).getFid());
-						intent.putExtra("name",
-								((BUForum) v.getTag()).getName());
-						startActivityForResult(intent, BUAppUtils.MAIN_REQ);
-					} else showToast("ÇëÏÈµÇÂ¼");
-				}
-			});
-			return textView;
-		}
+    // ExpandableListViewçš„æ•°æ®æ¥å£
+    private class ForumListAdapter extends BaseExpandableListAdapter {
 
-		@Override
-		public int getChildrenCount(int groupPosition) {
-			return fArrayList.get(groupPosition).size();
-		}
+        @Override
+        public Object getChild(int groupPosition, int childPosition) {
+            return fArrayList.get(groupPosition).get(childPosition);
+        }
 
-		@Override
-		public Object getGroup(int groupPosition) {
-			return groupList.get(groupPosition);
-		}
+        @Override
+        public long getChildId(int groupPosition, int childPosition) {
+            return childPosition;
+        }
 
-		@Override
-		public int getGroupCount() {
-			return groupList.size();
-		}
+        @Override
+        public View getChildView(int groupPosition, int childPosition,
+                                 boolean isLastChild, View convertView, ViewGroup parent) {
+            TextView textView = new TextView(MainActivity.this);
+            textView.setBackgroundColor(getResources().getColor(
+                    R.color.blue_light));
+            if (fArrayList.get(groupPosition).get(childPosition).getName().contains("--"))
+                textView.setTextSize(settings.titletextsize + 2);
+            else
+                textView.setTextSize(settings.titletextsize + 2 + 4);
+            textView.setPadding(60, 10, 0, 10);
+            textView.setText(fArrayList.get(groupPosition).get(childPosition)
+                    .getName());
+            textView.setTag(fArrayList.get(groupPosition).get(childPosition));
+            // Log.v("martin", Integer.toString(textView.getId()));
+            // è§¦æ‘¸ç‚¹å‡»åé¦ˆï¼ŒæŒ‰ä¸‹æ—¶å˜è‰²ï¼Œä¸Šä¸‹æ»‘åŠ¨æˆ–æ¾å¼€åˆ™æ¢å¤
+            textView.setOnTouchListener(new OnTouchListener() {
 
-		@Override
-		public long getGroupId(int groupPosition) {
-			return groupPosition;
-		}
+                double y;
 
-		@Override
-		public View getGroupView(int groupPosition, boolean isExpanded,
-				View convertView, ViewGroup parent) {
-			final TextView textView = new TextView(MainActivity.this);
-			textView.setBackgroundColor(getResources().getColor(
-					R.color.blue_dark));
-			textView.setTextSize(settings.titletextsize + 2 + 4 + 5);
-			textView.setPadding(60, 10, 0, 10);
-			textView.setText(groupList.get(groupPosition));
-			return textView;
-		}
-		@Override
-		public boolean hasStableIds() {
-			return false;
-		}
-		@Override
-		public boolean isChildSelectable(int groupPosition, int childPosition) {
-			return false;
-		}
+                @Override
+                public boolean onTouch(View v, MotionEvent motion) {
+                    if (motion.getAction() == MotionEvent.ACTION_DOWN) {
+                        v.setBackgroundColor(getResources().getColor(
+                                R.color.blue_view_selected));
+                        y = motion.getY();
+                    } else if (motion.getAction() == MotionEvent.ACTION_UP
+                            || motion.getAction() == MotionEvent.ACTION_CANCEL) {
+                        v.setBackgroundColor(getResources().getColor(
+                                R.color.blue_light));
+                        return false;
+                    } else if (motion.getAction() == MotionEvent.ACTION_MOVE) {
+                        double disMoved;
+                        disMoved = Math.abs(y - motion.getY());
+                        if (disMoved > 5) {
+                            v.setBackgroundColor(getResources().getColor(
+                                    R.color.blue_light));
+                        }
+                    }
+                    return false;
+                }
+            });
+            // æ³¨å†ŒOnClickäº‹ä»¶ï¼Œè§¦æ‘¸ç‚¹å‡»è½¬è‡³DisplayActivity
+            textView.setOnClickListener(new OnClickListener() {
 
-	}
-	
-	@Override
-	public void onBackPressed() {
-		long currentTime = System.currentTimeMillis();  
-	    if((currentTime-touchTime)>= BUAppUtils.EXIT_WAIT_TIME) {  
-	        showToast("ÔÙ°´Ò»´ÎÍË³ö³ÌĞò");
-	        touchTime = currentTime;  
-	    }else {  
-	    	super.onBackPressed();  
-	    }  
-	}
+                @Override
+                public void onClick(View v) {
+                    if (settings.mUsername != null && settings.mPassword != null) {
+                        if ( ((BUForum) v.getTag()).getFid() == -1){
+                            // TODO æœ€æ–°å¸–å­
+                            return;}
+                        if ( ((BUForum) v.getTag()).getFid() == -2){
+                            // TODO æ”¶è—å¤¹
+                            return;}
+                        Intent intent = new Intent(MainActivity.this,
+                                DisplayActivity.class);
+                        intent.putExtra("fid", ((BUForum) v.getTag()).getFid());
+                        intent.putExtra("name",
+                                ((BUForum) v.getTag()).getName());
+                        startActivityForResult(intent, BUAppUtils.MAIN_REQ);
+                    } else showToast("è¯·å…ˆç™»å½•");
+                }
+            });
+            return textView;
+        }
 
-	private void showToast(String text) {
-		Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
-	}
+        @Override
+        public int getChildrenCount(int groupPosition) {
+            return fArrayList.get(groupPosition).size();
+        }
+
+        @Override
+        public Object getGroup(int groupPosition) {
+            return groupList.get(groupPosition);
+        }
+
+        @Override
+        public int getGroupCount() {
+            return groupList.size();
+        }
+
+        @Override
+        public long getGroupId(int groupPosition) {
+            return groupPosition;
+        }
+
+        @Override
+        public View getGroupView(int groupPosition, boolean isExpanded,
+                                 View convertView, ViewGroup parent) {
+            final TextView textView = new TextView(MainActivity.this);
+            textView.setBackgroundColor(getResources().getColor(
+                    R.color.blue_dark));
+            textView.setTextSize(settings.titletextsize + 2 + 4 + 5);
+            textView.setPadding(60, 10, 0, 10);
+            textView.setText(groupList.get(groupPosition));
+            return textView;
+        }
+        @Override
+        public boolean hasStableIds() {
+            return false;
+        }
+        @Override
+        public boolean isChildSelectable(int groupPosition, int childPosition) {
+            return false;
+        }
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        long currentTime = System.currentTimeMillis();
+        if((currentTime-touchTime)>= BUAppUtils.EXIT_WAIT_TIME) {
+            showToast("å†æŒ‰ä¸€æ¬¡é€€å‡ºç¨‹åº");
+            touchTime = currentTime;
+        }else {
+            super.onBackPressed();
+        }
+    }
+
+    private void showToast(String text) {
+        Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
+    }
 
 }

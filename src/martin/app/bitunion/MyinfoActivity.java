@@ -11,7 +11,7 @@ import martin.app.bitunion.fragment.ConfirmDialogFragment;
 import martin.app.bitunion.fragment.ConfirmDialogFragment.ConfirmDialogListener;
 import martin.app.bitunion.util.BUAppUtils.Result;
 import martin.app.bitunion.util.BUAppUtils;
-import martin.app.bitunion.util.BUUserInfo;
+import martin.app.bitunion.model.BUUserInfo;
 import martin.app.bitunion.util.PostMethod;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -30,345 +30,345 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 
 public class MyinfoActivity extends FragmentActivity implements
-		ConfirmDialogListener {
+        ConfirmDialogListener {
 
-	private ImageView mAvatar;
-	private TextView mUsername;
-	private TextView mGroup;
-	private TextView mCredit;
-	private TextView mThreadnum;
-	private TextView mPostnum;
-	private TextView mRegdate;
-	private TextView mLastactive;
-	private TextView mEmail;
-	private TextView mSignt;
+    private ImageView mAvatar;
+    private TextView mUsername;
+    private TextView mGroup;
+    private TextView mCredit;
+    private TextView mThreadnum;
+    private TextView mPostnum;
+    private TextView mRegdate;
+    private TextView mLastactive;
+    private TextView mEmail;
+    private TextView mSignt;
 
-	private ProgressDialog progressDialog = null;
-	private ConfirmDialogFragment mAlertFragment = null;
+    private ProgressDialog progressDialog = null;
+    private ConfirmDialogFragment mAlertFragment = null;
 
-	private static Drawable imageDrawable;
+    private static Drawable imageDrawable;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_myinfo);
-		
-		// Show the Up button in the action bar.
-		setupActionBar();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_myinfo);
 
-		if (savedInstanceState != null && !savedInstanceState.isEmpty())
-			return;
+        // Show the Up button in the action bar.
+        setupActionBar();
 
-		imageDrawable = getResources()
-				.getDrawable(R.drawable.ic_action_picture);
+        if (savedInstanceState != null && !savedInstanceState.isEmpty())
+            return;
 
-		mAvatar = (ImageView) findViewById(R.id.myinfo_avatar);
-		mUsername = (TextView) findViewById(R.id.myinfo_username);
-		mGroup = (TextView) findViewById(R.id.myinfo_group);
-		mCredit = (TextView) findViewById(R.id.myinfo_credit);
-		mThreadnum = (TextView) findViewById(R.id.myinfo_threadnum);
-		mPostnum = (TextView) findViewById(R.id.myinfo_postnum);
-		mRegdate = (TextView) findViewById(R.id.myinfo_regdate);
-		mLastactive = (TextView) findViewById(R.id.myinfo_lastvisit);
-		mEmail = (TextView) findViewById(R.id.myinfo_email);
-		mSignt = (TextView) findViewById(R.id.myinfo_signature);
+        imageDrawable = getResources()
+                .getDrawable(R.drawable.ic_action_picture);
 
-		if (MainActivity.settings.mSession != null
-				&& !MainActivity.settings.mSession.isEmpty()) {
-			progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
-			progressDialog.setMessage("∂¡»°÷–...");
-			progressDialog.show();
-			new MyinfoReadTask().execute();
-		} else
-			showToast("«Îµ»¥˝µ«¬º∫Û÷ÿ–¬≥¢ ‘");
-	}
+        mAvatar = (ImageView) findViewById(R.id.myinfo_avatar);
+        mUsername = (TextView) findViewById(R.id.myinfo_username);
+        mGroup = (TextView) findViewById(R.id.myinfo_group);
+        mCredit = (TextView) findViewById(R.id.myinfo_credit);
+        mThreadnum = (TextView) findViewById(R.id.myinfo_threadnum);
+        mPostnum = (TextView) findViewById(R.id.myinfo_postnum);
+        mRegdate = (TextView) findViewById(R.id.myinfo_regdate);
+        mLastactive = (TextView) findViewById(R.id.myinfo_lastvisit);
+        mEmail = (TextView) findViewById(R.id.myinfo_email);
+        mSignt = (TextView) findViewById(R.id.myinfo_signature);
 
-	private void setInfoContent(BUUserInfo info) {
-		new GetAvatarTask(mAvatar, info.getAvatar()).execute();
-		mUsername.setText(info.getUsername());
-		mGroup.setText("”√ªß◊È£∫" + info.getStatus());
-		mCredit.setText("ª˝∑÷£∫" + info.getCredit());
-		mThreadnum.setText("÷˜Ã‚ ˝£∫" + info.getThreadnum());
-		mPostnum.setText("∑¢Ã˚ ˝£∫" + info.getPostnum());
-		mRegdate.setText("◊¢≤·»’∆⁄£∫" + info.getRegdate());
-		mLastactive.setText("…œ¥Œµ«¬º£∫" + info.getLastvisit());
-		mEmail.setText("E-mail£∫" + info.getEmail());
-		mSignt.setText(Html.fromHtml("«©√˚£∫<br>" + info.getSignature(),
-				new BUAppUtils.HtmlImageGetter(this, mSignt), null));
-		mSignt.setMovementMethod(LinkMovementMethod.getInstance());
-	}
+        if (MainActivity.settings.mSession != null
+                && !MainActivity.settings.mSession.isEmpty()) {
+            progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
+            progressDialog.setMessage("ËØªÂèñ‰∏≠...");
+            progressDialog.show();
+            new MyinfoReadTask().execute();
+        } else
+            showToast("ËØ∑Á≠âÂæÖÁôªÂΩïÂêéÈáçÊñ∞Â∞ùËØï");
+    }
 
-	private void updateImage() {
-		mAvatar.setImageDrawable(imageDrawable);
-	}
+    private void setInfoContent(BUUserInfo info) {
+        new GetAvatarTask(mAvatar, info.getAvatar()).execute();
+        mUsername.setText(info.getUsername());
+        mGroup.setText("Áî®Êà∑ÁªÑÔºö" + info.getStatus());
+        mCredit.setText("ÁßØÂàÜÔºö" + info.getCredit());
+        mThreadnum.setText("‰∏ªÈ¢òÊï∞Ôºö" + info.getThreadnum());
+        mPostnum.setText("ÂèëÂ∏ñÊï∞Ôºö" + info.getPostnum());
+        mRegdate.setText("Ê≥®ÂÜåÊó•ÊúüÔºö" + info.getRegdate());
+        mLastactive.setText("‰∏äÊ¨°ÁôªÂΩïÔºö" + info.getLastvisit());
+        mEmail.setText("E-mailÔºö" + info.getEmail());
+        mSignt.setText(Html.fromHtml("Á≠æÂêçÔºö<br>" + info.getSignature(),
+                new BUAppUtils.HtmlImageGetter(this, mSignt), null));
+        mSignt.setMovementMethod(LinkMovementMethod.getInstance());
+    }
 
-	class GetAvatarTask extends AsyncTask<Void, Void, Result> {
+    private void updateImage() {
+        mAvatar.setImageDrawable(imageDrawable);
+    }
 
-		String path;
-		ImageView mView;
+    class GetAvatarTask extends AsyncTask<Void, Void, Result> {
 
-		public GetAvatarTask(ImageView v, String url) {
-			mView = v;
-			MainActivity.settings.setNetType(MainActivity.settings.mNetType);
-			path = url;
-			path = path.replaceAll("(http://)?(www|v6|kiss|out).bitunion.org",
-					MainActivity.settings.ROOTURL);
-			path = path.replaceAll("^images/", MainActivity.settings.ROOTURL
-					+ "/images/");
-			path = path.replaceAll("^attachments/",
-					MainActivity.settings.ROOTURL + "/attachments/");
-			Log.v("MyinfoActivity", "GetAvatarTask>>" + path);
-		}
+        String path;
+        ImageView mView;
 
-		@Override
-		protected Result doInBackground(Void... arg0) {
+        public GetAvatarTask(ImageView v, String url) {
+            mView = v;
+            MainActivity.settings.setNetType(MainActivity.settings.mNetType);
+            path = url;
+            path = path.replaceAll("(http://)?(www|v6|kiss|out).bitunion.org",
+                    MainActivity.settings.ROOTURL);
+            path = path.replaceAll("^images/", MainActivity.settings.ROOTURL
+                    + "/images/");
+            path = path.replaceAll("^attachments/",
+                    MainActivity.settings.ROOTURL + "/attachments/");
+            Log.v("MyinfoActivity", "GetAvatarTask>>" + path);
+        }
 
-			InputStream is = null;
-			try {
-				is = BUAppUtils.getImageVewInputStream(path);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return null;
-			}
-			Drawable drawable = Drawable.createFromStream(is, path);
-			if (drawable == null)
-				drawable = getResources().getDrawable(R.drawable.noavatar);
-			float asratio = (float) drawable.getIntrinsicWidth()
-					/ drawable.getIntrinsicHeight();
-			if (asratio > 1)
-				drawable.setBounds(0, 0, mAvatar.getWidth(),
-						(int) (mAvatar.getWidth() / asratio));
-			else
-				drawable.setBounds(0, 0, (int) (mAvatar.getHeight() * asratio),
-						mAvatar.getHeight());
-			imageDrawable = drawable;
-			return null;
-		}
+        @Override
+        protected Result doInBackground(Void... arg0) {
 
-		@Override
-		protected void onPostExecute(Result result) {
-			updateImage();
-			super.onPostExecute(result);
-		}
+            InputStream is = null;
+            try {
+                is = BUAppUtils.getImageVewInputStream(path);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return null;
+            }
+            Drawable drawable = Drawable.createFromStream(is, path);
+            if (drawable == null)
+                drawable = getResources().getDrawable(R.drawable.noavatar);
+            float asratio = (float) drawable.getIntrinsicWidth()
+                    / drawable.getIntrinsicHeight();
+            if (asratio > 1)
+                drawable.setBounds(0, 0, mAvatar.getWidth(),
+                        (int) (mAvatar.getWidth() / asratio));
+            else
+                drawable.setBounds(0, 0, (int) (mAvatar.getHeight() * asratio),
+                        mAvatar.getHeight());
+            imageDrawable = drawable;
+            return null;
+        }
 
-	}
+        @Override
+        protected void onPostExecute(Result result) {
+            updateImage();
+            super.onPostExecute(result);
+        }
 
-	class MyinfoReadTask extends AsyncTask<Void, Void, Result> {
+    }
 
-		PostMethod postMethod = new PostMethod();
+    class MyinfoReadTask extends AsyncTask<Void, Void, Result> {
 
-		@Override
-		protected Result doInBackground(Void... params) {
-			JSONObject postReq = new JSONObject();
-			try {
-				postReq.put("action", "profile");
-				postReq.put("username", URLEncoder.encode(
-						MainActivity.settings.mUsername, "utf-8"));
-				postReq.put("session", MainActivity.settings.mSession);
-				postReq.put("queryusername", URLEncoder.encode(
-						MainActivity.settings.mUsername, "utf-8"));
-				return postMethod.sendPost(
-						BUAppUtils.getUrl(MainActivity.settings.mNetType,
-								BUAppUtils.REQ_PROFILE), postReq);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
+        PostMethod postMethod = new PostMethod();
 
-		@Override
-		protected void onPostExecute(Result result) {
-			switch (result) {
-			default:
-				return;
-			case FAILURE:
-				new UserLoginTask().execute();
-				return;
-			case NETWRONG:
-				showToast(BUAppUtils.NETWRONG);
-				return;
-			case UNKNOWN:
-				return;
-			case SUCCESS:
-			}
-			try {
-				BUUserInfo info = new BUUserInfo(
-						postMethod.jsonResponse.getJSONObject("memberinfo"));
-				setInfoContent(info);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			progressDialog.dismiss();
-		}
+        @Override
+        protected Result doInBackground(Void... params) {
+            JSONObject postReq = new JSONObject();
+            try {
+                postReq.put("action", "profile");
+                postReq.put("username", URLEncoder.encode(
+                        MainActivity.settings.mUsername, "utf-8"));
+                postReq.put("session", MainActivity.settings.mSession);
+                postReq.put("queryusername", URLEncoder.encode(
+                        MainActivity.settings.mUsername, "utf-8"));
+                return postMethod.sendPost(
+                        BUAppUtils.getUrl(MainActivity.settings.mNetType,
+                                BUAppUtils.REQ_PROFILE), postReq);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
 
-	}
+        @Override
+        protected void onPostExecute(Result result) {
+            switch (result) {
+                default:
+                    return;
+                case FAILURE:
+                    new UserLoginTask().execute();
+                    return;
+                case NETWRONG:
+                    showToast(BUAppUtils.NETWRONG);
+                    return;
+                case UNKNOWN:
+                    return;
+                case SUCCESS:
+            }
+            try {
+                BUUserInfo info = new BUUserInfo(
+                        postMethod.jsonResponse.getJSONObject("memberinfo"));
+                setInfoContent(info);
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            progressDialog.dismiss();
+        }
 
-	/**
-	 * Set up the {@link android.app.ActionBar}.
-	 */
-	private void setupActionBar() {
-		getActionBar().setTitle("Œ“µƒ¡™√À");
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-	}
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.myinfo, menu);
-		return true;
-	}
+    /**
+     * Set up the {@link android.app.ActionBar}.
+     */
+    private void setupActionBar() {
+        getActionBar().setTitle("ÊàëÁöÑËÅîÁõü");
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+    }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			finish();
-			return true;
-		case R.id.action_refresh:
-			if (MainActivity.settings.mSession == null
-					|| MainActivity.settings.mSession.isEmpty()) {
-				new UserLoginTask().execute();
-				progressDialog.show();
-			} else
-				new MyinfoReadTask().execute();
-			return true;
-		case R.id.action_logout:
-			mAlertFragment = new ConfirmDialogFragment();
-			Bundle args = new Bundle();
-			args.putString("title", "µ«≥ˆ");
-			args.putString("message", "»∑∂®“™µ«≥ˆ¬£ø");
-			mAlertFragment.setArguments(args);
-			mAlertFragment.show(getSupportFragmentManager(), "LogoutAlert");
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.myinfo, menu);
+        return true;
+    }
 
-	@Override
-	public void onDialogPositiveClick(DialogFragment dialog) {
-		new UserLogoutTask().execute();
-	}
-	@Override
-	public void onDialogPositiveClick(DialogFragment dialog, String arg) {}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            case R.id.action_refresh:
+                if (MainActivity.settings.mSession == null
+                        || MainActivity.settings.mSession.isEmpty()) {
+                    new UserLoginTask().execute();
+                    progressDialog.show();
+                } else
+                    new MyinfoReadTask().execute();
+                return true;
+            case R.id.action_logout:
+                mAlertFragment = new ConfirmDialogFragment();
+                Bundle args = new Bundle();
+                args.putString("title", "ÁôªÂá∫");
+                args.putString("message", "Á°ÆÂÆöË¶ÅÁôªÂá∫ÂêóÔºü");
+                mAlertFragment.setArguments(args);
+                mAlertFragment.show(getSupportFragmentManager(), "LogoutAlert");
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-	/**
-	 * Represents an asynchronous login/registration task used to authenticate
-	 * the user.
-	 */
-	private class UserLoginTask extends AsyncTask<Void, Void, Result> {
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        new UserLogoutTask().execute();
+    }
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog, String arg) {}
 
-		PostMethod postMethod = new PostMethod();
+    /**
+     * Represents an asynchronous login/registration task used to authenticate
+     * the user.
+     */
+    private class UserLoginTask extends AsyncTask<Void, Void, Result> {
 
-		@Override
-		protected Result doInBackground(Void... params) {
+        PostMethod postMethod = new PostMethod();
 
-			JSONObject postReq = new JSONObject();
-			try {
-				postReq.put("action", "login");
-				postReq.put("username", URLEncoder.encode(
-						MainActivity.settings.mUsername, "utf-8"));
-				postReq.put("password", MainActivity.settings.mPassword);
-				return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
+        @Override
+        protected Result doInBackground(Void... params) {
 
-		// ¥¶¿Ìµ«¬ºΩ·π˚≤¢µØ≥ˆtoastœ‘ æ
-		@Override
-		protected void onPostExecute(final Result result) {
+            JSONObject postReq = new JSONObject();
+            try {
+                postReq.put("action", "login");
+                postReq.put("username", URLEncoder.encode(
+                        MainActivity.settings.mUsername, "utf-8"));
+                postReq.put("password", MainActivity.settings.mPassword);
+                return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
 
-			switch (result) {
-			default:
-				return;
-			case FAILURE:
-				showToast(BUAppUtils.LOGINFAIL);
-				return;
-			case NETWRONG:
-				showToast(BUAppUtils.NETWRONG);
-				return;
-			case UNKNOWN:
-				return;
-			case SUCCESS:
-			}
-			try {
-				MainActivity.settings.mSession = postMethod.jsonResponse
-						.getString("session");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			new MyinfoReadTask().execute();
-		}
-	}
+        // Â§ÑÁêÜÁôªÂΩïÁªìÊûúÂπ∂ÂºπÂá∫toastÊòæÁ§∫
+        @Override
+        protected void onPostExecute(final Result result) {
 
-	private class UserLogoutTask extends AsyncTask<Void, Void, Result> {
+            switch (result) {
+                default:
+                    return;
+                case FAILURE:
+                    showToast(BUAppUtils.LOGINFAIL);
+                    return;
+                case NETWRONG:
+                    showToast(BUAppUtils.NETWRONG);
+                    return;
+                case UNKNOWN:
+                    return;
+                case SUCCESS:
+            }
+            try {
+                MainActivity.settings.mSession = postMethod.jsonResponse
+                        .getString("session");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            new MyinfoReadTask().execute();
+        }
+    }
 
-		PostMethod postMethod = new PostMethod();
+    private class UserLogoutTask extends AsyncTask<Void, Void, Result> {
 
-		@Override
-		protected Result doInBackground(Void... params) {
+        PostMethod postMethod = new PostMethod();
 
-			JSONObject postReq = new JSONObject();
-			try {
-				postReq.put("action", "logout");
-				postReq.put("username", URLEncoder.encode(
-						MainActivity.settings.mUsername, "utf-8"));
-				postReq.put("password", MainActivity.settings.mPassword);
-				postReq.put("session", MainActivity.settings.mSession);
-				return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
+        @Override
+        protected Result doInBackground(Void... params) {
 
-		// ¥¶¿Ìµ«¬ºΩ·π˚≤¢µØ≥ˆtoastœ‘ æ
-		@Override
-		protected void onPostExecute(final Result result) {
+            JSONObject postReq = new JSONObject();
+            try {
+                postReq.put("action", "logout");
+                postReq.put("username", URLEncoder.encode(
+                        MainActivity.settings.mUsername, "utf-8"));
+                postReq.put("password", MainActivity.settings.mPassword);
+                postReq.put("session", MainActivity.settings.mSession);
+                return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
 
-			switch (result) {
-			default:
-				return;
-			case FAILURE:
-				showToast(BUAppUtils.LOGINFAIL);
-				return;
-			case NETWRONG:
-				showToast(BUAppUtils.NETWRONG);
-				return;
-			case UNKNOWN:
-				return;
-			case SUCCESS:
-			case SUCCESS_EMPTY:
-			}
-			cleareConfig();
-			finish();
-		}
-	}
+        // Â§ÑÁêÜÁôªÂΩïÁªìÊûúÂπ∂ÂºπÂá∫toastÊòæÁ§∫
+        @Override
+        protected void onPostExecute(final Result result) {
 
-	public void cleareConfig() {
-		SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
-		SharedPreferences.Editor editor = config.edit();
-		MainActivity.settings.mUsername = null;
-		MainActivity.settings.mPassword = null;
-		MainActivity.settings.mSession = null;
-		MainActivity.settings.mNetType = BUAppUtils.OUTNET;
-		editor.putInt("nettype", BUAppUtils.OUTNET);
-		editor.putString("username", null);
-		editor.putString("password", null);
-		editor.commit();
-	}
+            switch (result) {
+                default:
+                    return;
+                case FAILURE:
+                    showToast(BUAppUtils.LOGINFAIL);
+                    return;
+                case NETWRONG:
+                    showToast(BUAppUtils.NETWRONG);
+                    return;
+                case UNKNOWN:
+                    return;
+                case SUCCESS:
+                case SUCCESS_EMPTY:
+            }
+            cleareConfig();
+            finish();
+        }
+    }
 
-	private void showToast(String text) {
-		Toast.makeText(MyinfoActivity.this, text, Toast.LENGTH_SHORT).show();
-	}
+    public void cleareConfig() {
+        SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
+        SharedPreferences.Editor editor = config.edit();
+        MainActivity.settings.mUsername = null;
+        MainActivity.settings.mPassword = null;
+        MainActivity.settings.mSession = null;
+        MainActivity.settings.mNetType = BUAppUtils.OUTNET;
+        editor.putInt("nettype", BUAppUtils.OUTNET);
+        editor.putString("username", null);
+        editor.putString("password", null);
+        editor.commit();
+    }
+
+    private void showToast(String text) {
+        Toast.makeText(MyinfoActivity.this, text, Toast.LENGTH_SHORT).show();
+    }
 
 }
