@@ -14,7 +14,6 @@ import martin.app.bitunion.util.PostMethod;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -92,6 +91,7 @@ public class MainActivity extends Activity {
 		groupList.add(2, "技术讨论区");
 		groupList.add(3, "苦中作乐区");
 		groupList.add(4, "时尚生活区");
+		groupList.add(5, "其他功能");
 
 		// 读取论坛列表信息
 		String[] forumNames = getResources().getStringArray(R.array.forums);
@@ -138,8 +138,7 @@ public class MainActivity extends Activity {
 				postReq.put("username",
 						URLEncoder.encode(settings.mUsername, "utf-8"));
 				postReq.put("password", settings.mPassword);
-				postMethod.setNetType(settings.mNetType);
-				return postMethod.sendPost(postMethod.REQ_LOGGING, postReq);
+				return postMethod.sendPost(BUAppUtils.getUrl(settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			} catch (UnsupportedEncodingException e) {
@@ -205,6 +204,11 @@ public class MainActivity extends Activity {
 		settings.mPassword = config.getString("password", null);
 		settings.titletextsize = config.getInt("titletextsize", (PIXDENSITY > DisplayMetrics.DENSITY_HIGH)? 14 : 12);
 		settings.contenttextsize = config.getInt("contenttextsize", (PIXDENSITY > DisplayMetrics.DENSITY_HIGH)? 14 : 12);
+		settings.showsigature = config.getBoolean("showsigature", true);
+		settings.showimage = config.getBoolean("showimage", true);
+		settings.referenceat = config.getBoolean("referenceat", false);
+		settings.setNetType(settings.mNetType);
+		Log.i("MainActivity", "readConfig>>Settings loaded!");
 	}
 
 	@Override
@@ -310,6 +314,12 @@ public class MainActivity extends Activity {
 				@Override
 				public void onClick(View v) {
 					if (settings.mUsername != null && settings.mPassword != null) {
+						if ( ((BUForum) v.getTag()).getFid() == -1){
+							// TODO 最新帖子
+							return;}
+						if ( ((BUForum) v.getTag()).getFid() == -2){
+							// TODO 收藏夹
+							return;}
 						Intent intent = new Intent(MainActivity.this,
 								DisplayActivity.class);
 						intent.putExtra("fid", ((BUForum) v.getTag()).getFid());

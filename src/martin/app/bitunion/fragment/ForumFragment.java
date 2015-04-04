@@ -1,44 +1,30 @@
 package martin.app.bitunion.fragment;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 
-import martin.app.bitunion.DisplayActivity;
 import martin.app.bitunion.MainActivity;
 import martin.app.bitunion.R;
 import martin.app.bitunion.ThreadActivity;
-import martin.app.bitunion.DisplayActivity.UserLoginTask;
 import martin.app.bitunion.util.BUAppUtils;
-import martin.app.bitunion.util.BUForum;
 import martin.app.bitunion.util.BUThread;
-import martin.app.bitunion.util.PostMethod;
-import martin.app.bitunion.util.BUAppUtils.Result;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.Html;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * A dummy fragment representing a section of the app, but that simply displays
@@ -51,7 +37,7 @@ public class ForumFragment extends Fragment {
 	public static final String ARG_PAGE_NUMBER = "page";
 	private LayoutInflater inflater;
 	private ArrayList<BUThread> threadlist = new ArrayList<BUThread>();
-	private int PAGENUM, FORUMID;
+//	private int PAGENUM, FORUMID;
 	private MyListAdapter mAdapter;
 	private View mForumView;
 
@@ -92,7 +78,6 @@ public class ForumFragment extends Fragment {
 	public void update(ArrayList<BUThread> content) {
 		mAdapter.updateList(content);
 		mAdapter.notifyDataSetChanged();
-		Log.v("fragment", "fragment>>" + this.PAGENUM);
 	}
 
 	@Override
@@ -182,9 +167,5 @@ public class ForumFragment extends Fragment {
 
 			return view;
 		}
-	}
-
-	private void showToast(String text) {
-		Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
 	}
 }

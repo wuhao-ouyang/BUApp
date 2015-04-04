@@ -38,8 +38,7 @@ public class BUPost extends BUContent {
 	private JSONObject json;
 	private int count;
 
-	private ArrayList<BUQuote> quote = new ArrayList<BUQuote>();
-	private ArrayList<String> images = new ArrayList<String>();
+	private ArrayList<BUQuote> quotes = new ArrayList<BUQuote>();
 
 	public BUPost(JSONObject jsonObject, int count) {
 		json = jsonObject;
@@ -88,11 +87,12 @@ public class BUPost extends BUContent {
 		Matcher m = p.matcher(message);
 		while (m.find()) {
 			BUQuote q = new BUQuote(m.group(1));
-			quote.add(q);
-			message = message.replace(
-					m.group(0),
-					"<table width='90%' style='border:1px dashed #698fc7;font-size:"+ MainActivity.settings.titletextsize +"px;margin:5px;'><tr><td>"
-							+ q.toString() + "\n</td></tr></table>");
+			quotes.add(q);
+			message = message.replace(m.group(0),
+					"<table width='90%' style='border:1px dashed #698fc7;font-size:"
+							+ MainActivity.settings.contenttextsize
+							+ "px;margin:5px;'><tr><td>" + q.toString()
+							+ "</td></tr></table>");
 //			message = message.replace(m.group(0), "");
 //			Log.v("BUpost", "quote>>" + q.toString());
 			m = p.matcher(message);
@@ -123,9 +123,15 @@ public class BUPost extends BUContent {
 		Matcher m = p.matcher(message);
 		while (m.find()) {
 			String path = "<img src='" + parseLocalImage(m.group(1)) + "'>";
-			// 统一站内地址
-			path = path.replaceAll("(http://)?((out.|kiss.|www.)?" +
-					"bitunion.org|btun.yi.org|10.1.10.253)", MainActivity.settings.ROOTURL);
+			Log.i("BUPost", "Post>>" + author + count);
+			Log.i("BUPost", "Image Path>>>" + path);
+			if (MainActivity.settings.showimage)
+				// 统一站内地址
+				path = path.replaceAll("(http://)?((out.|kiss.|www.)?"
+						+ "bitunion.org|btun.yi.org|10.1.10.253)",
+						MainActivity.settings.ROOTURL);
+			else if (!path.contains("smilies_") && !path.contains("bz_"))
+				path = "<img src='ic_action_picture'>";
 			message = message.replace(m.group(0), path);
 		}
 	}
@@ -174,7 +180,7 @@ public class BUPost extends BUContent {
 	}
 
 	public String getDateline() {
-		Date date = new Date(Integer.parseInt(dateline) * 1000L);
+		Date date = new Date(Long.parseLong(dateline) * 1000L);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
 				Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT+8"));
@@ -190,7 +196,7 @@ public class BUPost extends BUContent {
 			String attUrl = MainActivity.settings.ROOTURL + "/" + attachment;
 			m += "<br>附件：<br>";
 			String format = attachment.substring(attachment.length() - 4);
-			if (".jpg.png.bmp.gif".contains(format))
+			if (".jpg.png.bmp.gif".contains(format) && MainActivity.settings.showimage)
 				m += "<a href='" + attUrl + "'><img src='" + attUrl
 						+ "'></a>";
 			else
@@ -221,7 +227,7 @@ public class BUPost extends BUContent {
 	}
 
 	public ArrayList<BUQuote> getQuote() {
-		return quote;
+		return quotes;
 	}
 
 	public String toString() {
@@ -230,14 +236,15 @@ public class BUPost extends BUContent {
 
 	public String toQuote() {
 		String quote = message;
+		// Clear other quotes in message
+		quote = quote.replaceAll(
+				"<table width='90%' style='border:1px dashed #698fc7;font-size:[0-9]{1,2}" +
+				"px;margin:5px;'><tr><td>" + "[\\w\\W]*"
+						+ "</td></tr></table>", "");
 		
 		// Cut down the message if it's too long
-		if (quote.length() > 250)
-			quote = quote.substring(0, 250) + "......";
-		
-		// Clear other quotes in message
-		quote = quote.replaceAll("<table width='90%' style='border:1px dashed #698fc7;font-size:"+ MainActivity.settings.titletextsize +"px;margin:5px;'><tr><td>" +
-				"[.\n]*\n</td></tr></table>", "");
+				if (quote.length() > 250)
+					quote = quote.substring(0, 250) + "......";
 		
 		// Change <br> to \n
 		quote = quote.replace("<br>", "\n");
@@ -260,7 +267,10 @@ public class BUPost extends BUContent {
 		quote = Html.fromHtml(quote).toString();
 		quote = "[quote=" + getPid() + "][b]" + getAuthor() + "[/b] "
 				+ getDateline() + "\n" + quote + "[/quote]\n";
-		return quote;
+		if (!MainActivity.settings.referenceat)
+			return quote;
+		else
+			return quote + "[@]" + getAuthor() + "[/@]\n";
 	}
 	
 	public int getCount(){

@@ -13,6 +13,10 @@ public class BUAppSettings {
 	public String mSession;
 	public int mNetType;
 	public String ROOTURL;
+	
+	public boolean showsigature;
+	public boolean showimage;
+	public boolean referenceat;
 
 	public void setNetType(int net) {
 		mNetType = net;

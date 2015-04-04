@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,7 +28,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.TableLayout;
 import android.widget.TextView;
 
 public class UserInfoDialogFragment extends DialogFragment {
@@ -163,8 +159,8 @@ public class UserInfoDialogFragment extends DialogFragment {
 
 		@Override
 		protected void onPostExecute(Boolean result) {
-			updateImage();
-			super.onPostExecute(result);
+			if (getActivity() != null)
+				updateImage();
 		}
 
 	}
@@ -187,8 +183,7 @@ public class UserInfoDialogFragment extends DialogFragment {
 						MainActivity.settings.mUsername, "utf-8"));
 				postReq.put("session", MainActivity.settings.mSession);
 				postReq.put("uid", uid);
-				postMethod.setNetType(MainActivity.settings.mNetType);
-				return postMethod.sendPost(postMethod.REQ_PROFILE, postReq);
+				return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_PROFILE), postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			} catch (UnsupportedEncodingException e) {
@@ -214,7 +209,8 @@ public class UserInfoDialogFragment extends DialogFragment {
 			try {
 				BUUserInfo info = new BUUserInfo(
 						postMethod.jsonResponse.getJSONObject("memberinfo"));
-				setTextContent(info);
+				if (getActivity() != null)
+					setTextContent(info);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

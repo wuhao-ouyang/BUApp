@@ -10,27 +10,21 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import martin.app.bitunion.fragment.ForumFragment;
-import martin.app.bitunion.fragment.ThreadFragment;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.BUThread;
 import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.app.ProgressDialog;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -73,7 +67,6 @@ public class DisplayActivity extends FragmentActivity {
 
 	int forumId;
 	String forumName;
-	String session;
 
 	SparseArray<ArrayList<BUThread>> pageList = new SparseArray<ArrayList<BUThread>>(); // 所有帖子列表
 	// SparseArray<ForumFragment> fragmentList = new
@@ -94,7 +87,11 @@ public class DisplayActivity extends FragmentActivity {
 		Intent intent = getIntent();
 		forumId = intent.getIntExtra("fid", 27);
 		forumName = intent.getStringExtra("name");
-		session = MainActivity.settings.mSession;
+		
+		if (savedInstanceState != null && !savedInstanceState.isEmpty()) {
+			forumId = savedInstanceState.getInt("fid");
+			forumName = savedInstanceState.getString("name");
+		}
 
 		// Show the Up button in the action bar.
 		getActionBar().setTitle(forumName.replace("-- ", ""));
@@ -129,6 +126,14 @@ public class DisplayActivity extends FragmentActivity {
 //			mViewPager.setCurrentItem(currenpage);
 
 	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		// TODO states needs checked
+		outState.putInt("fid", forumId);
+		outState.putString("name", forumName);
+	}
 
 	public void readPage(int page) {
 		if (!pReqFlags.get(page)) {
@@ -159,16 +164,17 @@ public class DisplayActivity extends FragmentActivity {
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			finish();
-			return true;
+			break;
 		case R.id.action_refresh:
 			refreshCurrentPage();
-			return true;
+			break;
 		case R.id.action_newthread:
 			Intent intent = new Intent(DisplayActivity.this, NewthreadActivity.class);
 			intent.putExtra("action", "newthread");
 			intent.putExtra("forumname", forumName);
 			intent.putExtra("fid", forumId);
 			startActivity(intent);
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -275,7 +281,6 @@ public class DisplayActivity extends FragmentActivity {
 	class MyOnPageChangeListener implements OnPageChangeListener {
 
 		private int position;
-		private float percent;
 
 		@Override
 		public void onPageScrollStateChanged(int state) {
@@ -312,12 +317,7 @@ public class DisplayActivity extends FragmentActivity {
 
 		@Override
 		public void onPageScrolled(int pos, float per, int arg2) {
-//			 Log.v("onPageScrolled", "--position-->>>" + pos);
-//			 Log.v("onPageScrolled", "--percent-->>>" + percent);
-//			 Log.v("onPageScrolled", "--arg2-->>>" + arg2);
-
 			position = pos;
-			percent = per;
 		}
 
 		@Override
@@ -361,9 +361,9 @@ public class DisplayActivity extends FragmentActivity {
 					postReq.put("fid", forumId);
 					postReq.put("from", from);
 					postReq.put("to", to);
-					postMethod.setNetType(MainActivity.settings.mNetType);
-					netStat = postMethod.sendPost(postMethod.REQ_THREAD,
-							postReq);
+					netStat = postMethod.sendPost(BUAppUtils.getUrl(
+							MainActivity.settings.mNetType,
+							BUAppUtils.REQ_THREAD), postReq);
 					if (netStat != Result.SUCCESS)
 						return netStat;
 						pageContent = BUAppUtils.mergeJSONArray(pageContent,
@@ -438,8 +438,7 @@ public class DisplayActivity extends FragmentActivity {
 				postReq.put("username", URLEncoder.encode(
 						MainActivity.settings.mUsername, "utf-8"));
 				postReq.put("password", MainActivity.settings.mPassword);
-				postMethod.setNetType(MainActivity.settings.mNetType);
-				return postMethod.sendPost(postMethod.REQ_LOGGING, postReq);
+				return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			} catch (UnsupportedEncodingException e) {

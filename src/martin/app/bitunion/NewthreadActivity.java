@@ -100,7 +100,9 @@ public class NewthreadActivity extends Activity {
 			messagebox.setError("内容长度不能小于5");
 			return;
 		}
-		new NewContentTask(subject, message + BUAppUtils.CLIENTMESSAGETAG, fid).execute();
+		if (MainActivity.settings.showsigature)
+			message += BUAppUtils.CLIENTMESSAGETAG;
+		new NewContentTask(subject, message, fid).execute();
 	}
 	
 	private void sendMessage(String message) {
@@ -108,7 +110,9 @@ public class NewthreadActivity extends Activity {
 			messagebox.setError("回复不能为空");
 			return;
 		}
-		new NewContentTask(message + BUAppUtils.CLIENTMESSAGETAG, tid).execute();
+		if (MainActivity.settings.showsigature)
+			message += BUAppUtils.CLIENTMESSAGETAG;
+		new NewContentTask(message, tid).execute();
 	}
 	
 	class MyOnFocusChangeListener implements View.OnFocusChangeListener{
@@ -181,8 +185,7 @@ public class NewthreadActivity extends Activity {
 					postReq.put("tid", tid);
 					postReq.put("message", URLEncoder.encode(message, "utf-8"));
 					postReq.put("attachment", 0);
-					postMethod.setNetType(MainActivity.settings.mNetType);
-					return postMethod.sendPost(postMethod.NEWPOST, postReq);
+					return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.NEWPOST), postReq);
 				}
 				if (fid != 0){
 					postReq.put("action", "newthread");
@@ -193,8 +196,7 @@ public class NewthreadActivity extends Activity {
 					postReq.put("subject", URLEncoder.encode(subject, "utf-8"));
 					postReq.put("message", URLEncoder.encode(message, "utf-8"));
 					postReq.put("attachment", 0);
-					postMethod.setNetType(MainActivity.settings.mNetType);
-					return postMethod.sendPost(postMethod.NEWTHREAD, postReq);
+					return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.NEWTHREAD), postReq);
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();

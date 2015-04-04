@@ -24,10 +24,6 @@ import martin.app.bitunion.util.BUAppUtils.Result;
 
 public class PostMethod {
 
-	public String ROOTURL, BASEURL;
-	public String REQ_LOGGING, REQ_FORUM, REQ_THREAD, REQ_PROFILE, REQ_POST,
-			NEWPOST, NEWTHREAD, REQ_FID_TID_SUM;
-
 	public JSONObject jsonResponse = null;
 
 	public PostMethod() {
@@ -36,7 +32,7 @@ public class PostMethod {
 
 	public Result sendPost(String path, JSONObject jsonRequest) {
 		try {
-			if (path == NEWPOST || path == NEWTHREAD){
+			if (path.contains("/bu_newpost.php")){
 				HttpParams httpParams = new BasicHttpParams();
 				HttpConnectionParams.setConnectionTimeout(httpParams, 5000);
 				HttpConnectionParams.setSoTimeout(httpParams, 8000);
@@ -51,7 +47,6 @@ public class PostMethod {
 				if (response.getStatusLine().getStatusCode() == 200){
 					String serverResponse = getServerResponse(response.getEntity().getContent());
 					jsonResponse = new JSONObject(serverResponse);
-					Log.v("PostMethod", "serverResponse>>" + jsonResponse.toString());
 					if (jsonResponse.getString("result").equals("success"))
 						return Result.SUCCESS_EMPTY;
 					else
@@ -79,7 +74,7 @@ public class PostMethod {
 						getServerResponse(urlConnection.getInputStream()));
 				String result = jsonResponse.getString("result");
 				if (result.equals("success"))
-					if (jsonRequest.length() <= 1)
+					if (jsonResponse.length() <= 1)
 						return Result.SUCCESS_EMPTY;
 					else
 						return Result.SUCCESS;
@@ -100,7 +95,6 @@ public class PostMethod {
 
 	public String getServerResponse(InputStream inputStream)
 			throws UnsupportedEncodingException {
-		// TODO Auto-generated method stub
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		byte[] data = new byte[1024];
 		int len = 0;
@@ -112,28 +106,11 @@ public class PostMethod {
 				}
 				result = new String(outputStream.toByteArray());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				Log.e("PostMethod", "getServerResponse(): Transform error!");
 			}
 		}
 		return result;
-	}
-
-	public void setNetType(int net) {
-		if (net == BUAppUtils.BITNET) {
-			ROOTURL = "http://www.bitunion.org";
-		} else if (net == BUAppUtils.OUTNET) {
-			ROOTURL = "http://out.bitunion.org";
-		}
-		BASEURL = ROOTURL + "/open_api";
-		REQ_LOGGING = BASEURL + "/bu_logging.php";
-		REQ_FORUM = BASEURL + "/bu_forum.php";
-		REQ_THREAD = BASEURL + "/bu_thread.php";
-		REQ_PROFILE = BASEURL + "/bu_profile.php";
-		REQ_POST = BASEURL + "/bu_post.php";
-		REQ_FID_TID_SUM = BASEURL + "/bu_fid_tid.php";
-		NEWPOST = BASEURL + "/bu_newpost.php";
-		NEWTHREAD = BASEURL + "/bu_newpost.php";
 	}
 
 }

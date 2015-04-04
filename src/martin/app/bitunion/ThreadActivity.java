@@ -2,11 +2,7 @@ package martin.app.bitunion;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.Locale;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,6 +17,10 @@ import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -29,7 +29,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -45,12 +44,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.View.OnTouchListener;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
+import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -110,6 +107,13 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 		threadId = intent.getStringExtra("tid");
 		threadName = intent.getStringExtra("subject");
 		replies = Integer.parseInt(intent.getStringExtra("replies")) + 1;
+		
+		if (savedInstanceState != null && !savedInstanceState.isEmpty()) {
+			threadId = savedInstanceState.getString("tid");
+			threadName = savedInstanceState.getString("subject");
+			replies = savedInstanceState.getInt("replies");
+		}
+		
 		if (replies % BUAppUtils.POSTS_PER_PAGE == 0)
 			lastpage = replies / BUAppUtils.POSTS_PER_PAGE - 1;
 		else
@@ -165,6 +169,15 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 		readThreadPage(1);
 
 	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		// TODO Data needs to be stored
+		outState.putString("tid", threadId);
+		outState.putString("subject", threadName);
+		outState.putInt("replies", replies);
+	}
 
 	/**
 	 * Open a new thread to requesting data from server
@@ -200,15 +213,31 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			finish();
-			return true;
+			break;
 		case R.id.action_refresh:
 			refreshCurrentPage();
-			return true;
+			break;
 		case R.id.action_post:
 			if (!replyContainer.isShown())
 				replyContainer.setVisibility(View.VISIBLE);
 			else
 				replyContainer.setVisibility(View.GONE);
+			break;
+		case R.id.action_sharelink:
+			StringBuilder sb = new StringBuilder(threadName);
+			sb.append('\n');
+			sb.append(MainActivity.settings.ROOTURL);
+			sb.append("/viewthread.php?tid=");
+			sb.append(threadId);
+			
+			ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+			ClipData.Item cliptext = new ClipData.Item(sb.toString());
+			String[] mime = new String[1];
+			mime[0] = "text/plain";
+			ClipData clip = new ClipData("帖子链接", mime, cliptext);
+			clipboard.setPrimaryClip(clip);
+			showToast("帖子链接已经复制进剪切板");
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -238,7 +267,7 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 	}
 
 	/**
-	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+	 * A {@link FragmentStatePagerAdapter} that returns a fragment corresponding to
 	 * one of the sections/tabs/pages.
 	 */
 	public class ThreadPagerAdapter extends FragmentStatePagerAdapter {
@@ -363,7 +392,6 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 	class MyOnPageChangeListener implements OnPageChangeListener {
 
 		private int position;
-		private float percent;
 
 		@Override
 		public void onPageScrollStateChanged(int state) {
@@ -406,7 +434,6 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 		@Override
 		public void onPageScrolled(int pos, float per, int arg2) {
 			position = pos;
-			percent = per;
 		}
 
 		@Override
@@ -432,7 +459,7 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 			if (this.page != lastpage)
 				postsRemain = BUAppUtils.POSTS_PER_PAGE;
 			else
-				postsRemain = replies % BUAppUtils.POSTS_PER_PAGE;
+				postsRemain = replies % (BUAppUtils.POSTS_PER_PAGE+1);
 			int from = params[0] * BUAppUtils.POSTS_PER_PAGE;
 			int to;
 			Result netStat = Result.SUCCESS;
@@ -453,11 +480,11 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 					postReq.put("tid", threadId);
 					postReq.put("from", from);
 					postReq.put("to", to);
-					postMethod.setNetType(MainActivity.settings.mNetType);
-					netStat = postMethod.sendPost(postMethod.REQ_POST, postReq);
+					Log.d("Request", "Replies>> " + replies+ " from >> " + from + " to >>" + to);
+					netStat = postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_POST), postReq);
 					if (netStat != Result.SUCCESS)
 						return netStat;
-						pageContent = BUAppUtils.mergeJSONArray(pageContent,
+					pageContent = BUAppUtils.mergeJSONArray(pageContent,
 								postMethod.jsonResponse
 										.getJSONArray("postlist"));
 					postsRemain = postsRemain - 20;
@@ -489,7 +516,7 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 				Log.v("ThreadActivity", "success empty");
 				break;
 			case SUCCESS:
-				// Log.v("ThreadActivity", "raw jsonArray>>" + pageContent);
+//				 Log.v("ThreadActivity", "raw jsonArray>>" + pageContent);
 				postList.put(this.page, BUAppUtils.jsonToPostlist(pageContent, this.page));
 				Log.v("ThreadActivity", "Page loaded>>" + this.page);
 				Log.v("ThreadActivity", "Post length>>" + pageContent.length());
@@ -537,8 +564,7 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 				postReq.put("username", URLEncoder.encode(
 						MainActivity.settings.mUsername, "utf-8"));
 				postReq.put("password", MainActivity.settings.mPassword);
-				postMethod.setNetType(MainActivity.settings.mNetType);
-				return postMethod.sendPost(postMethod.REQ_LOGGING, postReq);
+				return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			} catch (UnsupportedEncodingException e) {
@@ -597,8 +623,7 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 						MainActivity.settings.mUsername, "utf-8"));
 				postReq.put("session", MainActivity.settings.mSession);
 				postReq.put("tid", threadId);
-				postMethod.setNetType(MainActivity.settings.mNetType);
-				return postMethod.sendPost(postMethod.REQ_FID_TID_SUM, postReq);
+				return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_FID_TID_SUM), postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			} catch (UnsupportedEncodingException e) {
@@ -670,7 +695,9 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, String message) {
 		Log.i("MyReplySubmitListener", "Reply sumitted>>" + message);
-		new NewPostTask(message + BUAppUtils.CLIENTMESSAGETAG).execute();
+		if (MainActivity.settings.showsigature)
+			message += BUAppUtils.CLIENTMESSAGETAG;
+		new NewPostTask(message).execute();
 	}
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog) {}
@@ -695,8 +722,7 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 				postReq.put("tid", threadId);
 				postReq.put("message", URLEncoder.encode(message, "utf-8"));
 				postReq.put("attachment", 0);
-				postMethod.setNetType(MainActivity.settings.mNetType);
-				return postMethod.sendPost(postMethod.NEWPOST, postReq);
+				return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.NEWPOST), postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			} catch (UnsupportedEncodingException e) {

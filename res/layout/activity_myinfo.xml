@@ -104,6 +104,7 @@
         android:layout_marginLeft="25dp"
         android:layout_marginRight="25dp"
         android:layout_marginTop="20dp"
-        android:text="签名：\n" />
+        android:text="签名：\n"
+        android:textColorLink="#00f" />
 
 </LinearLayout>

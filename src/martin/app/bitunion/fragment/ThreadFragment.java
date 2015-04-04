@@ -1,7 +1,6 @@
 package martin.app.bitunion.fragment;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import martin.app.bitunion.MainActivity;
 import martin.app.bitunion.ThreadActivity;
 import martin.app.bitunion.util.BUAppUtils;
@@ -11,7 +10,6 @@ import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -40,7 +38,6 @@ public class ThreadFragment extends Fragment {
 	private int POS_OFFSET;
 	private int PAGENUM;
 	private ArrayList<BUPost> postlist = new ArrayList<BUPost>();
-	private HashMap<String, Drawable> imgCache = new HashMap<String, Drawable>();
 	WebView singlepageView = null;
 
 	@Override
@@ -68,7 +65,7 @@ public class ThreadFragment extends Fragment {
 		singlepageView.getSettings().setJavaScriptEnabled(true);
 		singlepageView.addJavascriptInterface(new JSInterface(getActivity()), "JSInterface");
 		singlepageView.loadDataWithBaseURL("file:///android_res/drawable/", content, "text/html", "utf-8", null);
-		Log.i("ThreadFragment", "WebView created!>>" + PAGENUM);
+		Log.i("ThreadFragment", "WebView created!>>" + PAGENUM + ", Posts >>" + postlist.size());
 		return singlepageView;
 	}
 	
@@ -91,10 +88,11 @@ public class ThreadFragment extends Fragment {
 		return content;
 	}
 	
+	@SuppressLint("HandlerLeak")
 	private Handler handler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
 			if (msg.what == 0) {
-				BUPost post = postlist.get(msg.arg1 - 1);
+				BUPost post = postlist.get(msg.arg1 - 1 - PAGENUM*BUAppUtils.POSTS_PER_PAGE);
 				((ThreadActivity) ThreadFragment.this.getActivity())
 						.setQuoteText(post);
 			}

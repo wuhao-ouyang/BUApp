@@ -51,47 +51,49 @@ public class BUAppUtils {
 	public static final String POSTEXECUTING = "消息发送中...";
 	public static final String USERNAME = "用户";
 	public static final String LOGINSUCCESS = "登录成功";
-	public static final String CLIENTMESSAGETAG = "\n\n发送自 [url=www.bitunion.org][b]BUApp Android[/b][/url]";
+	public static final String CLIENTMESSAGETAG = "\n\n发送自 [url=https://play.google.com/store/apps/details?id=martin.app.bitunion][b]BUApp Android[/b][/url]";
 
-	public String ROOTURL, BASEURL;
-	public String REQ_LOGGING, REQ_FORUM, REQ_THREAD, REQ_PROFILE, REQ_POST,
-			NEWPOST, NEWTHREAD, REQ_FID_TID_SUM;
-
-	public String mUsername;
-	public String mPassword;
-	public String mSession;
-	public int mNetType;
-
+	public static final int REQ_LOGGING = 0;
+	public static final int REQ_FORUM = 1;
+	public static final int REQ_THREAD = 2;
+	public static final int REQ_PROFILE = 3;
+	public static final int REQ_POST = 4;
+	public static final int NEWPOST = 5;
+	public static final int NEWTHREAD = 6;
+	public static final int REQ_FID_TID_SUM = 7;
+	
 	public enum Result {
 		SUCCESS, // 返回数据成功，result字段为success
 		FAILURE, // 返回数据失败，result字段为failure
 		SUCCESS_EMPTY, // 返回数据成功，但字段没有数据
-		SESSIONLOGIN, // obsolete
 		NETWRONG, // 没有返回数据
-		NOTLOGIN, // api还未登录
 		UNKNOWN;
 	};
-
-	public BUAppUtils() {
-		// TODO Auto-generated constructor stub
-	}
-
-	public void setNetType(int net) {
-		mNetType = net;
-		if (net == BITNET) {
-			ROOTURL = "http://www.bitunion.org";
-		} else if (net == OUTNET) {
-			ROOTURL = "http://out.bitunion.org";
-		}
+	
+	public static String getUrl(int net, int urlType){
+		String ROOTURL, BASEURL;
+		
+		ROOTURL = net == BITNET ? "http://www.bitunion.org" : "http://out.bitunion.org";
 		BASEURL = ROOTURL + "/open_api";
-		REQ_LOGGING = BASEURL + "/bu_logging.php";
-		REQ_FORUM = BASEURL + "/bu_forum.php";
-		REQ_THREAD = BASEURL + "/bu_thread.php";
-		REQ_PROFILE = BASEURL + "/bu_profile.php";
-		REQ_POST = BASEURL + "/bu_post.php";
-		REQ_FID_TID_SUM = BASEURL + "/bu_fid_tid.php";
-		NEWPOST = BASEURL + "/bu_newpost.php";
-		NEWTHREAD = BASEURL + "/bu_newpost.php";
+		if (urlType == REQ_LOGGING)
+			return BASEURL + "/bu_logging.php";
+		if (urlType == REQ_FORUM)
+			return BASEURL + "/bu_forum.php";
+		if (urlType == REQ_THREAD)
+			return BASEURL + "/bu_thread.php";
+		if (urlType == REQ_PROFILE) 
+			return BASEURL + "/bu_profile.php";
+		if (urlType == REQ_POST)
+			return BASEURL + "/bu_post.php";
+		if (urlType == REQ_FID_TID_SUM) 
+			return BASEURL + "/bu_fid_tid.php";
+		if (urlType == NEWPOST)
+			return BASEURL + "/bu_newpost.php";
+		if (urlType == NEWTHREAD)
+			return BASEURL + "/bu_newpost.php";
+		Log.e("BUAppUtils", "getUrl Error!");
+		return "";
+		
 	}
 
 	public static JSONArray mergeJSONArray(JSONArray array1, JSONArray array2)
@@ -110,7 +112,7 @@ public class BUAppUtils {
 			try {
 				list.add(new BUThread(array.getJSONObject(i)));
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
+				Log.e("JSONError", "Error>>\n" + array.toString());
 				e.printStackTrace();
 			}
 		// Log.v("page", "array parsed");
@@ -124,7 +126,7 @@ public class BUAppUtils {
 			try {
 				list.add(new BUPost(array.getJSONObject(i), i + offset));
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
+				Log.e("JSONError", "Error>>\n" + array.toString());
 				e.printStackTrace();
 			}
 		// Log.v("page", "array parsed");
@@ -136,6 +138,8 @@ public class BUAppUtils {
 		if (imagepath.contains("bitunion.org"))
 			if (imagepath.contains(".php?"))
 				return null;
+		if (!MainActivity.settings.showimage)
+			return null;
 		
 		InputStream inputStream = null;
 		URL url = new URL(imagepath);
@@ -274,13 +278,14 @@ public static class HtmlImageGetter implements Html.ImageGetter {
 
 			private Drawable drawable;
 
+			@SuppressWarnings("deprecation")
 			public URLDrawable(Drawable defaultDraw) {
 				setDrawable(defaultDraw);
 			}
 
 			private void setDrawable(Drawable ndrawable) {
 				drawable = ndrawable;
-				float dpi = MainActivity.PIXDENSITY;
+//				float dpi = MainActivity.PIXDENSITY;
 				float scalingFactor = (float) htmlTextView.getMeasuredWidth()
 						/ drawable.getIntrinsicWidth();
 				if (drawable.getIntrinsicWidth() < 100) {

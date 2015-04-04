@@ -202,8 +202,9 @@ public class LoginActivity extends Activity {
 				postReq.put("action", "login");
 				postReq.put("username", URLEncoder.encode(mUsername, "utf-8"));
 				postReq.put("password", mPassword);
-				postMethod.setNetType(mNetType);
-				return postMethod.sendPost(postMethod.REQ_LOGGING, postReq);
+				return postMethod.sendPost(
+						BUAppUtils.getUrl(MainActivity.settings.mNetType,
+								BUAppUtils.REQ_LOGGING), postReq);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

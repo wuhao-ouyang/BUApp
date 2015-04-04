@@ -136,7 +136,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingBottom="3sp"
-                    android:text="签名：" />
+                    android:text="签名："
+                    android:textColorLink="#00f" />
             </LinearLayout>
         </FrameLayout>
     </ScrollView>

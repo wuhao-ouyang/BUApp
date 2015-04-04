@@ -3,6 +3,8 @@ package martin.app.bitunion.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.util.Log;
+
 public class BUQuote extends BUContent {
 
 	private String author;
@@ -14,7 +16,7 @@ public class BUQuote extends BUContent {
 		this.postdate = "";
 		this.message = unparsed;
 		Pattern p = Pattern
-				.compile("<b>([^<]+)</b> ([0-9]{4}-[0-9]{1,2}-[0-9]{1,2} [0-9]{2}:[0-9]{2}( (A|P)M)*)");
+				.compile("<b>([^<]+)</b> (\\d{4}-\\d{1,2}-\\d{1,2} \\d{2}:\\d{2}( (A|P)M)*)");
 		Matcher m = p.matcher(this.message);
 		if (m.find()) {
 			this.author = m.group(1);
@@ -43,6 +45,6 @@ public class BUQuote extends BUContent {
 	}
 
 	public String toString() {
-		return "引用:\t" + author + "\t\t" + postdate + "<br>" + message;
+		return "引用:\t" + author + "\t\t" + postdate + message;
 	}
 }

@@ -32,20 +32,19 @@ import android.support.v4.app.FragmentActivity;
 public class MyinfoActivity extends FragmentActivity implements
 		ConfirmDialogListener {
 
-	ImageView mAvatar;
-	TextView mUsername;
-	TextView mGroup;
-	TextView mCredit;
-	TextView mThreadnum;
-	TextView mPostnum;
-	TextView mRegdate;
-	TextView mLastactive;
-	TextView mEmail;
-	TextView mSignt;
+	private ImageView mAvatar;
+	private TextView mUsername;
+	private TextView mGroup;
+	private TextView mCredit;
+	private TextView mThreadnum;
+	private TextView mPostnum;
+	private TextView mRegdate;
+	private TextView mLastactive;
+	private TextView mEmail;
+	private TextView mSignt;
 
-	ProgressDialog progressDialog = null;
-
-	ConfirmDialogFragment mAlertFragment = null;
+	private ProgressDialog progressDialog = null;
+	private ConfirmDialogFragment mAlertFragment = null;
 
 	private static Drawable imageDrawable;
 
@@ -53,6 +52,7 @@ public class MyinfoActivity extends FragmentActivity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_myinfo);
+		
 		// Show the Up button in the action bar.
 		setupActionBar();
 
@@ -168,8 +168,9 @@ public class MyinfoActivity extends FragmentActivity implements
 				postReq.put("session", MainActivity.settings.mSession);
 				postReq.put("queryusername", URLEncoder.encode(
 						MainActivity.settings.mUsername, "utf-8"));
-				postMethod.setNetType(MainActivity.settings.mNetType);
-				return postMethod.sendPost(postMethod.REQ_PROFILE, postReq);
+				return postMethod.sendPost(
+						BUAppUtils.getUrl(MainActivity.settings.mNetType,
+								BUAppUtils.REQ_PROFILE), postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			} catch (UnsupportedEncodingException e) {
@@ -271,8 +272,7 @@ public class MyinfoActivity extends FragmentActivity implements
 				postReq.put("username", URLEncoder.encode(
 						MainActivity.settings.mUsername, "utf-8"));
 				postReq.put("password", MainActivity.settings.mPassword);
-				postMethod.setNetType(MainActivity.settings.mNetType);
-				return postMethod.sendPost(postMethod.REQ_LOGGING, postReq);
+				return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			} catch (UnsupportedEncodingException e) {
@@ -322,8 +322,7 @@ public class MyinfoActivity extends FragmentActivity implements
 						MainActivity.settings.mUsername, "utf-8"));
 				postReq.put("password", MainActivity.settings.mPassword);
 				postReq.put("session", MainActivity.settings.mSession);
-				postMethod.setNetType(MainActivity.settings.mNetType);
-				return postMethod.sendPost(postMethod.REQ_LOGGING, postReq);
+				return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			} catch (UnsupportedEncodingException e) {
