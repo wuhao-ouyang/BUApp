@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.support.v7.app.ActionBarActivity;
 import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -21,7 +22,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.support.v4.app.NavUtils;
 
-public class SettingsActivity extends Activity {
+public class SettingsActivity extends ActionBarActivity {
 
     private TextView titleTextView;
     private SeekBar titleSeekBar;
@@ -193,7 +194,7 @@ public class SettingsActivity extends Activity {
      */
     private void setupActionBar() {
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
     }
 

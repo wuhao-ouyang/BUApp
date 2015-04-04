@@ -19,6 +19,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
@@ -33,7 +34,7 @@ import android.view.MenuItem;
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
-public class LoginActivity extends Activity {
+public class LoginActivity extends ActionBarActivity {
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -60,7 +61,7 @@ public class LoginActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        getActionBar().setTitle("登录");
+        getSupportActionBar().setTitle("登录");
         setupActionBar();
 
         readConfig();
@@ -87,7 +88,6 @@ public class LoginActivity extends Activity {
 //		mLoginStatusView = findViewById(R.id.login_status);
 //		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
         progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
-        progressDialog.setMessage("登录中...");
 
         findViewById(R.id.sign_in_button).setOnClickListener(
                 new View.OnClickListener() {
@@ -105,7 +105,7 @@ public class LoginActivity extends Activity {
     private void setupActionBar() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             // Show the Up button in the action bar.
-            getActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 

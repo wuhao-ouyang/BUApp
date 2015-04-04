@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.support.v7.app.ActionBarActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -29,7 +30,7 @@ import android.widget.Toast;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 
-public class MyinfoActivity extends FragmentActivity implements
+public class MyinfoActivity extends ActionBarActivity implements
         ConfirmDialogListener {
 
     private ImageView mAvatar;
@@ -76,7 +77,6 @@ public class MyinfoActivity extends FragmentActivity implements
         if (MainActivity.settings.mSession != null
                 && !MainActivity.settings.mSession.isEmpty()) {
             progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
-            progressDialog.setMessage("读取中...");
             progressDialog.show();
             new MyinfoReadTask().execute();
         } else
@@ -211,8 +211,8 @@ public class MyinfoActivity extends FragmentActivity implements
      * Set up the {@link android.app.ActionBar}.
      */
     private void setupActionBar() {
-        getActionBar().setTitle("我的联盟");
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("我的联盟");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override

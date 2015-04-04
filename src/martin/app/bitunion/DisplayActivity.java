@@ -26,6 +26,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
@@ -39,7 +40,7 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-public class DisplayActivity extends FragmentActivity {
+public class DisplayActivity extends ActionBarActivity {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -92,9 +93,9 @@ public class DisplayActivity extends FragmentActivity {
         }
 
         // Show the Up button in the action bar.
-        getActionBar().setTitle(forumName.replace("-- ", ""));
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setDisplayShowHomeEnabled(false);
+        getSupportActionBar().setTitle(forumName.replace("-- ", ""));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(false);
 
         // mPagerAdapter = new MyPagerAdapter();
         mPagerAdapter = new ThreadsPagerAdapter(getSupportFragmentManager());

@@ -18,6 +18,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.support.v7.app.ActionBarActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -35,7 +36,9 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+import com.idunnololz.widgets.AnimatedExpandableListView;
+
+public class MainActivity extends ActionBarActivity {
 
     public static int SCREENWIDTH;
     public static int SCREENHEIGHT;
@@ -62,10 +65,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.activity_main);
 
-        getActionBar().setTitle("北理FTP联盟");
+        getSupportActionBar().setTitle("北理FTP联盟");
 
         Point size = new Point();
         WindowManager w = getWindowManager();
@@ -254,7 +256,7 @@ public class MainActivity extends Activity {
     }
 
     // ExpandableListView的数据接口
-    private class ForumListAdapter extends BaseExpandableListAdapter {
+    private class ForumListAdapter extends AnimatedExpandableListView.AnimatedExpandableListAdapter {
 
         @Override
         public Object getChild(int groupPosition, int childPosition) {
@@ -267,11 +269,14 @@ public class MainActivity extends Activity {
         }
 
         @Override
-        public View getChildView(int groupPosition, int childPosition,
+        public View getRealChildView(int groupPosition, int childPosition,
                                  boolean isLastChild, View convertView, ViewGroup parent) {
-            TextView textView = new TextView(MainActivity.this);
-            textView.setBackgroundColor(getResources().getColor(
-                    R.color.blue_light));
+            TextView textView;
+            if (convertView == null || !(convertView instanceof TextView))
+                textView = new TextView(MainActivity.this);
+            else
+                textView = (TextView) convertView;
+            textView.setBackgroundResource(R.drawable.ripple_main_row_click);
             if (fArrayList.get(groupPosition).get(childPosition).getName().contains("--"))
                 textView.setTextSize(settings.titletextsize + 2);
             else
@@ -280,34 +285,6 @@ public class MainActivity extends Activity {
             textView.setText(fArrayList.get(groupPosition).get(childPosition)
                     .getName());
             textView.setTag(fArrayList.get(groupPosition).get(childPosition));
-            // Log.v("martin", Integer.toString(textView.getId()));
-            // 触摸点击反馈，按下时变色，上下滑动或松开则恢复
-            textView.setOnTouchListener(new OnTouchListener() {
-
-                double y;
-
-                @Override
-                public boolean onTouch(View v, MotionEvent motion) {
-                    if (motion.getAction() == MotionEvent.ACTION_DOWN) {
-                        v.setBackgroundColor(getResources().getColor(
-                                R.color.blue_view_selected));
-                        y = motion.getY();
-                    } else if (motion.getAction() == MotionEvent.ACTION_UP
-                            || motion.getAction() == MotionEvent.ACTION_CANCEL) {
-                        v.setBackgroundColor(getResources().getColor(
-                                R.color.blue_light));
-                        return false;
-                    } else if (motion.getAction() == MotionEvent.ACTION_MOVE) {
-                        double disMoved;
-                        disMoved = Math.abs(y - motion.getY());
-                        if (disMoved > 5) {
-                            v.setBackgroundColor(getResources().getColor(
-                                    R.color.blue_light));
-                        }
-                    }
-                    return false;
-                }
-            });
             // 注册OnClick事件，触摸点击转至DisplayActivity
             textView.setOnClickListener(new OnClickListener() {
 
@@ -333,7 +310,7 @@ public class MainActivity extends Activity {
         }
 
         @Override
-        public int getChildrenCount(int groupPosition) {
+        public int getRealChildrenCount(int groupPosition) {
             return fArrayList.get(groupPosition).size();
         }
 
@@ -356,8 +333,7 @@ public class MainActivity extends Activity {
         public View getGroupView(int groupPosition, boolean isExpanded,
                                  View convertView, ViewGroup parent) {
             final TextView textView = new TextView(MainActivity.this);
-            textView.setBackgroundColor(getResources().getColor(
-                    R.color.blue_dark));
+            textView.setBackgroundColor(getResources().getColor(R.color.blue_dark));
             textView.setTextSize(settings.titletextsize + 2 + 4 + 5);
             textView.setPadding(60, 10, 0, 10);
             textView.setText(groupList.get(groupPosition));

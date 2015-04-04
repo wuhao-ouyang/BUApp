@@ -31,6 +31,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
@@ -52,49 +53,49 @@ import android.widget.Toast;
  * @author Strider_oy
  *
  */
-public class ThreadActivity extends FragmentActivity implements ConfirmDialogListener {
+public class ThreadActivity extends ActionBarActivity implements ConfirmDialogListener {
 
 
-    ThreadPagerAdapter mThreadAdapter;
+    private ThreadPagerAdapter mThreadAdapter;
 
     /**
      * The {@link ViewPager} that will host the section contents.
      */
-    ViewPager mViewPager;
-    PagerTitleStrip mPagerTitleStrip;
-    View mReadingStatus;
-    LayoutInflater inflater = null;
-    ProgressDialog progressDialog = null;
-    LinearLayout replyContainer = null;
-    EditText replyMessage = null;
+    private ViewPager mViewPager;
+    private PagerTitleStrip mPagerTitleStrip;
+    private View mReadingStatus;
+    private LayoutInflater inflater = null;
+    private ProgressDialog progressDialog = null;
+    private LinearLayout replyContainer = null;
+    private EditText replyMessage = null;
     /**
      * Marking if current page is refreshing, used to notify the activity to
      * update its view after having new data ready.
      */
-    boolean refreshingCurrentPage = false;
+    private boolean refreshingCurrentPage = false;
 
-    String threadId;
-    String threadName;
+    private String threadId;
+    private String threadName;
 
     /**
      * Posts list of current thread, including all pages even not been
      * initialized in ViewPager.
      */
-    SparseArray<ArrayList<BUPost>> postList = new SparseArray<ArrayList<BUPost>>(); // 所有回复列表
+    private SparseArray<ArrayList<BUPost>> postList = new SparseArray<ArrayList<BUPost>>(); // 所有回复列表
     /**
      * Flag indicates whether the page is requesting or not
      */
-    SparseBooleanArray tReqFlags = new SparseBooleanArray(); // 是否正在读取该页回复列表
-    int lastpage, replies; // 当前帖子总页数，总回复数
-    int currentpage = 0; // 当前所在页数
+    private SparseBooleanArray tReqFlags = new SparseBooleanArray(); // 是否正在读取该页回复列表
+    private int lastpage, replies; // 当前帖子总页数，总回复数
+    private int currentpage = 0; // 当前所在页数
     /**
      * Maximum refresh attempts of session
      */
-    int refreshCnt = 2; // 刷新session最大次数
+    private int refreshCnt = 2; // 刷新session最大次数
     /**
      * Flag indicates if session refreshing task is running
      */
-    boolean refreshFlag = false; // session是否正在刷新
+    private boolean refreshFlag = false; // session是否正在刷新
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,8 +120,8 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
         Log.v("ThreadActivity", "lastpage>>>>>" + lastpage);
 
         // Setup the action bar.
-        getActionBar().setTitle(threadName);
-        getActionBar().setDisplayShowHomeEnabled(false);
+        getSupportActionBar().setTitle(threadName);
+        getSupportActionBar().setDisplayShowHomeEnabled(false);
 
         // Get reply View container and hide for current
         replyContainer = (LinearLayout) findViewById(R.id.reply_layout);
@@ -159,7 +160,6 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
 
         // Progress dialog indicating reading process
         progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
-        progressDialog.setMessage("读取中...");
         progressDialog.show();
 
         // Read first two page.
@@ -193,7 +193,6 @@ public class ThreadActivity extends FragmentActivity implements ConfirmDialogLis
      * current page
      */
     private void refreshCurrentPage() {
-        progressDialog.setMessage("刷新中...");
         progressDialog.show();
         // 请求当前帖子总楼数
         new RefreshingTask().execute();

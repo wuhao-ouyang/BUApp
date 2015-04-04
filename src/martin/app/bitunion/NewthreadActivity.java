@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,7 +23,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 
-public class NewthreadActivity extends Activity {
+public class NewthreadActivity extends ActionBarActivity {
 
     private EditText subjectbox;
     private EditText messagebox;
@@ -132,8 +133,8 @@ public class NewthreadActivity extends Activity {
      */
     private void setupActionBar() {
 
-        getActionBar().setTitle(title);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(title);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
     }
 
