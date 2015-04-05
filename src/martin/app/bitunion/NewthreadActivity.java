@@ -101,7 +101,7 @@ public class NewthreadActivity extends ActionBarActivity {
             messagebox.setError("内容长度不能小于5");
             return;
         }
-        if (MainActivity.settings.showsigature)
+        if (BUApplication.settings.showsigature)
             message += BUAppUtils.CLIENTMESSAGETAG;
         new NewContentTask(subject, message, fid).execute();
     }
@@ -111,7 +111,7 @@ public class NewthreadActivity extends ActionBarActivity {
             messagebox.setError("回复不能为空");
             return;
         }
-        if (MainActivity.settings.showsigature)
+        if (BUApplication.settings.showsigature)
             message += BUAppUtils.CLIENTMESSAGETAG;
         new NewContentTask(message, tid).execute();
     }
@@ -181,23 +181,23 @@ public class NewthreadActivity extends ActionBarActivity {
                 if (tid != null && !tid.isEmpty()) {
                     postReq.put("action", "newreply");
                     postReq.put("username", URLEncoder.encode(
-                            MainActivity.settings.mUsername, "utf-8"));
-                    postReq.put("session", MainActivity.settings.mSession);
+                            BUApplication.settings.mUsername, "utf-8"));
+                    postReq.put("session", BUApplication.settings.mSession);
                     postReq.put("tid", tid);
                     postReq.put("message", URLEncoder.encode(message, "utf-8"));
                     postReq.put("attachment", 0);
-                    return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.NEWPOST), postReq);
+                    return postMethod.sendPost(BUAppUtils.getUrl(BUApplication.settings.mNetType, BUAppUtils.NEWPOST), postReq);
                 }
                 if (fid != 0){
                     postReq.put("action", "newthread");
                     postReq.put("username", URLEncoder.encode(
-                            MainActivity.settings.mUsername, "utf-8"));
-                    postReq.put("session", MainActivity.settings.mSession);
+                            BUApplication.settings.mUsername, "utf-8"));
+                    postReq.put("session", BUApplication.settings.mSession);
                     postReq.put("fid", fid);
                     postReq.put("subject", URLEncoder.encode(subject, "utf-8"));
                     postReq.put("message", URLEncoder.encode(message, "utf-8"));
                     postReq.put("attachment", 0);
-                    return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.NEWTHREAD), postReq);
+                    return postMethod.sendPost(BUAppUtils.getUrl(BUApplication.settings.mNetType, BUAppUtils.NEWTHREAD), postReq);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();

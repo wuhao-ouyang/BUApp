@@ -48,18 +48,18 @@ public class SettingsActivity extends ActionBarActivity {
         // Show the Up button in the action bar.
         setupActionBar();
 
-        if (MainActivity.PIXDENSITY > DisplayMetrics.DENSITY_HIGH) {
+        if (BUApplication.PIXDENSITY > DisplayMetrics.DENSITY_HIGH) {
             RECOMMENDTITESIZE = 14;
             RECOMMENDCONTENTSIZE = 14;
         } else {
             RECOMMENDTITESIZE = 12;
             RECOMMENDCONTENTSIZE = 12;
         }
-        titletextsize = MainActivity.settings.titletextsize;
-        contenttextsize = MainActivity.settings.contenttextsize;
-        sig = MainActivity.settings.showsigature;
-        img = MainActivity.settings.showimage;
-        ref = MainActivity.settings.referenceat;
+        titletextsize = BUApplication.settings.titletextsize;
+        contenttextsize = BUApplication.settings.contenttextsize;
+        sig = BUApplication.settings.showsigature;
+        img = BUApplication.settings.showimage;
+        ref = BUApplication.settings.referenceat;
 
         TextView mVersion = (TextView) findViewById(R.id.settings_version);
         try {
@@ -78,7 +78,7 @@ public class SettingsActivity extends ActionBarActivity {
         referat = (CheckBox) findViewById(R.id.setting_refat);
         nettypeSwitch = (Switch) findViewById(R.id.netswitch);
 
-        nettypeSwitch.setChecked(MainActivity.settings.mNetType == 1);
+        nettypeSwitch.setChecked(BUApplication.settings.mNetType == 1);
         titleSeekBar
                 .setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
@@ -134,7 +134,7 @@ public class SettingsActivity extends ActionBarActivity {
                     public void onCheckedChanged(CompoundButton buttonView,
                                                  boolean isChecked) {
                         Log.i("SettingsActivity", "外网模式>>" + isChecked);
-                        MainActivity.settings.mNetType = isChecked ? 1 : 0;
+                        BUApplication.settings.mNetType = isChecked ? 1 : 0;
                     }
                 });
 
@@ -171,11 +171,11 @@ public class SettingsActivity extends ActionBarActivity {
     }
 
     protected void onDestroy() {
-        MainActivity.settings.titletextsize = titletextsize;
-        MainActivity.settings.contenttextsize = contenttextsize;
-        MainActivity.settings.showsigature = sig;
-        MainActivity.settings.showimage = img;
-        MainActivity.settings.referenceat = ref;
+        BUApplication.settings.titletextsize = titletextsize;
+        BUApplication.settings.contenttextsize = contenttextsize;
+        BUApplication.settings.showsigature = sig;
+        BUApplication.settings.showimage = img;
+        BUApplication.settings.referenceat = ref;
         SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
         SharedPreferences.Editor editor = config.edit();
         editor.putInt("titletextsize", titletextsize);

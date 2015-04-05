@@ -70,8 +70,7 @@ public class PostMethod {
             OutputStream outputStream = urlConnection.getOutputStream();
             outputStream.write(postdata);
             if (urlConnection.getResponseCode() == 200) {
-                this.jsonResponse = new JSONObject(
-                        getServerResponse(urlConnection.getInputStream()));
+                this.jsonResponse = new JSONObject(getServerResponse(urlConnection.getInputStream()));
                 String result = jsonResponse.getString("result");
                 if (result.equals("success"))
                     if (jsonResponse.length() <= 1)
@@ -81,13 +80,16 @@ public class PostMethod {
                 else if (result.equals("fail"))
                     return Result.FAILURE;
             } else {
+                try {
+                    jsonResponse = new JSONObject(getServerResponse(urlConnection.getInputStream()));
+                } catch (JSONException e) {
+                }
                 return Result.NETWRONG;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("PostMethod", "IOException while post", e);
             return Result.NETWRONG;
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return Result.UNKNOWN;

@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
@@ -30,16 +31,14 @@ import android.widget.Toast;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.view.MenuItem;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+
 /**
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
 public class LoginActivity extends ActionBarActivity {
-
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mLoginTask = null;
 
     // Values for username and password at the time of the login attempt.
     String mUsername;
@@ -133,10 +132,6 @@ public class LoginActivity extends ActionBarActivity {
      * errors are presented and no actual login attempt is made.
      */
     public void attemptLogin() {
-        if (mLoginTask != null) {
-            return;
-        }
-
         // Reset errors.
         mUsernameView.setError(null);
         mPasswordView.setError(null);
@@ -171,15 +166,33 @@ public class LoginActivity extends ActionBarActivity {
             // perform the user login attempt.
 //			mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
             showProgress(true);
-            mLoginTask = new UserLoginTask();
-            mLoginTask.execute((Void) null);
+            BUApiHelper.tryLogin(new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    switch (BUApiHelper.getResult(response)) {
+                        case SUCCESS:
+                        case SUCCESS_EMPTY:
+                            saveConfig();
+                            mSession = response.optString("session");
+                            Intent intent = new Intent();
+                            intent.putExtra("session", mSession);
+                            setResult(RESULT_OK, intent);
+                            finish();
+                        default:
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+
+                }
+            });
         }
     }
 
     /**
      * Shows the progress UI and hides the login form.
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
         if (show)
             progressDialog.show();
@@ -187,73 +200,10 @@ public class LoginActivity extends ActionBarActivity {
             progressDialog.dismiss();
     }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-
-        @Override
-        protected Result doInBackground(Void... params) {
-            JSONObject postReq = new JSONObject();
-            try {
-                postReq.put("action", "login");
-                postReq.put("username", URLEncoder.encode(mUsername, "utf-8"));
-                postReq.put("password", mPassword);
-                return postMethod.sendPost(
-                        BUAppUtils.getUrl(MainActivity.settings.mNetType,
-                                BUAppUtils.REQ_LOGGING), postReq);
-            } catch (JSONException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return Result.UNKNOWN;
-        }
-
-        @Override
-        protected void onPostExecute(final Result result) {
-            mLoginTask = null;
-            showProgress(false);
-
-            switch (result) {
-                default:
-                    return;
-                case FAILURE:
-                    Toast.makeText(LoginActivity.this, BUAppUtils.LOGINFAIL, Toast.LENGTH_SHORT)
-                            .show();
-                    return;
-                case NETWRONG:
-                    Toast.makeText(LoginActivity.this, BUAppUtils.NETWRONG, Toast.LENGTH_SHORT)
-                            .show();
-                    return;
-                case SUCCESS:
-            }
-            saveConfig();
-            try {
-                mSession = postMethod.jsonResponse.getString("session");
-                Intent intent = new Intent();
-                intent.putExtra("session", mSession);
-                setResult(BUAppUtils.MAIN_RESULT, intent);
-            } catch (JSONException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            finish();
-        }
-
-        @Override
-        protected void onCancelled() {
-            mLoginTask = null;
-            showProgress(false);
-        }
-    }
-
     public void saveConfig() {
+        BUApplication.settings.mUsername = mUsername;
+        BUApplication.settings.mPassword = mPassword;
+        BUApplication.settings.mNetType = mNetType;
         SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
         SharedPreferences.Editor editor = config.edit();
         editor.putInt("nettype", mNetType);

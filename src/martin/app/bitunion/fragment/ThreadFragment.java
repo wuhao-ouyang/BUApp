@@ -1,10 +1,16 @@
 package martin.app.bitunion.fragment;
 
 import java.util.ArrayList;
-import martin.app.bitunion.MainActivity;
+
+import martin.app.bitunion.BUApplication;
+import martin.app.bitunion.R;
 import martin.app.bitunion.ThreadActivity;
+import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUPost;
+import martin.app.bitunion.util.DataParser;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,59 +28,142 @@ import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.ProgressBar;
+import android.widget.Toast;
+
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 
 /**
  * A dummy fragment representing a section of the app, but that simply displays
  * dummy text.
  */
 @SuppressLint({ "JavascriptInterface", "SetJavaScriptEnabled" })
-public class ThreadFragment extends Fragment {
+public class ThreadFragment extends Fragment implements Updateable {
 
-    ThreadFragment mFragment;
+    public static final String ARG_THREAD_ID = "ThreadFragment.tid";
+    public static final String ARG_PAGE_NUMBER = "ThreadFragment.page";
 
-    /**
-     * The fragment argument representing the section number for this fragment.
-     */
-    public static final String ARG_PAGE_NUMBER = "page";
     private int POS_OFFSET;
-    private int PAGENUM;
+    private int mTid;
+    private int mPageNum;
     private ArrayList<BUPost> postlist = new ArrayList<BUPost>();
-    WebView singlepageView = null;
+
+    private SwipeRefreshLayout mRefreshLayout;
+    private WebView singlepageView = null;
+    private ProgressBar mSpinner;
+
+    private int mReqCount;
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("offset", POS_OFFSET);
+        outState.putInt("tid", mTid);
+        outState.putInt("page_num", mPageNum);
+        outState.putParcelableArrayList("post_list", postlist);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            POS_OFFSET = savedInstanceState.getInt("offset");
+            mTid = savedInstanceState.getInt("tid");
+            mPageNum = savedInstanceState.getInt("page_num");
+            postlist = savedInstanceState.getParcelableArrayList("post_list");
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        mTid = getArguments().getInt(ARG_THREAD_ID);
+        mPageNum = getArguments().getInt(ARG_PAGE_NUMBER);
+        POS_OFFSET = mPageNum * BUAppUtils.POSTS_PER_PAGE + 1;
 
-        MainActivity.settings.setNetType(MainActivity.settings.mNetType);
+        View root = inflater.inflate(R.layout.fragment_display_posts, container, false);
+        mRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.lyt_refresh_frame);
+        mRefreshLayout.setOnRefreshListener(this);
+        mRefreshLayout.setEnabled(false);
+        singlepageView = (WebView) root.findViewById(R.id.webView_posts);
+        mSpinner = (ProgressBar) root.findViewById(R.id.progressBar);
+        if (postlist == null || postlist.isEmpty()) {
+            singlepageView.setVisibility(View.GONE);
+            mSpinner.setVisibility(View.VISIBLE);
+        } else {
+            singlepageView.setVisibility(View.VISIBLE);
+            mSpinner.setVisibility(View.GONE);
+        }
 
-        PAGENUM = getArguments().getInt(ThreadFragment.ARG_PAGE_NUMBER);
-        POS_OFFSET = PAGENUM * BUAppUtils.POSTS_PER_PAGE + 1;
-        ArrayList<String> list = getArguments().getStringArrayList(
-                "singlepagelist");
-        if (postlist == null || postlist.isEmpty())
-            for (String s : list)
-                try {
-                    postlist.add(new BUPost(new JSONObject(s), list.indexOf(s)
-                            + POS_OFFSET));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-        singlepageView = new WebView(getActivity());
         String content = createHtmlCode();
         singlepageView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         singlepageView.getSettings().setJavaScriptEnabled(true);
         singlepageView.addJavascriptInterface(new JSInterface(getActivity()), "JSInterface");
         singlepageView.loadDataWithBaseURL("file:///android_res/drawable/", content, "text/html", "utf-8", null);
-        Log.i("ThreadFragment", "WebView created!>>" + PAGENUM + ", Posts >>" + postlist.size());
-        return singlepageView;
+        Log.i("ThreadFragment", "WebView created!>>" + mPageNum + ", Posts >>" + postlist.size());
+
+        onRefresh();
+        return root;
+    }
+
+    @Override
+    public void onRefresh() {
+        if (isUpdating())
+            return;
+        mReqCount = 0;
+        int from = mPageNum*BUAppUtils.POSTS_PER_PAGE;
+        int to = (mPageNum+1)*BUAppUtils.POSTS_PER_PAGE;
+        final ArrayList<BUPost> posts = new ArrayList<BUPost>(BUAppUtils.POSTS_PER_PAGE);
+        while (from < to) {
+            mReqCount++;
+            BUApiHelper.readPostList(mTid, from, from + 20, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    mReqCount--;
+                    if (BUApiHelper.getResult(response) != BUAppUtils.Result.SUCCESS)
+                        return;
+                    JSONArray postsJson = response.optJSONArray("postlist");
+                    if (postsJson != null)
+                        posts.addAll(DataParser.jsonToPostlist(postsJson));
+                    if (!isUpdating()) {
+                        postlist = posts;
+                        notifyUpdated();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    mReqCount--;
+                    notifyUpdated();
+                    Toast.makeText(BUApplication.getInstance(), BUAppUtils.NETWRONG, Toast.LENGTH_SHORT).show();
+                }
+            });
+            from += 20;
+        }
+    }
+
+    @Override
+    public boolean isUpdating() {
+        return mReqCount != 0;
+    }
+
+    @Override
+    public void notifyUpdated() {
+        mRefreshLayout.setRefreshing(false);
+        mSpinner.setVisibility(View.GONE);
+        singlepageView.setVisibility(View.VISIBLE);
+
+        String htmlcode = createHtmlCode();
+        singlepageView.loadDataWithBaseURL("file:///android_res/drawable/", htmlcode, "text/html", "utf-8", null);
+        Log.v("ThreadFragment", "fragment>>" + this.mPageNum + "<<updated");
     }
 
     private String createHtmlCode(){
         String content = "<!DOCTYPE ><html><head><title></title>" +
                 "<style type=\"text/css\">" +
                 "img{max-width: 100%; width:auto; height: auto;}" +
-                "body{background-color: #D8E2EF; color: #284264;font-size:" + MainActivity.settings.contenttextsize +"px;}" +
+                "body{background-color: #D8E2EF; color: #284264;font-size:" + BUApplication.settings.contenttextsize +"px;}" +
                 "</style><script type='text/javascript'>" +
                 "function referenceOnClick(num){" +
                 "JSInterface.referenceOnClick(num);}" +
@@ -81,8 +171,10 @@ public class ThreadFragment extends Fragment {
                 "JSInterface.authorOnClick(uid);}" +
                 "</script></head><body>";
 
-        for (BUPost postItem : postlist){
-            content += postItem.getHtmlLayout();
+        int len = postlist.size();
+        for (int i = 0; i < len; i++){
+            BUPost postItem = postlist.get(i);
+            content += postItem.getHtmlLayout(POS_OFFSET+i);
         }
         content += "</body></html>";
         return content;
@@ -92,9 +184,8 @@ public class ThreadFragment extends Fragment {
     private Handler handler = new Handler() {
         public void handleMessage(android.os.Message msg) {
             if (msg.what == 0) {
-                BUPost post = postlist.get(msg.arg1 - 1 - PAGENUM*BUAppUtils.POSTS_PER_PAGE);
-                ((ThreadActivity) ThreadFragment.this.getActivity())
-                        .setQuoteText(post);
+                BUPost post = postlist.get(msg.arg1 - 1 - mPageNum *BUAppUtils.POSTS_PER_PAGE);
+                ((ThreadActivity) ThreadFragment.this.getActivity()).setQuoteText(post);
             }
             if (msg.what == 1) {
                 ((ThreadActivity) ThreadFragment.this.getActivity())
@@ -105,7 +196,7 @@ public class ThreadFragment extends Fragment {
 
     private class JSInterface {
 
-        Context mContext;
+        private Context mContext;
 
         JSInterface(Context c) {
             mContext = c;
@@ -130,12 +221,4 @@ public class ThreadFragment extends Fragment {
             Log.i("JavascriptInterface", "Author ID>>" + uid);
         }
     }
-
-    public void update(ArrayList<BUPost> content) {
-        postlist = content;
-        String htmlcode = createHtmlCode();
-        singlepageView.loadDataWithBaseURL("file:///android_res/drawable/", htmlcode, "text/html", "utf-8", null);
-        Log.v("ThreadFragment", "fragment>>" + this.PAGENUM + "<<updated");
-    }
-
 }

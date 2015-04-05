@@ -7,10 +7,12 @@ import java.net.URLEncoder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.MainActivity;
 import martin.app.bitunion.R;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUUserInfo;
+import martin.app.bitunion.util.HtmlImageGetter;
 import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 import android.app.AlertDialog;
@@ -32,22 +34,22 @@ import android.widget.TextView;
 
 public class UserInfoDialogFragment extends DialogFragment {
 
-    ImageView mAvatar;
-    TextView mUsername;
-    TextView mGroup;
-    TextView mCredit;
-    TextView mUid;
-    TextView mThreadnum;
-    TextView mPostnum;
-    TextView mBirth;
-    TextView mRegdate;
-    TextView mLastactive;
-    TextView mSite;
-    TextView mEmail;
-    TextView mSignt;
+    private ImageView mAvatar;
+    private TextView mUsername;
+    private TextView mGroup;
+    private TextView mCredit;
+    private TextView mUid;
+    private TextView mThreadnum;
+    private TextView mPostnum;
+    private TextView mBirth;
+    private TextView mRegdate;
+    private TextView mLastactive;
+    private TextView mSite;
+    private TextView mEmail;
+    private TextView mSignt;
 
-    ScrollView userinfoForm;
-    LinearLayout readingstatusForm;
+    private ScrollView userinfoForm;
+    private LinearLayout readingstatusForm;
 
     private int uid;
     private Drawable imageDrawable;
@@ -107,7 +109,7 @@ public class UserInfoDialogFragment extends DialogFragment {
         mSite.setText("个人主页：" + info.getSite());
         mEmail.setText("E-mail：" + info.getEmail());
         mSignt.setText(Html.fromHtml("签名：<br>" + info.getSignature(),
-                new BUAppUtils.HtmlImageGetter(getActivity(), mSignt), null));
+                new HtmlImageGetter(getActivity(), mSignt), null));
         mSignt.setMovementMethod(LinkMovementMethod.getInstance());
         readingstatusForm.setVisibility(View.GONE);
         userinfoForm.setVisibility(View.VISIBLE);
@@ -120,14 +122,14 @@ public class UserInfoDialogFragment extends DialogFragment {
 
         public GetAvatarTask(ImageView v, String url) {
             mView = v;
-            MainActivity.settings.setNetType(MainActivity.settings.mNetType);
+            BUApplication.settings.setNetType(BUApplication.settings.mNetType);
             path = url;
             path = path.replaceAll("(http://)?(www|v6|kiss|out).bitunion.org",
-                    MainActivity.settings.ROOTURL);
-            path = path.replaceAll("^images/", MainActivity.settings.ROOTURL
+                    BUApplication.settings.ROOTURL);
+            path = path.replaceAll("^images/", BUApplication.settings.ROOTURL
                     + "/images/");
             path = path.replaceAll("^attachments/",
-                    MainActivity.settings.ROOTURL + "/attachments/");
+                    BUApplication.settings.ROOTURL + "/attachments/");
             Log.v("Userinfo", "GetAvatarTask>>" + path);
         }
 
@@ -169,7 +171,7 @@ public class UserInfoDialogFragment extends DialogFragment {
         mAvatar.setImageDrawable(imageDrawable);
     }
 
-    class MyinfoReadTask extends AsyncTask<Void, Void, Result> {
+    private class MyinfoReadTask extends AsyncTask<Void, Void, Result> {
 
         PostMethod postMethod = new PostMethod();
 
@@ -180,10 +182,10 @@ public class UserInfoDialogFragment extends DialogFragment {
             try {
                 postReq.put("action", "profile");
                 postReq.put("username", URLEncoder.encode(
-                        MainActivity.settings.mUsername, "utf-8"));
-                postReq.put("session", MainActivity.settings.mSession);
+                        BUApplication.settings.mUsername, "utf-8"));
+                postReq.put("session", BUApplication.settings.mSession);
                 postReq.put("uid", uid);
-                return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_PROFILE), postReq);
+                return postMethod.sendPost(BUAppUtils.getUrl(BUApplication.settings.mNetType, BUAppUtils.REQ_PROFILE), postReq);
             } catch (JSONException e) {
                 e.printStackTrace();
             } catch (UnsupportedEncodingException e) {

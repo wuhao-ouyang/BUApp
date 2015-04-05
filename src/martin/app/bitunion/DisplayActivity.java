@@ -5,13 +5,17 @@ import java.net.URLEncoder;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import martin.app.bitunion.fragment.ForumFragment;
+import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUThread;
+import martin.app.bitunion.util.DataParser;
 import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 
@@ -40,43 +44,26 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+
 public class DisplayActivity extends ActionBarActivity {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link android.support.v4.app.FragmentPagerAdapter} derivative, which
-     * will keep every loaded fragment in memory. If this becomes too memory
-     * intensive, it may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
-    ThreadsPagerAdapter mPagerAdapter;
+    private ThreadsPagerAdapter mPagerAdapter;
+    private List<Integer> mPageList;
     // MyPagerAdapter mPagerAdapter;
 
     /**
      * The {@link ViewPager} that will host the section contents.
      */
-    ViewPager mViewPager;
-    PagerTitleStrip mPagerTitleStrip;
-    View mReadingStatus;
-    LayoutInflater inflater = null;
-    ProgressDialog progressDialog = null;
+    private ViewPager mViewPager;
+    private PagerTitleStrip mPagerTitleStrip;
+    private int currentpage = 0;
 
     // ReadPageTask mReadPageTask;
 
-    int forumId;
-    String forumName;
-
-    SparseArray<ArrayList<BUThread>> pageList = new SparseArray<ArrayList<BUThread>>(); // 所有帖子列表
-    // SparseArray<ForumFragment> fragmentList = new
-    // SparseArray<ForumFragment>();
-    SparseBooleanArray pReqFlags = new SparseBooleanArray(); // 是否正在读取该页帖子列表
-    Deque<Integer> reqDeck = new ArrayDeque<Integer>();
-    Result netStatus = null; // 网络连接返回结果
-    int currentpage = 0;
-    int refreshCnt = 2; // 刷新session最大次数
-    boolean refreshFlag = false; // 是否正在刷新session
-    boolean refreshingCurrentPage = false;
+    private int forumId;
+    private String forumName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,32 +84,21 @@ public class DisplayActivity extends ActionBarActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(false);
 
-        // mPagerAdapter = new MyPagerAdapter();
+        // Pre read 2 pages
+        mPageList = new ArrayList<Integer>();
+        mPageList.add(0);
+        mPageList.add(0);
         mPagerAdapter = new ThreadsPagerAdapter(getSupportFragmentManager());
-
-        inflater = LayoutInflater.from(DisplayActivity.this);
-        mReadingStatus = inflater.inflate(R.layout.processing_display, null);
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
         mPagerTitleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip);
         mPagerTitleStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        mPagerTitleStrip.setBackgroundResource(R.color.blue_dark);
         // mPagerTabStrip = (PagerTabStrip) findViewById(R.id.pager_tab_strip);
         mViewPager.setAdapter(mPagerAdapter);
         mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
         mViewPager.setOnTouchListener(new MyOnTouchListener());
-
-        progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
-        progressDialog.setMessage("读取中...");
-        progressDialog.show();
-
-//		showProgress(true);
-
-        readPage(0);
-        readPage(1);
-//		currenpage = 2;
-//		if (mViewPager.getCurrentItem() != currenpage)
-//			mViewPager.setCurrentItem(currenpage);
 
     }
 
@@ -132,23 +108,6 @@ public class DisplayActivity extends ActionBarActivity {
         // TODO states needs checked
         outState.putInt("fid", forumId);
         outState.putString("name", forumName);
-    }
-
-    public void readPage(int page) {
-        if (!pReqFlags.get(page)) {
-            pReqFlags.put(page, true);
-            new ReadPageTask().execute(page);
-        }
-    }
-
-    private void refreshCurrentPage() {
-        progressDialog.setMessage("刷新中...");
-        progressDialog.show();
-        readPage(currentpage);
-        refreshingCurrentPage = true;
-        Log.v("displayActivity", "refreshCurrentPage");
-        // update current page view
-//		mViewPager.addView(mPagerAdapter.getFragment(currenpage).getView(), currenpage, null);
     }
 
     @Override
@@ -165,7 +124,7 @@ public class DisplayActivity extends ActionBarActivity {
                 finish();
                 break;
             case R.id.action_refresh:
-                refreshCurrentPage();
+                mPagerAdapter.notifyRefresh(currentpage);
                 break;
             case R.id.action_newthread:
                 Intent intent = new Intent(DisplayActivity.this, NewthreadActivity.class);
@@ -182,9 +141,9 @@ public class DisplayActivity extends ActionBarActivity {
      * A {@link FragmentStatePagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class ThreadsPagerAdapter extends FragmentStatePagerAdapter {
+    private class ThreadsPagerAdapter extends FragmentStatePagerAdapter {
 
-        SparseArray<ForumFragment> registeredFragments = new SparseArray<ForumFragment>();
+        private SparseArray<ForumFragment> registeredFragments = new SparseArray<ForumFragment>();
 
         public ThreadsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -193,23 +152,24 @@ public class DisplayActivity extends ActionBarActivity {
         @Override
         public Fragment getItem(int position) {
 //			Log.v("adapter", "getItem>>"+position);
-            if (registeredFragments.get(position) == null)
-                registeredFragments.put(position, new ForumFragment());
             Bundle args = new Bundle();
-            ArrayList<String> threadlist = new ArrayList<String>();
-            if (pageList.get(position) != null)
-                for (BUThread thread : pageList.get(position))
-                    threadlist.add(thread.toString());
-            args.putStringArrayList("threadlist", threadlist);
-            args.putInt(ForumFragment.ARG_PAGE_NUMBER, position);
-            args.putInt("fid", forumId);
-            registeredFragments.get(position).setArguments(args);
-            return registeredFragments.get(position);
+            if (mPageList.get(position) != null) {
+                args.putInt(ForumFragment.ARG_PAGE_NUMBER, position);
+                args.putInt("fid", forumId);
+            }
+            ForumFragment frag = registeredFragments.get(position);
+            if (frag == null) {
+                frag = new ForumFragment();
+                frag.setArguments(args);
+                registeredFragments.put(position, frag);
+            } else if (!frag.isUpdating())
+                frag.onRefresh();
+            return frag;
         }
 
         @Override
         public int getCount() {
-            return pageList.size();
+            return mPageList.size();
         }
 
         @Override
@@ -227,18 +187,12 @@ public class DisplayActivity extends ActionBarActivity {
             registeredFragments.remove(position);
             super.destroyItem(container, position, object);
         }
-        public ForumFragment getFragment(int position){
-            return registeredFragments.get(position);
+
+        public void notifyRefresh(int page) {
+            ForumFragment frag = registeredFragments.get(page);
+            if (frag != null && !frag.isUpdating())
+                frag.onRefresh();
         }
-//		@Override
-//		public int getItemPosition(Object object) {
-//			ForumFragment fragment = (ForumFragment) object;
-//			 int position = registeredFragments.indexOfValue(fragment);
-//			if (position >= 0 )
-//				return position;
-//			else
-//				return POSITION_NONE;
-//		}
     }
 
     class MyOnTouchListener implements OnTouchListener{
@@ -277,210 +231,23 @@ public class DisplayActivity extends ActionBarActivity {
         }
     }
 
-    class MyOnPageChangeListener implements OnPageChangeListener {
-
-        private int position;
+    private class MyOnPageChangeListener implements OnPageChangeListener {
 
         @Override
         public void onPageScrollStateChanged(int state) {
-            // Log.v("onPageScrollStateChanged", "--state-->>>" + state);
-            if (state == ViewPager.SCROLL_STATE_DRAGGING) {
-                switch (position) {
-                    default:
-                        if (pageList.get(position - 2) == null
-                                || pageList.get(position - 2).isEmpty())
-                            if (!pReqFlags.get(position - 2)) {
-                                readPage(position - 2);
-                            }
-                    case 1:
-                        if (pageList.get(position - 1) == null
-                                || pageList.get(position - 1).isEmpty())
-                            if (!pReqFlags.get(position - 1)) {
-                                readPage(position - 1);
-                            }
-                    case 0:
-                }
-                if (pageList.get(position + 2) == null
-                        || pageList.get(position + 2).isEmpty())
-                    if (!pReqFlags.get(position + 2)) {
-                        readPage(position + 2);
-                    }
-                if (pageList.get(position + 1) == null
-                        || pageList.get(position + 1).isEmpty())
-                    if (!pReqFlags.get(position + 1)) {
-                        readPage(position + 1);
-                    }
-            } else if (state == ViewPager.SCROLL_STATE_IDLE)
-                currentpage = position;
         }
 
         @Override
         public void onPageScrolled(int pos, float per, int arg2) {
-            position = pos;
         }
 
         @Override
-        public void onPageSelected(int arg0) {
-            // TODO Auto-generated method stub
-            // Log.v("onPageSelected", "--arg0-->>>" + arg0);
+        public void onPageSelected(int position) {
+            currentpage = position;
+            while (position > mPageList.size() - 2)
+                mPageList.add(0);
+            mPagerAdapter.notifyDataSetChanged();
         }
-    }
-
-    /**
-     * @author Martin Read content of certain page from server. After reading,
-     *         data will be put into list.
-     */
-    public class ReadPageTask extends AsyncTask<Integer, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-        JSONArray pageContent = new JSONArray();
-        int page;
-
-        @Override
-        protected Result doInBackground(Integer... params) {
-
-            int threadsRemain = BUAppUtils.THREADS_PER_PAGE;
-            int from = params[0] * BUAppUtils.THREADS_PER_PAGE;
-            int to;
-            Result netStat = Result.SUCCESS;
-            this.page = params[0];
-
-            while (threadsRemain > 0 && netStat == Result.SUCCESS) {
-                JSONObject postReq = new JSONObject();
-                try {
-                    if (threadsRemain >= 20) {
-                        to = from + 20;
-                    } else {
-                        to = from + threadsRemain;
-                    }
-                    postReq.put("action", "thread");
-                    postReq.put("username", URLEncoder.encode(
-                            MainActivity.settings.mUsername, "utf-8"));
-                    postReq.put("session", MainActivity.settings.mSession);
-                    postReq.put("fid", forumId);
-                    postReq.put("from", from);
-                    postReq.put("to", to);
-                    netStat = postMethod.sendPost(BUAppUtils.getUrl(
-                            MainActivity.settings.mNetType,
-                            BUAppUtils.REQ_THREAD), postReq);
-                    if (netStat != Result.SUCCESS)
-                        return netStat;
-                    pageContent = BUAppUtils.mergeJSONArray(pageContent,
-                            postMethod.jsonResponse.getJSONArray("threadlist"));
-                    threadsRemain = threadsRemain - 20;
-                    from = from + 20;
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-            }
-            return netStat;
-        }
-
-        @Override
-        protected void onPostExecute(Result result) {
-            switch (result) {
-                default:
-                    break;
-                case FAILURE:
-                    // 如果读取失败尝试刷新session
-                    if (refreshCnt > 0 && !refreshFlag) {
-                        new UserLoginTask(this.page).execute();
-                    }
-                    break;
-                case NETWRONG:
-                    showToast(BUAppUtils.NETWRONG);
-                    break;
-                case SUCCESS:
-                    pageList.put(this.page,
-                            BUAppUtils.jsonToThreadlist(pageContent));
-                    mPagerAdapter.notifyDataSetChanged();
-                    if (refreshingCurrentPage == true){
-                        mPagerAdapter.getFragment(currentpage).update(pageList.get(currentpage));
-                        refreshingCurrentPage = false;
-                    }
-                    if (progressDialog.isShowing())
-                        progressDialog.dismiss();
-            }
-            pReqFlags.put(this.page, false);
-        }
-
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            pReqFlags.put(this.page, false);
-        }
-    }
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-        int pageRequested = 0;
-
-        public UserLoginTask(int page) {
-            pageRequested = page;
-        }
-
-        @Override
-        protected Result doInBackground(Void... params) {
-            // 标记session正在刷新
-            refreshFlag = true;
-            JSONObject postReq = new JSONObject();
-            try {
-                postReq.put("action", "login");
-                postReq.put("username", URLEncoder.encode(
-                        MainActivity.settings.mUsername, "utf-8"));
-                postReq.put("password", MainActivity.settings.mPassword);
-                return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(final Result result) {
-            // 标记session刷新完毕
-            refreshFlag = false;
-            switch (result) {
-                default:
-                    return;
-                case FAILURE:
-                    // 再次尝试刷新session并且重置刷新次数计数器
-                    if (refreshCnt > 0 && !refreshFlag) {
-                        refreshCnt -= 1;
-                        new UserLoginTask(pageRequested).execute();
-                    } else
-                        showToast(BUAppUtils.LOGINFAIL);
-                    return;
-                case NETWRONG:
-                    showToast(BUAppUtils.NETWRONG);
-                    return;
-                case UNKNOWN:
-                    return;
-                case SUCCESS:
-            }
-
-            try {
-                MainActivity.settings.mSession = postMethod.jsonResponse
-                        .getString("session");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            // Rest session refresh counter
-            refreshCnt = 2;
-            readPage(pageRequested);
-            Log.i("DisplayActivity", "session refreshed");
-        }
-
     }
 
     private void showToast(String text) {

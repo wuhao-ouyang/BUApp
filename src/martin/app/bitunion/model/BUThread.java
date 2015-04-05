@@ -1,5 +1,8 @@
 package martin.app.bitunion.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
@@ -12,31 +15,72 @@ import org.json.JSONObject;
 
 import martin.app.bitunion.util.BUAppUtils;
 
-public class BUThread extends BUContent {
+public class BUThread extends BUContent implements Parcelable {
 
-    private String tid;
+    private int tid;
     private String author;
     private String authorid;
     private String subject;
-    private String dateline;
+    private int dateline;
     private String lastpost;
     private String lastposter;
-    private String views;
-    private String replies;
-    private JSONObject jsonObject;
+    private int views;
+    private int replies;
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(tid);
+        dest.writeString(author);
+        dest.writeString(authorid);
+        dest.writeString(subject);
+        dest.writeInt(dateline);
+        dest.writeString(lastpost);
+        dest.writeString(lastposter);
+        dest.writeInt(views);
+        dest.writeInt(replies);
+    }
+
+    BUThread(Parcel in) {
+        tid = in.readInt();
+        author = in.readString();
+        authorid = in.readString();
+        subject = in.readString();
+        dateline = in.readInt();
+        lastpost = in.readString();
+        lastposter = in.readString();
+        views = in.readInt();
+        replies = in.readInt();
+    }
+
+    public static final Parcelable.Creator<BUThread> CREATOR = new Parcelable.Creator<BUThread>() {
+
+        @Override
+        public BUThread createFromParcel(Parcel source) {
+            return new BUThread(source);
+        }
+
+        @Override
+        public BUThread[] newArray(int size) {
+            return new BUThread[size];
+        }
+    };
 
     public BUThread(JSONObject object) {
-        jsonObject = object;
         try {
-            tid = object.getString("tid");
+            tid = object.getInt("tid");
             author = URLDecoder.decode(object.getString("author"), "utf-8");
             authorid = object.getString("authorid");
             subject = URLDecoder.decode(object.getString("subject"), "utf-8");
-            dateline = object.getString("dateline");
+            dateline = object.getInt("dateline");
             lastpost = object.getString("lastpost");
             lastposter = object.getString("lastposter");
-            views = object.getString("views");
-            replies = object.getString("replies");
+            views = object.getInt("views");
+            replies = object.getInt("replies");
         } catch (JSONException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -55,7 +99,7 @@ public class BUThread extends BUContent {
         subject = BUAppUtils.replaceHtmlChar(subject);
     }
 
-    public String getTid() {
+    public int getTid() {
         return tid;
     }
 
@@ -72,40 +116,27 @@ public class BUThread extends BUContent {
     }
 
     public String getDateline() {
-        Date date = new Date(Integer.parseInt(dateline) * 1000L);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd",
-                Locale.US);
+        Date date = new Date(dateline * 1000L);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("GMT+8"));
         String formattedDate = sdf.format(date);
         return formattedDate;
     }
 
-    public String getLastpost() {
-        return lastpost;
-    }
-
-    public String getLastposter() {
-        return lastposter;
-    }
-
     public String getViews() {
-        int n = Integer.parseInt(views);
+        int n = views;
         if (n > 9999){
             return Integer.toString(n / 10000) + "." + Integer.toString(n % 10000 / 1000) + "万";
         } else
-            return views;
+            return Integer.toString(views);
     }
 
     public String getReplies() {
-        int n = Integer.parseInt(replies);
+        int n = replies;
         if (n > 9999){
             return Integer.toString(n / 1000) + "." + Integer.toString(n % 1000 / 100) + "万";
         } else
-            return replies;
-    }
-
-    public String toString(){
-        return jsonObject.toString();
+            return Integer.toString(replies);
     }
 
 }

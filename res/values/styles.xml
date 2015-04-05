@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -8,6 +9,9 @@
 
     -->
     <style name="AppBaseTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:colorPrimary" tools:ignore="NewApi">@color/blue_light</item>
+        <item name="android:colorPrimaryDark" tools:ignore="NewApi">@color/blue_dark</item>
+        <item name="android:statusBarColor" tools:ignore="NewApi">#4972af</item>
         <item name="android:actionBarStyle">@style/MyActionBar</item>
 
         <!-- Support library compatibility -->

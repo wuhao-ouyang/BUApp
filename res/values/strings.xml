@@ -23,4 +23,8 @@
     <string name="title_activity_newthread">NewthreadActivity</string>
     <string name="title_activity_settings">设置</string>
 
+
+    <!-- Network response error -->
+    <string name="network_unknown">未知网络错误</string>
+    <string name="network_api_fail">Api 错误: $api_error</string>
 </resources>

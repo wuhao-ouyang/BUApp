@@ -12,6 +12,7 @@ import martin.app.bitunion.fragment.ConfirmDialogFragment.ConfirmDialogListener;
 import martin.app.bitunion.util.BUAppUtils.Result;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUUserInfo;
+import martin.app.bitunion.util.HtmlImageGetter;
 import martin.app.bitunion.util.PostMethod;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -74,8 +75,8 @@ public class MyinfoActivity extends ActionBarActivity implements
         mEmail = (TextView) findViewById(R.id.myinfo_email);
         mSignt = (TextView) findViewById(R.id.myinfo_signature);
 
-        if (MainActivity.settings.mSession != null
-                && !MainActivity.settings.mSession.isEmpty()) {
+        if (BUApplication.settings.mSession != null
+                && !BUApplication.settings.mSession.isEmpty()) {
             progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
             progressDialog.show();
             new MyinfoReadTask().execute();
@@ -94,7 +95,7 @@ public class MyinfoActivity extends ActionBarActivity implements
         mLastactive.setText("上次登录：" + info.getLastvisit());
         mEmail.setText("E-mail：" + info.getEmail());
         mSignt.setText(Html.fromHtml("签名：<br>" + info.getSignature(),
-                new BUAppUtils.HtmlImageGetter(this, mSignt), null));
+                new HtmlImageGetter(this, mSignt), null));
         mSignt.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
@@ -109,14 +110,14 @@ public class MyinfoActivity extends ActionBarActivity implements
 
         public GetAvatarTask(ImageView v, String url) {
             mView = v;
-            MainActivity.settings.setNetType(MainActivity.settings.mNetType);
+            BUApplication.settings.setNetType(BUApplication.settings.mNetType);
             path = url;
             path = path.replaceAll("(http://)?(www|v6|kiss|out).bitunion.org",
-                    MainActivity.settings.ROOTURL);
-            path = path.replaceAll("^images/", MainActivity.settings.ROOTURL
+                    BUApplication.settings.ROOTURL);
+            path = path.replaceAll("^images/", BUApplication.settings.ROOTURL
                     + "/images/");
             path = path.replaceAll("^attachments/",
-                    MainActivity.settings.ROOTURL + "/attachments/");
+                    BUApplication.settings.ROOTURL + "/attachments/");
             Log.v("MyinfoActivity", "GetAvatarTask>>" + path);
         }
 
@@ -164,12 +165,12 @@ public class MyinfoActivity extends ActionBarActivity implements
             try {
                 postReq.put("action", "profile");
                 postReq.put("username", URLEncoder.encode(
-                        MainActivity.settings.mUsername, "utf-8"));
-                postReq.put("session", MainActivity.settings.mSession);
+                        BUApplication.settings.mUsername, "utf-8"));
+                postReq.put("session", BUApplication.settings.mSession);
                 postReq.put("queryusername", URLEncoder.encode(
-                        MainActivity.settings.mUsername, "utf-8"));
+                        BUApplication.settings.mUsername, "utf-8"));
                 return postMethod.sendPost(
-                        BUAppUtils.getUrl(MainActivity.settings.mNetType,
+                        BUAppUtils.getUrl(BUApplication.settings.mNetType,
                                 BUAppUtils.REQ_PROFILE), postReq);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -229,8 +230,8 @@ public class MyinfoActivity extends ActionBarActivity implements
                 finish();
                 return true;
             case R.id.action_refresh:
-                if (MainActivity.settings.mSession == null
-                        || MainActivity.settings.mSession.isEmpty()) {
+                if (BUApplication.settings.mSession == null
+                        || BUApplication.settings.mSession.isEmpty()) {
                     new UserLoginTask().execute();
                     progressDialog.show();
                 } else
@@ -270,9 +271,9 @@ public class MyinfoActivity extends ActionBarActivity implements
             try {
                 postReq.put("action", "login");
                 postReq.put("username", URLEncoder.encode(
-                        MainActivity.settings.mUsername, "utf-8"));
-                postReq.put("password", MainActivity.settings.mPassword);
-                return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
+                        BUApplication.settings.mUsername, "utf-8"));
+                postReq.put("password", BUApplication.settings.mPassword);
+                return postMethod.sendPost(BUAppUtils.getUrl(BUApplication.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
             } catch (JSONException e) {
                 e.printStackTrace();
             } catch (UnsupportedEncodingException e) {
@@ -299,7 +300,7 @@ public class MyinfoActivity extends ActionBarActivity implements
                 case SUCCESS:
             }
             try {
-                MainActivity.settings.mSession = postMethod.jsonResponse
+                BUApplication.settings.mSession = postMethod.jsonResponse
                         .getString("session");
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -319,10 +320,10 @@ public class MyinfoActivity extends ActionBarActivity implements
             try {
                 postReq.put("action", "logout");
                 postReq.put("username", URLEncoder.encode(
-                        MainActivity.settings.mUsername, "utf-8"));
-                postReq.put("password", MainActivity.settings.mPassword);
-                postReq.put("session", MainActivity.settings.mSession);
-                return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
+                        BUApplication.settings.mUsername, "utf-8"));
+                postReq.put("password", BUApplication.settings.mPassword);
+                postReq.put("session", BUApplication.settings.mSession);
+                return postMethod.sendPost(BUAppUtils.getUrl(BUApplication.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
             } catch (JSONException e) {
                 e.printStackTrace();
             } catch (UnsupportedEncodingException e) {
@@ -357,10 +358,10 @@ public class MyinfoActivity extends ActionBarActivity implements
     public void cleareConfig() {
         SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
         SharedPreferences.Editor editor = config.edit();
-        MainActivity.settings.mUsername = null;
-        MainActivity.settings.mPassword = null;
-        MainActivity.settings.mSession = null;
-        MainActivity.settings.mNetType = BUAppUtils.OUTNET;
+        BUApplication.settings.mUsername = null;
+        BUApplication.settings.mPassword = null;
+        BUApplication.settings.mSession = null;
+        BUApplication.settings.mNetType = BUAppUtils.OUTNET;
         editor.putInt("nettype", BUAppUtils.OUTNET);
         editor.putString("username", null);
         editor.putString("password", null);

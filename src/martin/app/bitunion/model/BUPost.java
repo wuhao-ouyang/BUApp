@@ -4,54 +4,121 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.MainActivity;
 import martin.app.bitunion.util.BUAppUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.Html;
 import android.util.Log;
 
-public class BUPost extends BUContent {
+public class BUPost extends BUContent implements Parcelable {
 
-    private String pid;
-    private String fid;
-    private String tid;
-    private String aid;
+    private int pid;
+    private int fid;
+    private int tid;
+    private int aid;
     private String icon;
     private String author;
-    private String authorid;
+    private int authorid;
     private String subject;
     private String dateline;
     private String message;
     private String usesig;
     private String attachment;
-    private String uid;
+    private int uid;
     private String username;
     private String avatar;
-    private JSONObject json;
-    private int count;
 
-    private ArrayList<BUQuote> quotes = new ArrayList<BUQuote>();
+    private List<BUQuote> quotes = new ArrayList<BUQuote>();
 
-    public BUPost(JSONObject jsonObject, int count) {
-        json = jsonObject;
-        this.count = count;
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(pid);
+        dest.writeInt(fid);
+        dest.writeInt(tid);
+        dest.writeInt(aid);
+        dest.writeString(icon);
+        dest.writeString(author);
+        dest.writeInt(authorid);
+        dest.writeString(subject);
+        dest.writeString(dateline);
+        dest.writeString(message);
+        dest.writeString(usesig);
+        dest.writeString(attachment);
+        dest.writeInt(uid);
+        dest.writeString(username);
+        dest.writeString(avatar);
+        if (quotes != null && quotes.size() > 0) {
+            BUQuote[] arr = new BUQuote[quotes.size()];
+            quotes.toArray(arr);
+            dest.writeByte((byte) 0x01);
+            dest.writeParcelableArray(arr, 0);
+        } else {
+            dest.writeByte((byte) 0x00);
+        }
+    }
+
+    BUPost(Parcel in) {
+        pid = in.readInt();
+        fid = in.readInt();
+        tid = in.readInt();
+        aid = in.readInt();
+        icon = in.readString();
+        author = in.readString();
+        authorid = in.readInt();
+        subject = in.readString();
+        dateline = in.readString();
+        message = in.readString();
+        usesig = in.readString();
+        attachment = in.readString();
+        uid = in.readInt();
+        username = in.readString();
+        avatar = in.readString();
+        boolean hasQuotes = in.readByte() != 0x00;
+        if (hasQuotes) {
+            quotes = Arrays.asList((BUQuote[]) in.readParcelableArray(BUQuote.class.getClassLoader()));
+        }
+    }
+
+    public static final Parcelable.Creator<BUPost> CREATOR = new Parcelable.Creator<BUPost>() {
+        @Override
+        public BUPost createFromParcel(Parcel source) {
+            return new BUPost(source);
+        }
+
+        @Override
+        public BUPost[] newArray(int size) {
+            return new BUPost[size];
+        }
+    };
+
+    public BUPost(JSONObject jsonObject) {
         try {
-            pid = jsonObject.getString("pid");
-            fid = jsonObject.getString("fid");
-            tid = jsonObject.getString("tid");
-            aid = jsonObject.getString("aid");
+            pid = jsonObject.getInt("pid");
+            fid = jsonObject.getInt("fid");
+            tid = jsonObject.getInt("tid");
+            aid = jsonObject.getInt("aid");
             icon = jsonObject.getString("icon");
             author = URLDecoder.decode(jsonObject.getString("author"), "utf-8");
-            authorid = jsonObject.getString("authorid");
+            authorid = jsonObject.getInt("authorid");
             subject = URLDecoder.decode(jsonObject.getString("subject"),
                     "utf-8");
             dateline = jsonObject.getString("dateline");
@@ -60,7 +127,7 @@ public class BUPost extends BUContent {
             usesig = jsonObject.getString("usesig");
             attachment = URLDecoder.decode(jsonObject.getString("attachment"),
                     "utf-8");
-            uid = jsonObject.getString("uid");
+            uid = jsonObject.getInt("uid");
             username = URLDecoder.decode(jsonObject.getString("username"),
                     "utf-8");
             avatar = URLDecoder.decode(jsonObject.getString("avatar"), "utf-8");
@@ -91,7 +158,7 @@ public class BUPost extends BUContent {
             quotes.add(q);
             message = message.replace(m.group(0),
                     "<table width='90%' style='border:1px dashed #698fc7;font-size:"
-                            + MainActivity.settings.contenttextsize
+                            + BUApplication.settings.contenttextsize
                             + "px;margin:5px;'><tr><td>" + q.toString()
                             + "</td></tr></table>");
 //			message = message.replace(m.group(0), "");
@@ -118,19 +185,19 @@ public class BUPost extends BUContent {
     }
 
     public void parseImage() {
-//		message = message.replace("src='..", "scr='" + MainActivity.settings.ROOTURL);
+//		message = message.replace("src='..", "scr='" + BUApplication.settings.ROOTURL);
         // 处理图片标签
         Pattern p = Pattern.compile("<img src='([^>']+)'[^>]*(width>)?[^>]*'>");
         Matcher m = p.matcher(message);
         while (m.find()) {
             String path = "<img src='" + parseLocalImage(m.group(1)) + "'>";
-            Log.i("BUPost", "Post>>" + author + count);
+            Log.i("BUPost", "Post>>" + author);
             Log.i("BUPost", "Image Path>>>" + path);
-            if (MainActivity.settings.showimage)
+            if (BUApplication.settings.showimage)
                 // 统一站内地址
                 path = path.replaceAll("(http://)?((out.|kiss.|www.)?"
                                 + "bitunion.org|btun.yi.org|10.1.10.253)",
-                        MainActivity.settings.ROOTURL);
+                        BUApplication.settings.ROOTURL);
             else if (!path.contains("smilies_") && !path.contains("bz_"))
                 path = "<img src='ic_action_picture'>";
             message = message.replace(m.group(0), path);
@@ -147,22 +214,6 @@ public class BUPost extends BUContent {
         return imgUrl;
     }
 
-    public String getPid() {
-        return pid;
-    }
-
-    public String getFid() {
-        return fid;
-    }
-
-    public String getTid() {
-        return tid;
-    }
-
-    public String getAid() {
-        return aid;
-    }
-
     public String getIcon() {
         return icon;
     }
@@ -171,12 +222,7 @@ public class BUPost extends BUContent {
         return author;
     }
 
-    public String getAuthorid() {
-        return authorid;
-    }
-
     public String getSubject() {
-
         return subject;
     }
 
@@ -194,10 +240,10 @@ public class BUPost extends BUContent {
         // 如果有附件图，以html标记形式添加在最后
         // 如果附件不为图片，以超链接形式添加
         if (attachment != "null" && attachment != null && !attachment.isEmpty()) {
-            String attUrl = MainActivity.settings.ROOTURL + "/" + attachment;
+            String attUrl = BUApplication.settings.ROOTURL + "/" + attachment;
             m += "<br>附件：<br>";
             String format = attachment.substring(attachment.length() - 4);
-            if (".jpg.png.bmp.gif".contains(format) && MainActivity.settings.showimage)
+            if (".jpg.png.bmp.gif".contains(format) && BUApplication.settings.showimage)
                 m += "<a href='" + attUrl + "'><img src='" + attUrl
                         + "'></a>";
             else
@@ -207,16 +253,8 @@ public class BUPost extends BUContent {
         return m;
     }
 
-    public String getUsesig() {
-        return usesig;
-    }
-
     public String getAttachment() {
         return attachment;
-    }
-
-    public String getUid() {
-        return uid;
     }
 
     public String getUsername() {
@@ -227,12 +265,8 @@ public class BUPost extends BUContent {
         return avatar;
     }
 
-    public ArrayList<BUQuote> getQuote() {
+    public List<BUQuote> getQuote() {
         return quotes;
-    }
-
-    public String toString() {
-        return json.toString();
     }
 
     public String toQuote() {
@@ -266,28 +300,24 @@ public class BUPost extends BUContent {
         }
         // Clear other HTML marks
         quote = Html.fromHtml(quote).toString();
-        quote = "[quote=" + getPid() + "][b]" + getAuthor() + "[/b] "
+        quote = "[quote=" + pid + "][b]" + getAuthor() + "[/b] "
                 + getDateline() + "\n" + quote + "[/quote]\n";
-        if (!MainActivity.settings.referenceat)
+        if (!BUApplication.settings.referenceat)
             return quote;
         else
             return quote + "[@]" + getAuthor() + "[/@]\n";
-    }
-
-    public int getCount(){
-        return count;
     }
 
     /**
      * Change HTML message returned from server to application style.
      * @return String of costumed HTML style for layout
      */
-    public String getHtmlLayout(){
+    public String getHtmlLayout(int count){
         String htmlcontent;
         htmlcontent = "<p><div class='tdiv'>" +
-                "<table width='100%' style='background-color:#92ACD3;padding:2px 5px;font-size:"+ MainActivity.settings.titletextsize +"px;'>" +
-                "<tr><td>#" + Integer.toString(getCount()) + "&nbsp;<span onclick=authorOnClick(" + getAuthorid() +")>" + getAuthor() +
-                "</span>&nbsp;&nbsp;&nbsp;<span onclick=referenceOnClick("+ getCount() +")><u>引用</u></span></td>" +
+                "<table width='100%' style='background-color:#92ACD3;padding:2px 5px;font-size:"+ BUApplication.settings.titletextsize +"px;'>" +
+                "<tr><td>#" + count + "&nbsp;<span onclick=authorOnClick(" + authorid +")>" + getAuthor() +
+                "</span>&nbsp;&nbsp;&nbsp;<span onclick=referenceOnClick("+ count +")><u>引用</u></span></td>" +
                 "<td style='text-align:right;'>" + getDateline() + "</td></tr></table>" +
                 "</div>" +
                 "<div class='mdiv' width='100%' style='padding:5px;word-break:break-all;'>" +

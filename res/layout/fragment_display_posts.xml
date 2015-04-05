@@ -1,0 +1,23 @@
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lyt_refresh_frame"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <WebView
+            android:id="@+id/webView_posts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:layout_gravity="center"/>
+    </FrameLayout>
+</android.support.v4.widget.SwipeRefreshLayout>

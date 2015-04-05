@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppSettings;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.BUAppUtils.Result;
@@ -40,27 +41,18 @@ import com.idunnololz.widgets.AnimatedExpandableListView;
 
 public class MainActivity extends ActionBarActivity {
 
-    public static int SCREENWIDTH;
-    public static int SCREENHEIGHT;
-    public static float PIXDENSITY;
-
-
     // 论坛列表视图
-    ExpandableListView listView;
+    private ExpandableListView listView;
     // 单组论坛列表数据
-    ArrayList<BUForum> forumList = new ArrayList<BUForum>();
+    private ArrayList<BUForum> forumList = new ArrayList<BUForum>();
     // 所有论坛列表数据
-    ArrayList<ArrayList<BUForum>> fArrayList = new ArrayList<ArrayList<BUForum>>();
+    private ArrayList<ArrayList<BUForum>> fArrayList = new ArrayList<ArrayList<BUForum>>();
     // 分组数据
-    ArrayList<String> groupList;
-    ForumListAdapter adapter;
+    private ArrayList<String> groupList;
+    private ForumListAdapter adapter;
 
-    // 静态变量在整个应用中传递网络连接参数，包括session, username, password信息
-    public static BUAppSettings settings = new BUAppSettings();
     // 上次按返回键的时间
-    long touchTime = 0;
-
-    private UserLoginTask mLoginTask = null;
+    private long touchTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,21 +60,6 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         getSupportActionBar().setTitle("北理FTP联盟");
-
-        Point size = new Point();
-        WindowManager w = getWindowManager();
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)    {
-            w.getDefaultDisplay().getSize(size);
-            SCREENWIDTH = size.x;
-            SCREENHEIGHT = size.y;
-        }else{
-            Display d = w.getDefaultDisplay();
-            SCREENWIDTH = d.getWidth();
-            SCREENHEIGHT = d.getHeight();
-        }
-        PIXDENSITY = getResources().getDisplayMetrics().densityDpi;
-
 
         listView = (ExpandableListView) this.findViewById(R.id.listview);
 
@@ -116,101 +93,23 @@ public class MainActivity extends ActionBarActivity {
         // Log.v("martin", fArrayList.get(0).get(0).getName());
         listView.setAdapter(new ForumListAdapter());
 
-        readConfig();
-        if (settings.mUsername != null && !settings.mUsername.isEmpty()) {
-            mLoginTask = new UserLoginTask();
-            mLoginTask.execute((Void) null);
-        }
-    }
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    private class UserLoginTask extends AsyncTask<Void, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-
-        @Override
-        protected Result doInBackground(Void... params) {
-
-            JSONObject postReq = new JSONObject();
-            try {
-                postReq.put("action", "login");
-                postReq.put("username",
-                        URLEncoder.encode(settings.mUsername, "utf-8"));
-                postReq.put("password", settings.mPassword);
-                return postMethod.sendPost(BUAppUtils.getUrl(settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        // 处理登录结果并弹出toast显示
-        @Override
-        protected void onPostExecute(final Result result) {
-            mLoginTask = null;
-
-            switch (result) {
-                default:
-                    return;
-                case FAILURE:
-                    showToast(BUAppUtils.LOGINFAIL);
-                    return;
-                case NETWRONG:
-                    showToast(BUAppUtils.NETWRONG);
-                    return;
-                case UNKNOWN:
-                    return;
-                case SUCCESS:
-            }
-            showToast(BUAppUtils.USERNAME + " " + settings.mUsername + " "
-                    + BUAppUtils.LOGINSUCCESS);
-            try {
-                settings.mSession = postMethod.jsonResponse.getString("session");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            // finish();
-        }
-
-        @Override
-        protected void onCancelled() {
-            mLoginTask = null;
-        }
+        BUApiHelper.tryLogin();
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
         // 主要为login_activity结束后更新数据用
-        Log.v("MainActivity", "Cookie>>" + settings.mSession);
+        Log.v("MainActivity", "Cookie>>" + BUApplication.settings.mSession);
     }
 
     @Override
     protected void onStop() {
         SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
         SharedPreferences.Editor editor = config.edit();
-        editor.putInt("nettype", settings.mNetType);
+        editor.putInt("nettype", BUApplication.settings.mNetType);
         editor.commit();
         super.onStop();
-    }
-
-    private void readConfig() {
-        SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
-        settings.mNetType = config.getInt("nettype", BUAppUtils.OUTNET);
-        settings.mUsername = config.getString("username", null);
-        settings.mPassword = config.getString("password", null);
-        settings.titletextsize = config.getInt("titletextsize", (PIXDENSITY > DisplayMetrics.DENSITY_HIGH)? 14 : 12);
-        settings.contenttextsize = config.getInt("contenttextsize", (PIXDENSITY > DisplayMetrics.DENSITY_HIGH)? 14 : 12);
-        settings.showsigature = config.getBoolean("showsigature", true);
-        settings.showimage = config.getBoolean("showimage", true);
-        settings.referenceat = config.getBoolean("referenceat", false);
-        settings.setNetType(settings.mNetType);
-        Log.i("MainActivity", "readConfig>>Settings loaded!");
     }
 
     @Override
@@ -225,7 +124,7 @@ public class MainActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
             case R.id.action_login:
-                if (settings.mUsername == null || settings.mUsername.isEmpty()) {
+                if (BUApplication.settings.mUsername == null || BUApplication.settings.mUsername.isEmpty()) {
                     Intent intent = new Intent(this, LoginActivity.class);
                     startActivityForResult(intent, BUAppUtils.MAIN_REQ);
                 } else {
@@ -246,11 +145,9 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == BUAppUtils.MAIN_RESULT
-                && requestCode == BUAppUtils.MAIN_REQ) {
-            readConfig();
-            settings.mSession = data.getStringExtra("session");
-            showToast(BUAppUtils.USERNAME + " " + settings.mUsername + " "
+        if (resultCode == RESULT_OK && requestCode == BUAppUtils.MAIN_REQ) {
+            BUApplication.settings.mSession = data.getStringExtra("session");
+            showToast(BUAppUtils.USERNAME + " " + BUApplication.settings.mUsername + " "
                     + BUAppUtils.LOGINSUCCESS);
         }
     }
@@ -271,42 +168,42 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public View getRealChildView(int groupPosition, int childPosition,
                                  boolean isLastChild, View convertView, ViewGroup parent) {
-            TextView textView;
-            if (convertView == null || !(convertView instanceof TextView))
-                textView = new TextView(MainActivity.this);
-            else
-                textView = (TextView) convertView;
-            textView.setBackgroundResource(R.drawable.ripple_main_row_click);
+            if (convertView == null) {
+                ChildHolder holder = new ChildHolder();
+                holder.title = new TextView(MainActivity.this);
+                convertView = holder.title;
+                convertView.setTag(holder);
+            }
+            ChildHolder holder = (ChildHolder) convertView.getTag();
+            holder.title.setBackgroundResource(R.drawable.ripple_main_row_click);
             if (fArrayList.get(groupPosition).get(childPosition).getName().contains("--"))
-                textView.setTextSize(settings.titletextsize + 2);
+                holder.title.setTextSize(BUApplication.settings.titletextsize + 2);
             else
-                textView.setTextSize(settings.titletextsize + 2 + 4);
-            textView.setPadding(60, 10, 0, 10);
-            textView.setText(fArrayList.get(groupPosition).get(childPosition)
-                    .getName());
-            textView.setTag(fArrayList.get(groupPosition).get(childPosition));
+                holder.title.setTextSize(BUApplication.settings.titletextsize + 2 + 4);
+            holder.title.setPadding(60, 10, 0, 10);
+            holder.title.setText(fArrayList.get(groupPosition).get(childPosition).getName());
+            final BUForum forum = fArrayList.get(groupPosition).get(childPosition);
             // 注册OnClick事件，触摸点击转至DisplayActivity
-            textView.setOnClickListener(new OnClickListener() {
+            holder.title.setOnClickListener(new OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
-                    if (settings.mUsername != null && settings.mPassword != null) {
-                        if ( ((BUForum) v.getTag()).getFid() == -1){
+                    if (BUApplication.settings.mUsername != null && BUApplication.settings.mPassword != null) {
+                        if (forum.getFid() == -1){
                             // TODO 最新帖子
                             return;}
-                        if ( ((BUForum) v.getTag()).getFid() == -2){
+                        if (forum.getFid() == -2){
                             // TODO 收藏夹
                             return;}
                         Intent intent = new Intent(MainActivity.this,
                                 DisplayActivity.class);
-                        intent.putExtra("fid", ((BUForum) v.getTag()).getFid());
-                        intent.putExtra("name",
-                                ((BUForum) v.getTag()).getName());
+                        intent.putExtra("fid", forum.getFid());
+                        intent.putExtra("name", forum.getName());
                         startActivityForResult(intent, BUAppUtils.MAIN_REQ);
                     } else showToast("请先登录");
                 }
             });
-            return textView;
+            return convertView;
         }
 
         @Override
@@ -332,22 +229,36 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public View getGroupView(int groupPosition, boolean isExpanded,
                                  View convertView, ViewGroup parent) {
-            final TextView textView = new TextView(MainActivity.this);
-            textView.setBackgroundColor(getResources().getColor(R.color.blue_dark));
-            textView.setTextSize(settings.titletextsize + 2 + 4 + 5);
-            textView.setPadding(60, 10, 0, 10);
-            textView.setText(groupList.get(groupPosition));
-            return textView;
+            if (convertView == null) {
+                GroupHolder holder = new GroupHolder();
+                holder.title = new TextView(MainActivity.this);
+                convertView = holder.title;
+                convertView.setTag(holder);
+            }
+            GroupHolder holder = (GroupHolder) convertView.getTag();
+            holder.title.setBackgroundColor(getResources().getColor(R.color.blue_dark));
+            holder.title.setTextSize(BUApplication.settings.titletextsize + 2 + 4 + 5);
+            holder.title.setPadding(60, 10, 0, 10);
+            holder.title.setText(groupList.get(groupPosition));
+            return convertView;
         }
         @Override
         public boolean hasStableIds() {
-            return false;
+            return true;
         }
         @Override
         public boolean isChildSelectable(int groupPosition, int childPosition) {
-            return false;
+            return true;
         }
 
+    }
+
+    private static class GroupHolder {
+        TextView title;
+    }
+
+    private static class ChildHolder {
+        TextView title;
     }
 
     @Override

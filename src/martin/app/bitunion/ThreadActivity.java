@@ -13,6 +13,7 @@ import martin.app.bitunion.fragment.ThreadFragment;
 import martin.app.bitunion.fragment.UserInfoDialogFragment;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUPost;
+import martin.app.bitunion.util.DataParser;
 import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 
@@ -58,44 +59,17 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
 
     private ThreadPagerAdapter mThreadAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager mViewPager;
     private PagerTitleStrip mPagerTitleStrip;
-    private View mReadingStatus;
-    private LayoutInflater inflater = null;
-    private ProgressDialog progressDialog = null;
     private LinearLayout replyContainer = null;
     private EditText replyMessage = null;
-    /**
-     * Marking if current page is refreshing, used to notify the activity to
-     * update its view after having new data ready.
-     */
-    private boolean refreshingCurrentPage = false;
 
-    private String threadId;
+    private int threadId;
     private String threadName;
 
-    /**
-     * Posts list of current thread, including all pages even not been
-     * initialized in ViewPager.
-     */
-    private SparseArray<ArrayList<BUPost>> postList = new SparseArray<ArrayList<BUPost>>(); // 所有回复列表
-    /**
-     * Flag indicates whether the page is requesting or not
-     */
-    private SparseBooleanArray tReqFlags = new SparseBooleanArray(); // 是否正在读取该页回复列表
+    private ArrayList<Integer> postList = new ArrayList<Integer>(); // 所有回复列表
     private int lastpage, replies; // 当前帖子总页数，总回复数
     private int currentpage = 0; // 当前所在页数
-    /**
-     * Maximum refresh attempts of session
-     */
-    private int refreshCnt = 2; // 刷新session最大次数
-    /**
-     * Flag indicates if session refreshing task is running
-     */
-    private boolean refreshFlag = false; // session是否正在刷新
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,12 +77,12 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
         setContentView(R.layout.activity_thread);
 
         Intent intent = getIntent();
-        threadId = intent.getStringExtra("tid");
+        threadId = intent.getIntExtra("tid", 0);
         threadName = intent.getStringExtra("subject");
         replies = Integer.parseInt(intent.getStringExtra("replies")) + 1;
 
         if (savedInstanceState != null && !savedInstanceState.isEmpty()) {
-            threadId = savedInstanceState.getString("tid");
+            threadId = savedInstanceState.getInt("tid");
             threadName = savedInstanceState.getString("subject");
             replies = savedInstanceState.getInt("replies");
         }
@@ -146,6 +120,10 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
             }
         });
 
+        postList.add(0);
+        if (lastpage > postList.size())
+            postList.add(0);
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the application.
         mThreadAdapter = new ThreadPagerAdapter(getSupportFragmentManager());
@@ -154,17 +132,10 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
         mViewPager = (ViewPager) findViewById(R.id.viewpager_thread);
         mPagerTitleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip_thread);
         mPagerTitleStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        mPagerTitleStrip.setBackgroundResource(R.color.blue_dark);
         mViewPager.setAdapter(mThreadAdapter);
         mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
         mViewPager.setOnTouchListener(new MyOnTouchListener());
-
-        // Progress dialog indicating reading process
-        progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
-        progressDialog.show();
-
-        // Read first two page.
-        readThreadPage(0);
-        readThreadPage(1);
 
     }
 
@@ -172,30 +143,9 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         // TODO Data needs to be stored
-        outState.putString("tid", threadId);
+        outState.putInt("tid", threadId);
         outState.putString("subject", threadName);
         outState.putInt("replies", replies);
-    }
-
-    /**
-     * Open a new thread to requesting data from server
-     *
-     * @param page
-     *            Which page to request
-     */
-    public void readThreadPage(int page) {
-        if (page <= lastpage && page >= 0)
-            new ReadThreadPageTask().execute(page);
-    }
-
-    /**
-     * Check if there are new posts, if positive, ask for new data and refresh
-     * current page
-     */
-    private void refreshCurrentPage() {
-        progressDialog.show();
-        // 请求当前帖子总楼数
-        new RefreshingTask().execute();
     }
 
     @Override
@@ -212,7 +162,6 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
                 finish();
                 break;
             case R.id.action_refresh:
-                refreshCurrentPage();
                 break;
             case R.id.action_post:
                 if (!replyContainer.isShown())
@@ -223,7 +172,7 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
             case R.id.action_sharelink:
                 StringBuilder sb = new StringBuilder(threadName);
                 sb.append('\n');
-                sb.append(MainActivity.settings.ROOTURL);
+                sb.append(BUApplication.settings.ROOTURL);
                 sb.append("/viewthread.php?tid=");
                 sb.append(threadId);
 
@@ -269,7 +218,7 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
      */
     public class ThreadPagerAdapter extends FragmentStatePagerAdapter {
 
-        SparseArray<ThreadFragment> registeredFragments = new SparseArray<ThreadFragment>();
+        private SparseArray<ThreadFragment> registeredFragments = new SparseArray<ThreadFragment>();
 
         public ThreadPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -277,26 +226,24 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
 
         @Override
         public Fragment getItem(int position) {
-            if (registeredFragments.get(position) == null){
-                registeredFragments.put(position, new ThreadFragment());
+            ThreadFragment frag = registeredFragments.get(position);
+            if (frag == null) {
+                frag = new ThreadFragment();
                 Bundle args = new Bundle();
-                ArrayList<String> singlepagelist = new ArrayList<String>();
-                if (postList.get(position) != null)
-                    for (BUPost post : postList.get(position))
-                        singlepagelist.add(post.toString());
-                args.putStringArrayList("singlepagelist", singlepagelist);
+                args.putInt(ThreadFragment.ARG_THREAD_ID, threadId);
                 args.putInt(ThreadFragment.ARG_PAGE_NUMBER, position);
-                registeredFragments.get(position).setArguments(args);
-                Log.d("PagerAdapter", "Fragment create>>" + position);}
-            return registeredFragments.get(position);
+                frag.setArguments(args);
+                registeredFragments.put(position, frag);
+                Log.d("PagerAdapter", "Fragment create>>" + position);
+            } else if (!frag.isUpdating()){
+                frag.onRefresh();
+            }
+            return frag;
         }
 
         @Override
         public int getCount() {
-            if (postList.size() == 0)
-                return 0;
-            else
-                return postList.keyAt(postList.size() - 1) + 1;
+            return postList.size();
         }
 
         @Override
@@ -314,12 +261,8 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-//			registeredFragments.remove(position);
+			registeredFragments.remove(position);
             super.destroyItem(container, position, object);
-        }
-
-        public ThreadFragment getFragment(int position) {
-            return registeredFragments.get(position);
         }
 
     }
@@ -329,7 +272,7 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
      * current activity thus lead to upper level of this application.
      * @author Strider_oy
      */
-    class MyOnTouchListener implements OnTouchListener {
+    private class MyOnTouchListener implements OnTouchListener {
 
         double lastx = -1;
         long lastswipetimeright = 0;
@@ -386,287 +329,24 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
      *
      * @author Strider_oy
      */
-    class MyOnPageChangeListener implements OnPageChangeListener {
-
-        private int position;
+    private class MyOnPageChangeListener implements OnPageChangeListener {
 
         @Override
         public void onPageScrollStateChanged(int state) {
-            // Log.v("onPageScrollStateChanged", "--state-->>>" + state);
-            if (state == ViewPager.SCROLL_STATE_DRAGGING) {
-                switch (position) {
-                    default:
-                        if (postList.get(position - 2) == null
-                                || postList.get(position - 2).isEmpty())
-                            if (!tReqFlags.get(position - 2)) {
-                                readThreadPage(position - 2);
-                            }
-                    case 1:
-                        if (postList.get(position - 1) == null
-                                || postList.get(position - 1).isEmpty())
-                            if (!tReqFlags.get(position - 1)) {
-                                readThreadPage(position - 1);
-                            }
-                    case 0:
-                }
-                switch (lastpage - position) {
-                    default:
-                        if (postList.get(position + 2) == null
-                                || postList.get(position + 2).isEmpty())
-                            if (!tReqFlags.get(position + 2)) {
-                                readThreadPage(position + 2);
-                            }
-                    case 1: // 当前页面是倒数第二页
-                        if (postList.get(position + 1) == null
-                                || postList.get(position + 1).isEmpty())
-                            if (!tReqFlags.get(position + 1)) {
-                                readThreadPage(position + 1);
-                            }
-                    case 0: // 当前页是最后一页
-                }
-            } else if (state == ViewPager.SCROLL_STATE_IDLE)
-                currentpage = position;
         }
 
         @Override
         public void onPageScrolled(int pos, float per, int arg2) {
-            position = pos;
         }
 
         @Override
-        public void onPageSelected(int arg0) {
+        public void onPageSelected(int pos) {
+            currentpage = pos;
+            while (pos > postList.size() - 2)
+                if (lastpage > postList.size())
+                    postList.add(0);
+            mThreadAdapter.notifyDataSetChanged();
         }
-    }
-
-    /**
-     * Read content of certain page from server. After reading, data will be put
-     * into list.
-     */
-    private class ReadThreadPageTask extends AsyncTask<Integer, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-        JSONArray pageContent = new JSONArray();
-        int page;
-
-        @Override
-        protected Result doInBackground(Integer... params) {
-
-            this.page = params[0];
-            int postsRemain;
-            if (this.page != lastpage)
-                postsRemain = BUAppUtils.POSTS_PER_PAGE;
-            else
-                postsRemain = replies % (BUAppUtils.POSTS_PER_PAGE+1);
-            int from = params[0] * BUAppUtils.POSTS_PER_PAGE;
-            int to;
-            Result netStat = Result.SUCCESS;
-            tReqFlags.put(this.page, true);
-
-            while (postsRemain > 0 && netStat == Result.SUCCESS) {
-                JSONObject postReq = new JSONObject();
-                try {
-                    if (postsRemain > 20) {
-                        to = from + 20;
-                    } else {
-                        to = from + postsRemain;
-                    }
-                    postReq.put("action", "post");
-                    postReq.put("username", URLEncoder.encode(
-                            MainActivity.settings.mUsername, "utf-8"));
-                    postReq.put("session", MainActivity.settings.mSession);
-                    postReq.put("tid", threadId);
-                    postReq.put("from", from);
-                    postReq.put("to", to);
-                    Log.d("Request", "Replies>> " + replies+ " from >> " + from + " to >>" + to);
-                    netStat = postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_POST), postReq);
-                    if (netStat != Result.SUCCESS)
-                        return netStat;
-                    pageContent = BUAppUtils.mergeJSONArray(pageContent,
-                            postMethod.jsonResponse
-                                    .getJSONArray("postlist"));
-                    postsRemain = postsRemain - 20;
-                    from = from + 20;
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-            }
-            return netStat;
-        }
-
-        @Override
-        protected void onPostExecute(Result result) {
-            switch (result) {
-                default:
-                    break;
-                case FAILURE:
-                    if (refreshCnt > 0 && !refreshFlag) {
-                        new UserLoginTask(page).execute();
-                    }
-                    break;
-                case NETWRONG:
-                    showToast(BUAppUtils.NETWRONG);
-                    break;
-                case SUCCESS_EMPTY:
-                    Log.v("ThreadActivity", "success empty");
-                    break;
-                case SUCCESS:
-//				 Log.v("ThreadActivity", "raw jsonArray>>" + pageContent);
-                    postList.put(this.page, BUAppUtils.jsonToPostlist(pageContent, this.page));
-                    Log.v("ThreadActivity", "Page loaded>>" + this.page);
-                    Log.v("ThreadActivity", "Post length>>" + pageContent.length());
-                    mThreadAdapter.notifyDataSetChanged();
-                    // mThreadAdapter.getFragment(this.page).update(postList.get(this.page));
-                    if (refreshingCurrentPage == true) {
-                        mThreadAdapter.getFragment(currentpage).update(
-                                postList.get(currentpage));
-                        refreshingCurrentPage = false;
-                    }
-                    if (progressDialog.isShowing())
-                        progressDialog.dismiss();
-            }
-            // showProgress(false);
-            tReqFlags.put(this.page, false);
-        }
-
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            tReqFlags.put(this.page, false);
-        }
-    }
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    private class UserLoginTask extends AsyncTask<Void, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-        int pageRequested = 0;
-
-        public UserLoginTask(int page) {
-            this.pageRequested = page;
-        }
-
-        @Override
-        protected Result doInBackground(Void... params) {
-            // 标记session正在刷新
-            refreshFlag = true;
-            JSONObject postReq = new JSONObject();
-            try {
-                postReq.put("action", "login");
-                postReq.put("username", URLEncoder.encode(
-                        MainActivity.settings.mUsername, "utf-8"));
-                postReq.put("password", MainActivity.settings.mPassword);
-                return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(final Result result) {
-            // 标记session刷新完毕
-            refreshFlag = false;
-            switch (result) {
-                default:
-                    return;
-                case FAILURE:
-                    // 再次尝试刷新session并且重置刷新次数计数器
-                    if (refreshCnt > 0 && !refreshFlag) {
-                        refreshCnt -= 1;
-                        new UserLoginTask(pageRequested).execute();
-                    } else
-                        showToast(BUAppUtils.LOGINFAIL);
-                    return;
-                case NETWRONG:
-                    showToast(BUAppUtils.NETWRONG);
-                    return;
-                case UNKNOWN:
-                    return;
-                case SUCCESS:
-            }
-            try {
-                MainActivity.settings.mSession = postMethod.jsonResponse
-                        .getString("session");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            Log.i("DisplayActivity", "session refreshed");
-            // Rest session refresh counter
-            refreshCnt = 2;
-            // Retry after session refreshed
-            readThreadPage(pageRequested);
-        }
-
-    }
-
-    private class RefreshingTask extends AsyncTask<Void, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-        int pageRequested = currentpage;
-
-        @Override
-        protected Result doInBackground(Void... params) {
-            JSONObject postReq = new JSONObject();
-            try {
-                postReq.put("username", URLEncoder.encode(
-                        MainActivity.settings.mUsername, "utf-8"));
-                postReq.put("session", MainActivity.settings.mSession);
-                postReq.put("tid", threadId);
-                return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.REQ_FID_TID_SUM), postReq);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(final Result result) {
-            // 标记session刷新完毕
-            refreshFlag = false;
-            switch (result) {
-                default:
-                    return;
-                case FAILURE:
-                    // 再次尝试刷新session并且重置刷新次数计数器
-                    if (refreshCnt > 0 && !refreshFlag) {
-                        refreshCnt -= 1;
-                        new UserLoginTask(pageRequested).execute();
-                    } else
-                        showToast(BUAppUtils.LOGINFAIL);
-                    return;
-                case NETWRONG:
-                    showToast(BUAppUtils.NETWRONG);
-                    return;
-                case UNKNOWN:
-                    return;
-                case SUCCESS:
-            }
-            int currReplies = replies;
-            if (postMethod.jsonResponse != null)
-                try {
-                    currReplies = Integer.parseInt(postMethod.jsonResponse
-                            .getString("tid_sum")) + 1;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            // update current page data
-            replies = currReplies;
-            lastpage = (replies -1) / BUAppUtils.POSTS_PER_PAGE;
-            readThreadPage(currentpage);
-            refreshingCurrentPage = true;
-            Log.v("displayActivity", "refreshCurrentPage");
-        }
-
     }
 
     private class MyReplySubmitListener implements OnClickListener {
@@ -692,7 +372,7 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, String message) {
         Log.i("MyReplySubmitListener", "Reply sumitted>>" + message);
-        if (MainActivity.settings.showsigature)
+        if (BUApplication.settings.showsigature)
             message += BUAppUtils.CLIENTMESSAGETAG;
         new NewPostTask(message).execute();
     }
@@ -714,12 +394,12 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
             try {
                 postReq.put("action", "newreply");
                 postReq.put("username", URLEncoder.encode(
-                        MainActivity.settings.mUsername, "utf-8"));
-                postReq.put("session", MainActivity.settings.mSession);
+                        BUApplication.settings.mUsername, "utf-8"));
+                postReq.put("session", BUApplication.settings.mSession);
                 postReq.put("tid", threadId);
                 postReq.put("message", URLEncoder.encode(message, "utf-8"));
                 postReq.put("attachment", 0);
-                return postMethod.sendPost(BUAppUtils.getUrl(MainActivity.settings.mNetType, BUAppUtils.NEWPOST), postReq);
+                return postMethod.sendPost(BUAppUtils.getUrl(BUApplication.settings.mNetType, BUAppUtils.NEWPOST), postReq);
             } catch (JSONException e) {
                 e.printStackTrace();
             } catch (UnsupportedEncodingException e) {
