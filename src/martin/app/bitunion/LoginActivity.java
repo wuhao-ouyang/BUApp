@@ -41,17 +41,14 @@ import com.android.volley.VolleyError;
 public class LoginActivity extends ActionBarActivity {
 
     // Values for username and password at the time of the login attempt.
-    String mUsername;
-    String mPassword;
-    String mSession = "";
-    int mNetType;
+    private String mUsername;
+    private String mPassword;
+    private String mSession = "";
+    private int mNetType;
 
     // UI references.
     private EditText mUsernameView;
     private EditText mPasswordView;
-    private View mLoginFormView;
-    private View mLoginStatusView;
-    private TextView mLoginStatusMessageView;
     private RadioGroup netGroup;
     private ProgressDialog progressDialog = null;
 
@@ -83,9 +80,6 @@ public class LoginActivity extends ActionBarActivity {
             }
         });
 
-        mLoginFormView = findViewById(R.id.login_form);
-//		mLoginStatusView = findViewById(R.id.login_status);
-//		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
         progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
 
         findViewById(R.id.sign_in_button).setOnClickListener(
@@ -166,7 +160,7 @@ public class LoginActivity extends ActionBarActivity {
             // perform the user login attempt.
 //			mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
             showProgress(true);
-            BUApiHelper.tryLogin(new Response.Listener<JSONObject>() {
+            BUApiHelper.tryLogin(mUsername, mPassword, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
                     switch (BUApiHelper.getResult(response)) {
@@ -194,9 +188,11 @@ public class LoginActivity extends ActionBarActivity {
      * Shows the progress UI and hides the login form.
      */
     private void showProgress(final boolean show) {
-        if (show)
+        if (progressDialog == null)
+            return;
+        if (show && !progressDialog.isShowing())
             progressDialog.show();
-        else
+        else if (!show && progressDialog.isShowing())
             progressDialog.dismiss();
     }
 

@@ -7,13 +7,15 @@ import java.net.URLEncoder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import martin.app.bitunion.fragment.ConfirmDialogFragment;
-import martin.app.bitunion.fragment.ConfirmDialogFragment.ConfirmDialogListener;
+import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils.Result;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUUserInfo;
 import martin.app.bitunion.util.HtmlImageGetter;
 import martin.app.bitunion.util.PostMethod;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.ProgressDialog;
@@ -29,10 +31,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 
-public class MyinfoActivity extends ActionBarActivity implements
-        ConfirmDialogListener {
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+
+public class MyinfoActivity extends ActionBarActivity implements DialogInterface.OnClickListener {
 
     private ImageView mAvatar;
     private TextView mUsername;
@@ -46,7 +49,6 @@ public class MyinfoActivity extends ActionBarActivity implements
     private TextView mSignt;
 
     private ProgressDialog progressDialog = null;
-    private ConfirmDialogFragment mAlertFragment = null;
 
     private static Drawable imageDrawable;
 
@@ -238,23 +240,40 @@ public class MyinfoActivity extends ActionBarActivity implements
                     new MyinfoReadTask().execute();
                 return true;
             case R.id.action_logout:
-                mAlertFragment = new ConfirmDialogFragment();
-                Bundle args = new Bundle();
-                args.putString("title", "登出");
-                args.putString("message", "确定要登出吗？");
-                mAlertFragment.setArguments(args);
-                mAlertFragment.show(getSupportFragmentManager(), "LogoutAlert");
+                AlertDialog dialog = new AlertDialog.Builder(this)
+                        .setTitle(R.string.logout_confirm_title)
+                        .setMessage(R.string.logout_confirm_message)
+                        .setPositiveButton(R.string.logout_confirm_button, this)
+                        .setNegativeButton(R.string.logout_cancel_button, this)
+                        .create();
+                dialog.show();
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
-        new UserLogoutTask().execute();
+    public void onClick(DialogInterface dialog, int which) {
+        if (which == DialogInterface.BUTTON_POSITIVE)
+            BUApiHelper.logoutUser(new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    if (BUApiHelper.getResult(response) == Result.SUCCESS) {
+                        BUApiHelper.clearUser();
+                        finish();
+                    } else {
+                        Toast.makeText(getApplicationContext(), R.string.logout_error, Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Toast.makeText(getApplicationContext(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
+                }
+            });
+        else
+            dialog.dismiss();
     }
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialog, String arg) {}
 
     /**
      * Represents an asynchronous login/registration task used to authenticate
@@ -307,65 +326,6 @@ public class MyinfoActivity extends ActionBarActivity implements
             }
             new MyinfoReadTask().execute();
         }
-    }
-
-    private class UserLogoutTask extends AsyncTask<Void, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-
-        @Override
-        protected Result doInBackground(Void... params) {
-
-            JSONObject postReq = new JSONObject();
-            try {
-                postReq.put("action", "logout");
-                postReq.put("username", URLEncoder.encode(
-                        BUApplication.settings.mUsername, "utf-8"));
-                postReq.put("password", BUApplication.settings.mPassword);
-                postReq.put("session", BUApplication.settings.mSession);
-                return postMethod.sendPost(BUAppUtils.getUrl(BUApplication.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        // 处理登录结果并弹出toast显示
-        @Override
-        protected void onPostExecute(final Result result) {
-
-            switch (result) {
-                default:
-                    return;
-                case FAILURE:
-                    showToast(BUAppUtils.LOGINFAIL);
-                    return;
-                case NETWRONG:
-                    showToast(BUAppUtils.NETWRONG);
-                    return;
-                case UNKNOWN:
-                    return;
-                case SUCCESS:
-                case SUCCESS_EMPTY:
-            }
-            cleareConfig();
-            finish();
-        }
-    }
-
-    public void cleareConfig() {
-        SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
-        SharedPreferences.Editor editor = config.edit();
-        BUApplication.settings.mUsername = null;
-        BUApplication.settings.mPassword = null;
-        BUApplication.settings.mSession = null;
-        BUApplication.settings.mNetType = BUAppUtils.OUTNET;
-        editor.putInt("nettype", BUAppUtils.OUTNET);
-        editor.putString("username", null);
-        editor.putString("password", null);
-        editor.commit();
     }
 
     private void showToast(String text) {

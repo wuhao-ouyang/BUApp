@@ -41,16 +41,22 @@ public class BUApiHelper {
     /**
      * Login current user with response listener
      */
-    public static void tryLogin(Response.Listener<JSONObject> responseListener,
+    public static void tryLogin(String username, String password,
+                                Response.Listener<JSONObject> responseListener,
                                 Response.ErrorListener errorListener) {
-        if (mUsername == null || mPassword == null)
+        if (username == null || password == null)
             return;
         String path = baseurl + "/bu_logging.php";
         Map<String, String> params = new HashMap<String, String>();
         params.put("action", "login");
-        params.put("username", mUsername);
-        params.put("password", mPassword);
+        params.put("username", username);
+        params.put("password", password);
         sendRequest(path, params, responseListener, errorListener);
+    }
+
+    public static void tryLogin(Response.Listener<JSONObject> responseListener,
+                                Response.ErrorListener errorListener) {
+        tryLogin(mUsername, mPassword, responseListener, errorListener);
     }
 
     /**
@@ -81,6 +87,19 @@ public class BUApiHelper {
                 Toast.makeText(BUApplication.getInstance(), BUAppUtils.NETWRONG, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public static void logoutUser(Response.Listener<JSONObject> responseListener,
+                                  Response.ErrorListener errorListener) {
+        if (mUsername == null || mPassword == null)
+            return;
+        String path = baseurl + "/bu_logging.php";
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("action", "logout");
+        params.put("username", mUsername);
+        params.put("password", BUApplication.settings.mPassword);
+        params.put("session", BUApplication.settings.mSession);
+        sendRequest(path, params, responseListener, errorListener);
     }
 
     /**
@@ -131,6 +150,20 @@ public class BUApiHelper {
         setNetType(mNetType);
 
         mApiQueue = Volley.newRequestQueue(context);
+    }
+
+    public static void clearUser() {
+        SharedPreferences config = BUApplication.getInstance()
+                .getSharedPreferences("config", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = config.edit();
+        BUApplication.settings.mUsername = mUsername = null;
+        BUApplication.settings.mPassword = mPassword = null;
+        BUApplication.settings.mSession = mSession = null;
+        BUApplication.settings.mNetType = mNetType = BUAppUtils.OUTNET;
+        editor.putInt("nettype", BUAppUtils.OUTNET);
+        editor.putString("username", null);
+        editor.putString("password", null);
+        editor.commit();
     }
 
     public static void setNetType(int net) {

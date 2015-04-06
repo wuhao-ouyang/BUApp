@@ -23,8 +23,21 @@
     <string name="title_activity_newthread">NewthreadActivity</string>
     <string name="title_activity_settings">设置</string>
 
-
     <!-- Network response error -->
     <string name="network_unknown">未知网络错误</string>
     <string name="network_api_fail">Api 错误: $api_error</string>
+
+    <!-- Api 错误 -->
+    <string name="logout_error">登出错误！</string>
+
+    <!-- Dialog message -->
+    <string name="logout_confirm_title">登出</string>
+    <string name="logout_confirm_message">确定要登出吗</string>
+    <string name="logout_confirm_button">确定</string>
+    <string name="logout_cancel_button">取消</string>
+    <string name="send_message_title">发送消息</string>
+    <string name="send_message_message">确认要发送吗？</string>
+    <string name="dialog_button_confirm">确认</string>
+    <string name="dialog_button_cancel">取消</string>
+
 </resources>

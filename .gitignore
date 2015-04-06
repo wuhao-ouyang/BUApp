@@ -9,6 +9,7 @@
 .gradle/
 **/build/
 *.iml
+*.apk
 bin/
 tmp/
 gen/

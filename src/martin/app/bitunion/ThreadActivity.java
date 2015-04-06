@@ -3,30 +3,27 @@ package martin.app.bitunion;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import org.json.JSONArray;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import martin.app.bitunion.fragment.ConfirmDialogFragment;
-import martin.app.bitunion.fragment.ConfirmDialogFragment.ConfirmDialogListener;
 import martin.app.bitunion.fragment.ThreadFragment;
 import martin.app.bitunion.fragment.UserInfoDialogFragment;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUPost;
-import martin.app.bitunion.util.DataParser;
 import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 
-import android.app.ProgressDialog;
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerTitleStrip;
@@ -35,9 +32,7 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.util.SparseArray;
-import android.util.SparseBooleanArray;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -54,7 +49,7 @@ import android.widget.Toast;
  * @author Strider_oy
  *
  */
-public class ThreadActivity extends ActionBarActivity implements ConfirmDialogListener {
+public class ThreadActivity extends ActionBarActivity {
 
 
     private ThreadPagerAdapter mThreadAdapter;
@@ -351,33 +346,34 @@ public class ThreadActivity extends ActionBarActivity implements ConfirmDialogLi
 
     private class MyReplySubmitListener implements OnClickListener {
 
-        ConfirmDialogFragment mAlertFragment;
-
         @Override
         public void onClick(View v) {
-            String message = replyMessage.getText().toString();
+            final String message = replyMessage.getText().toString();
             if (message != null && !message.isEmpty()) {
-                mAlertFragment = new ConfirmDialogFragment();
-                Bundle args = new Bundle();
-                args.putString("title", "发送消息");
-                args.putString("message", "确认要发送吗？");
-                args.putString("reply", message);
-                mAlertFragment.setArguments(args);
-                mAlertFragment.show(getSupportFragmentManager(), "LogoutAlert");
+                final DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == DialogInterface.BUTTON_POSITIVE) {
+                            Log.i("MyReplySubmitListener", "Reply sumitted>>" + message);
+                            String finalMsg = message;
+                            if (BUApplication.settings.showsigature)
+                                finalMsg += BUAppUtils.CLIENTMESSAGETAG;
+                            new NewPostTask(finalMsg).execute();
+                        } else {
+
+                        }
+                    }
+                };
+                new AlertDialog.Builder(ThreadActivity.this)
+                        .setTitle(R.string.send_message_title)
+                        .setMessage(R.string.send_message_message)
+                        .setPositiveButton(R.string.dialog_button_confirm, clickListener)
+                        .setNegativeButton(R.string.dialog_button_cancel, clickListener)
+                        .create().show();
             } else
                 showToast("回复不能为空");
         }
     }
-
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialog, String message) {
-        Log.i("MyReplySubmitListener", "Reply sumitted>>" + message);
-        if (BUApplication.settings.showsigature)
-            message += BUAppUtils.CLIENTMESSAGETAG;
-        new NewPostTask(message).execute();
-    }
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {}
 
     private class NewPostTask extends AsyncTask<Void, Void, Result> {
 
