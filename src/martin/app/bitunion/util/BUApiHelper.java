@@ -2,6 +2,7 @@ package martin.app.bitunion.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -38,11 +39,22 @@ public class BUApiHelper {
 
     private static RequestQueue mApiQueue;
 
+    public static Response.ErrorListener sErrorListener = new Response.ErrorListener() {
+        @Override
+        public void onErrorResponse(VolleyError error) {
+            Log.d(TAG, "Volley default error", error);
+        }
+    };
+
+    public static boolean isUserLoggedin() {
+        return mSession == null || mSession.isEmpty();
+    }
+
     /**
      * Login current user with response listener
      */
     public static void tryLogin(String username, String password,
-                                Response.Listener<JSONObject> responseListener,
+                                final Response.Listener<JSONObject> responseListener,
                                 Response.ErrorListener errorListener) {
         if (username == null || password == null)
             return;
@@ -51,7 +63,14 @@ public class BUApiHelper {
         params.put("action", "login");
         params.put("username", username);
         params.put("password", password);
-        sendRequest(path, params, responseListener, errorListener);
+        sendRequest(path, params, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                if (getResult(response) == BUAppUtils.Result.SUCCESS)
+                        mSession = response.optString("session");
+                responseListener.onResponse(response);
+            }
+        }, errorListener);
     }
 
     public static void tryLogin(Response.Listener<JSONObject> responseListener,
@@ -60,7 +79,7 @@ public class BUApiHelper {
     }
 
     /**
-     * Simple version of {@link BUApiHelper#tryLogin()}
+     * Simple version of {@link BUApiHelper#tryLogin(Response.Listener, Response.ErrorListener)}
      */
     public static void tryLogin() {
         tryLogin(new Response.Listener<JSONObject>() {
@@ -89,7 +108,7 @@ public class BUApiHelper {
         });
     }
 
-    public static void logoutUser(Response.Listener<JSONObject> responseListener,
+    public static void logoutUser(final Response.Listener<JSONObject> responseListener,
                                   Response.ErrorListener errorListener) {
         if (mUsername == null || mPassword == null)
             return;
@@ -97,8 +116,36 @@ public class BUApiHelper {
         Map<String, String> params = new HashMap<String, String>();
         params.put("action", "logout");
         params.put("username", mUsername);
-        params.put("password", BUApplication.settings.mPassword);
-        params.put("session", BUApplication.settings.mSession);
+        params.put("password", mPassword);
+        params.put("session", mSession);
+        sendRequest(path, params, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                if (getResult(response) == BUAppUtils.Result.SUCCESS) {
+                    mUsername = null;
+                    mPassword = null;
+                    mSession = null;
+                }
+                responseListener.onResponse(response);
+            }
+        }, errorListener);
+    }
+
+    /**
+     * Get user profile
+     * @param userName user name, passing null will read profile of user himself
+     */
+    public static void getUserProfile(String userName,
+                                      Response.Listener<JSONObject> responseListener,
+                                      Response.ErrorListener errorListener) {
+        if (userName == null)
+            userName = mUsername;
+        String path = baseurl + "/bu_profile.php";
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("action", "profile");
+        params.put("username", mUsername);
+        params.put("session", mSession);
+        params.put("queryusername", userName);
         sendRequest(path, params, responseListener, errorListener);
     }
 
@@ -107,8 +154,6 @@ public class BUApiHelper {
      * @param fid Forum id
      * @param from from index
      * @param to to index
-     * @param responseListener response listener
-     * @param errorListener error listener
      */
     public static void readThreads(int fid, int from, int to,
                                    Response.Listener<JSONObject> responseListener,
@@ -209,6 +254,15 @@ public class BUApiHelper {
         if ("success".equals(response.optString("result")))
             return BUAppUtils.Result.SUCCESS;
         return BUAppUtils.Result.UNKNOWN;
+    }
+
+    public static String getImageAbsoluteUrl(String shortUrl) {
+        String path;
+        path = shortUrl;
+        path = path.replaceAll("(http://)?(www|v6|kiss|out).bitunion.org", rooturl);
+        path = path.replaceAll("^images/", rooturl + "/images/");
+        path = path.replaceAll("^attachments/", rooturl + "/attachments/");
+        return path;
     }
 
 //    private static String getUrl(int net, int urlType){

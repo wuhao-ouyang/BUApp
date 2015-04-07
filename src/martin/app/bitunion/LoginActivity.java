@@ -163,16 +163,11 @@ public class LoginActivity extends ActionBarActivity {
             BUApiHelper.tryLogin(mUsername, mPassword, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    switch (BUApiHelper.getResult(response)) {
-                        case SUCCESS:
-                        case SUCCESS_EMPTY:
+                    if (BUApiHelper.getResult(response) == Result.SUCCESS) {
                             saveConfig();
                             mSession = response.optString("session");
-                            Intent intent = new Intent();
-                            intent.putExtra("session", mSession);
-                            setResult(RESULT_OK, intent);
+                            setResult(RESULT_OK, null);
                             finish();
-                        default:
                     }
                 }
             }, new Response.ErrorListener() {

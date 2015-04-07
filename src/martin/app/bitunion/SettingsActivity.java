@@ -1,5 +1,6 @@
 package martin.app.bitunion;
 
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
@@ -21,6 +22,15 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.support.v4.app.NavUtils;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import martin.app.bitunion.util.BUAppUtils;
 
 public class SettingsActivity extends ActionBarActivity {
 
@@ -211,8 +221,15 @@ public class SettingsActivity extends ActionBarActivity {
             case android.R.id.home:
                 finish();
             case R.id.action_info:
+                String message = null;
+                try {
+                    message = BUAppUtils.readTextFromInputStream(getAssets().open("about.txt"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    break;
+                }
                 new AlertDialog.Builder(this)
-                        .setMessage(Html.fromHtml("作者：Martin<br>E-mail：martin_oy@qq.com"))
+                        .setMessage(message)
                         .setNegativeButton("我要评价！", new DialogInterface.OnClickListener() {
 
                             @Override

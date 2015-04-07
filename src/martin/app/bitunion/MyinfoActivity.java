@@ -13,6 +13,7 @@ import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUUserInfo;
 import martin.app.bitunion.util.HtmlImageGetter;
 import martin.app.bitunion.util.PostMethod;
+import martin.app.bitunion.util.VolleyImageLoaderFactory;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -34,10 +35,11 @@ import android.support.v4.app.DialogFragment;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.NetworkImageView;
 
 public class MyinfoActivity extends ActionBarActivity implements DialogInterface.OnClickListener {
 
-    private ImageView mAvatar;
+    private NetworkImageView mAvatar;
     private TextView mUsername;
     private TextView mGroup;
     private TextView mCredit;
@@ -50,8 +52,6 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
 
     private ProgressDialog progressDialog = null;
 
-    private static Drawable imageDrawable;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,10 +63,7 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
         if (savedInstanceState != null && !savedInstanceState.isEmpty())
             return;
 
-        imageDrawable = getResources()
-                .getDrawable(R.drawable.ic_action_picture);
-
-        mAvatar = (ImageView) findViewById(R.id.myinfo_avatar);
+        mAvatar = (NetworkImageView) findViewById(R.id.myinfo_avatar);
         mUsername = (TextView) findViewById(R.id.myinfo_username);
         mGroup = (TextView) findViewById(R.id.myinfo_group);
         mCredit = (TextView) findViewById(R.id.myinfo_credit);
@@ -77,17 +74,25 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
         mEmail = (TextView) findViewById(R.id.myinfo_email);
         mSignt = (TextView) findViewById(R.id.myinfo_signature);
 
-        if (BUApplication.settings.mSession != null
-                && !BUApplication.settings.mSession.isEmpty()) {
-            progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
-            progressDialog.show();
-            new MyinfoReadTask().execute();
-        } else
-            showToast("请等待登录后重新尝试");
+        progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
+
+        if (BUApiHelper.isUserLoggedin()) {
+            readUserInfo();
+        } else {
+            BUApiHelper.tryLogin(new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    if (BUApiHelper.getResult(response) == Result.SUCCESS)
+                        readUserInfo();
+                    else
+                        showToast(getString(R.string.login_error));
+                }
+            }, BUApiHelper.sErrorListener);
+        }
     }
 
     private void setInfoContent(BUUserInfo info) {
-        new GetAvatarTask(mAvatar, info.getAvatar()).execute();
+        mAvatar.setImageUrl(BUApiHelper.getImageAbsoluteUrl(info.getAvatar()), VolleyImageLoaderFactory.getImageLoader(getApplicationContext()));
         mUsername.setText(info.getUsername());
         mGroup.setText("用户组：" + info.getStatus());
         mCredit.setText("积分：" + info.getCredit());
@@ -96,118 +101,8 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
         mRegdate.setText("注册日期：" + info.getRegdate());
         mLastactive.setText("上次登录：" + info.getLastvisit());
         mEmail.setText("E-mail：" + info.getEmail());
-        mSignt.setText(Html.fromHtml("签名：<br>" + info.getSignature(),
-                new HtmlImageGetter(this, mSignt), null));
+        mSignt.setText(Html.fromHtml("签名：<br>" + info.getSignature(), new HtmlImageGetter(this, mSignt), null));
         mSignt.setMovementMethod(LinkMovementMethod.getInstance());
-    }
-
-    private void updateImage() {
-        mAvatar.setImageDrawable(imageDrawable);
-    }
-
-    class GetAvatarTask extends AsyncTask<Void, Void, Result> {
-
-        String path;
-        ImageView mView;
-
-        public GetAvatarTask(ImageView v, String url) {
-            mView = v;
-            BUApplication.settings.setNetType(BUApplication.settings.mNetType);
-            path = url;
-            path = path.replaceAll("(http://)?(www|v6|kiss|out).bitunion.org",
-                    BUApplication.settings.ROOTURL);
-            path = path.replaceAll("^images/", BUApplication.settings.ROOTURL
-                    + "/images/");
-            path = path.replaceAll("^attachments/",
-                    BUApplication.settings.ROOTURL + "/attachments/");
-            Log.v("MyinfoActivity", "GetAvatarTask>>" + path);
-        }
-
-        @Override
-        protected Result doInBackground(Void... arg0) {
-
-            InputStream is = null;
-            try {
-                is = BUAppUtils.getImageVewInputStream(path);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                return null;
-            }
-            Drawable drawable = Drawable.createFromStream(is, path);
-            if (drawable == null)
-                drawable = getResources().getDrawable(R.drawable.noavatar);
-            float asratio = (float) drawable.getIntrinsicWidth()
-                    / drawable.getIntrinsicHeight();
-            if (asratio > 1)
-                drawable.setBounds(0, 0, mAvatar.getWidth(),
-                        (int) (mAvatar.getWidth() / asratio));
-            else
-                drawable.setBounds(0, 0, (int) (mAvatar.getHeight() * asratio),
-                        mAvatar.getHeight());
-            imageDrawable = drawable;
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Result result) {
-            updateImage();
-            super.onPostExecute(result);
-        }
-
-    }
-
-    class MyinfoReadTask extends AsyncTask<Void, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-
-        @Override
-        protected Result doInBackground(Void... params) {
-            JSONObject postReq = new JSONObject();
-            try {
-                postReq.put("action", "profile");
-                postReq.put("username", URLEncoder.encode(
-                        BUApplication.settings.mUsername, "utf-8"));
-                postReq.put("session", BUApplication.settings.mSession);
-                postReq.put("queryusername", URLEncoder.encode(
-                        BUApplication.settings.mUsername, "utf-8"));
-                return postMethod.sendPost(
-                        BUAppUtils.getUrl(BUApplication.settings.mNetType,
-                                BUAppUtils.REQ_PROFILE), postReq);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Result result) {
-            switch (result) {
-                default:
-                    return;
-                case FAILURE:
-                    new UserLoginTask().execute();
-                    return;
-                case NETWRONG:
-                    showToast(BUAppUtils.NETWRONG);
-                    return;
-                case UNKNOWN:
-                    return;
-                case SUCCESS:
-            }
-            try {
-                BUUserInfo info = new BUUserInfo(
-                        postMethod.jsonResponse.getJSONObject("memberinfo"));
-                setInfoContent(info);
-            } catch (JSONException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            progressDialog.dismiss();
-        }
-
     }
 
     /**
@@ -232,12 +127,8 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
                 finish();
                 return true;
             case R.id.action_refresh:
-                if (BUApplication.settings.mSession == null
-                        || BUApplication.settings.mSession.isEmpty()) {
-                    new UserLoginTask().execute();
-                    progressDialog.show();
-                } else
-                    new MyinfoReadTask().execute();
+                if (BUApiHelper.isUserLoggedin())
+
                 return true;
             case R.id.action_logout:
                 AlertDialog dialog = new AlertDialog.Builder(this)
@@ -250,6 +141,30 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void readUserInfo() {
+        progressDialog.show();
+        BUApiHelper.getUserProfile(null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                if (BUApiHelper.getResult(response) == Result.SUCCESS && !response.isNull("memberinfo")){
+                    if (progressDialog.isShowing())
+                        progressDialog.dismiss();
+                    BUUserInfo info = new BUUserInfo(response.optJSONObject("memberinfo"));
+                    setInfoContent(info);
+                } else
+                    showToast("Server Error: " + response.toString());
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if (progressDialog.isShowing())
+                    progressDialog.dismiss();
+                showToast(getString(R.string.network_unknown));
+            }
+        });
     }
 
     @Override
@@ -273,59 +188,6 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
             });
         else
             dialog.dismiss();
-    }
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    private class UserLoginTask extends AsyncTask<Void, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-
-        @Override
-        protected Result doInBackground(Void... params) {
-
-            JSONObject postReq = new JSONObject();
-            try {
-                postReq.put("action", "login");
-                postReq.put("username", URLEncoder.encode(
-                        BUApplication.settings.mUsername, "utf-8"));
-                postReq.put("password", BUApplication.settings.mPassword);
-                return postMethod.sendPost(BUAppUtils.getUrl(BUApplication.settings.mNetType, BUAppUtils.REQ_LOGGING), postReq);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        // 处理登录结果并弹出toast显示
-        @Override
-        protected void onPostExecute(final Result result) {
-
-            switch (result) {
-                default:
-                    return;
-                case FAILURE:
-                    showToast(BUAppUtils.LOGINFAIL);
-                    return;
-                case NETWRONG:
-                    showToast(BUAppUtils.NETWRONG);
-                    return;
-                case UNKNOWN:
-                    return;
-                case SUCCESS:
-            }
-            try {
-                BUApplication.settings.mSession = postMethod.jsonResponse
-                        .getString("session");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            new MyinfoReadTask().execute();
-        }
     }
 
     private void showToast(String text) {

@@ -1,5 +1,6 @@
 package martin.app.bitunion.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -175,4 +176,20 @@ public class BUAppUtils {
             imgKey = "0" + imgKey;
         return imgKey;
     }
+
+    public static String readTextFromInputStream(InputStream is) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] data = new byte[1024];
+        int len;
+        String result = null;
+        if (is == null)
+            return null;
+        while ((len = is.read(data)) != -1) {
+            outputStream.write(data, 0, len);
+        }
+        result = new String(outputStream.toByteArray());
+        return result;
+
+    }
+
 }

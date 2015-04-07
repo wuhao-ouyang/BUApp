@@ -1,43 +1,26 @@
 package martin.app.bitunion;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import martin.app.bitunion.util.BUApiHelper;
-import martin.app.bitunion.util.BUAppSettings;
-import martin.app.bitunion.util.BUAppUtils;
-import martin.app.bitunion.util.BUAppUtils.Result;
-import martin.app.bitunion.model.BUForum;
-import martin.app.bitunion.util.PostMethod;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Point;
+import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.idunnololz.widgets.AnimatedExpandableListView;
+
+import java.util.ArrayList;
+
+import martin.app.bitunion.model.BUForum;
+import martin.app.bitunion.util.BUApiHelper;
+import martin.app.bitunion.util.BUAppUtils;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -147,8 +130,7 @@ public class MainActivity extends ActionBarActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == BUAppUtils.MAIN_REQ) {
             BUApplication.settings.mSession = data.getStringExtra("session");
-            showToast(BUAppUtils.USERNAME + " " + BUApplication.settings.mUsername + " "
-                    + BUAppUtils.LOGINSUCCESS);
+            showToast(BUAppUtils.USERNAME + " " + BUApplication.settings.mUsername + " " + BUAppUtils.LOGINSUCCESS);
         }
     }
 
@@ -188,7 +170,7 @@ public class MainActivity extends ActionBarActivity {
 
                 @Override
                 public void onClick(View v) {
-                    if (BUApplication.settings.mUsername != null && BUApplication.settings.mPassword != null) {
+                    if (BUApiHelper.isUserLoggedin()) {
                         if (forum.getFid() == -1){
                             // TODO 最新帖子
                             return;}

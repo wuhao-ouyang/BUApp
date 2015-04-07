@@ -7,7 +7,7 @@
     <string name="action_refresh">刷新</string>
     <string name="action_post">回复</string>
     <string name="action_logout">登出</string>
-    <string name="action_info">关于…</string>
+    <string name="action_info">关于</string>
     <string name="action_sharelink">分享</string>
     <string name="nettype_in">校园网</string>
     <string name="nettype_out">外网</string>
@@ -24,11 +24,12 @@
     <string name="title_activity_settings">设置</string>
 
     <!-- Network response error -->
-    <string name="network_unknown">未知网络错误</string>
-    <string name="network_api_fail">Api 错误: $api_error</string>
+    <string name="network_unknown">网络异常</string>
+    <string name="network_api_fail">Api error: $api_error</string>
 
     <!-- Api 错误 -->
-    <string name="logout_error">登出错误！</string>
+    <string name="login_error">登录异常!</string>
+    <string name="logout_error">登出异常！</string>
 
     <!-- Dialog message -->
     <string name="logout_confirm_title">登出</string>

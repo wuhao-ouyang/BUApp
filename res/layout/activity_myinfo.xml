@@ -17,7 +17,7 @@
 
         <TableRow>
 
-            <ImageView
+            <com.android.volley.toolbox.NetworkImageView
                 android:id="@+id/myinfo_avatar"
                 android:layout_width="100sp"
                 android:layout_height="150sp"

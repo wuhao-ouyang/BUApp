@@ -1,21 +1,22 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/action_post"
         android:icon="@drawable/ic_action_edit"
         android:orderInCategory="100"
-        android:showAsAction="ifRoom"
+        app:showAsAction="ifRoom"
         android:title="@string/action_post"/>
     <item
         android:id="@+id/action_refresh"
         android:icon="@drawable/ic_action_refresh"
-        android:showAsAction="ifRoom"
+        app:showAsAction="ifRoom"
         android:title="@string/action_refresh"/>
     
     <item
         android:id="@+id/action_sharelink"
         android:icon="@drawable/ic_action_share"
-        android:showAsAction="ifRoom"
+        app:showAsAction="ifRoom"
         android:title="@string/action_sharelink"/>
 
 </menu>
