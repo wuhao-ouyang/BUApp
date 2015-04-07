@@ -47,7 +47,7 @@ public class BUApiHelper {
     };
 
     public static boolean isUserLoggedin() {
-        return mSession == null || mSession.isEmpty();
+        return mSession != null && !mSession.isEmpty();
     }
 
     /**
@@ -129,6 +129,24 @@ public class BUApiHelper {
                 responseListener.onResponse(response);
             }
         }, errorListener);
+    }
+
+    /**
+     * Get user profile
+     * @param uid user id
+     */
+    public static void getUserProfile(int uid,
+                                      Response.Listener<JSONObject> responseListener,
+                                      Response.ErrorListener errorListener) {
+        if (uid <= 0)
+            return;
+        String path = baseurl + "/bu_profile.php";
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("action", "profile");
+        params.put("username", mUsername);
+        params.put("session", mSession);
+        params.put("uid", Integer.toString(uid));
+        sendRequest(path, params, responseListener, errorListener);
     }
 
     /**
