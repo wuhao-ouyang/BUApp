@@ -25,6 +25,7 @@ import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
@@ -32,6 +33,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -59,7 +61,7 @@ public class UserInfoDialogFragment extends DialogFragment {
     private TextView mSignt;
 
     private ScrollView userinfoForm;
-    private LinearLayout readingstatusForm;
+    private View readingstatusForm;
 
     private int uid;
 
@@ -67,13 +69,22 @@ public class UserInfoDialogFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         uid = getArguments().getInt("uid");
+        setStyle(R.style.UserProfileDialog, 0);
+    }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+        dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        return dialog;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.userinfo_fragment, null);
         userinfoForm = (ScrollView) view.findViewById(R.id.userinfo_contentform);
-        readingstatusForm = (LinearLayout) view.findViewById(R.id.userinfo_reading_status);
+        readingstatusForm = view.findViewById(R.id.userinfo_reading_status);
 
         mAvatar = (NetworkImageView) view.findViewById(R.id.userinfo_avatar);
         mUsername = (TextView) view.findViewById(R.id.userinfo_username);

@@ -1,137 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:minWidth="360dp"
+    android:padding="20dp">
 
-    <LinearLayout
+    <ProgressBar
         android:id="@+id/userinfo_reading_status"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="20dp">
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"/>
 
     <ScrollView
         android:id="@+id/userinfo_contentform"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone" >
+        android:visibility="gone">
 
-        <FrameLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+            android:layout_height="wrap_content">
 
             <com.android.volley.toolbox.NetworkImageView
                 android:id="@+id/userinfo_avatar"
                 android:layout_width="100sp"
                 android:layout_height="150sp"
-                android:layout_gravity="right"
-                android:layout_marginRight="20dp"
+                android:layout_alignParentRight="true"
                 android:layout_marginTop="20dp"
-                android:src="@drawable/ic_action_picture" />
+                android:src="@drawable/ic_action_picture"/>
 
-            <LinearLayout
+
+            <TextView
+                android:id="@+id/userinfo_username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_toLeftOf="@+id/userinfo_avatar"
+                android:layout_marginBottom="3dp"
+                android:text="用户名"
+                android:textSize="20sp"/>
+
+            <TextView
+                android:id="@+id/userinfo_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_toLeftOf="@+id/userinfo_avatar"
+                android:layout_marginBottom="3dp"
+                android:layout_below="@+id/userinfo_username"
+                android:text="用户组："/>
+
+            <TextView
+                android:id="@+id/userinfo_credit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_toLeftOf="@+id/userinfo_avatar"
+                android:layout_marginBottom="3dp"
+                android:layout_below="@+id/userinfo_group"
+                android:text="积分："/>
+
+            <TextView
+                android:id="@+id/userinfo_uid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_toLeftOf="@+id/userinfo_avatar"
+                android:layout_marginBottom="10dp"
+                android:layout_below="@+id/userinfo_credit"
+                android:text="UID：0"/>
+
+            <TextView
+                android:id="@+id/userinfo_threadnum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginBottom="3dp"
+                android:layout_below="@+id/userinfo_uid"
+                android:text="主题数：0"/>
+
+            <TextView
+                android:id="@+id/userinfo_postnum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginBottom="3dp"
+                android:layout_below="@+id/userinfo_threadnum"
+                android:text="发帖数：0"/>
+
+            <TextView
+                android:id="@+id/userinfo_birth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginBottom="3dp"
+                android:layout_below="@+id/userinfo_postnum"
+                android:text="生日：0000-00-00"/>
+
+            <TextView
+                android:id="@+id/userinfo_regdate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="3dp"
+                android:layout_below="@+id/userinfo_birth"
+                android:text="注册日期：0000-00-00 00:00:00"/>
+
+            <TextView
+                android:id="@+id/userinfo_lastvisit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginBottom="10dp"
+                android:layout_below="@+id/userinfo_regdate"
+                android:text="上次登录：0000-00-00 00:00:00"/>
+
+            <TextView
+                android:id="@+id/userinfo_site"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginBottom="3dp"
+                android:layout_below="@+id/userinfo_lastvisit"
+                android:text="主页："/>
+
+            <TextView
+                android:id="@+id/userinfo_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginBottom="3dp"
+                android:layout_below="@+id/userinfo_site"
+                android:text="E-mail："/>
+
+            <TextView
+                android:id="@+id/userinfo_signature"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginTop="20dp"
-                android:orientation="vertical" >
-
-                <TextView
-                    android:id="@+id/userinfo_username"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3sp"
-                    android:text="用户名"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/userinfo_group"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3sp"
-                    android:text="用户组：null" />
-
-                <TextView
-                    android:id="@+id/userinfo_credit"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="10sp"
-                    android:text="积分：null" />
-
-                <TextView
-                    android:id="@+id/userinfo_uid"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3sp"
-                    android:text="UID：0" />
-
-                <TextView
-                    android:id="@+id/userinfo_threadnum"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3sp"
-                    android:text="主题数：0" />
-
-                <TextView
-                    android:id="@+id/userinfo_postnum"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3sp"
-                    android:text="发帖数：0" />
-
-                <TextView
-                    android:id="@+id/userinfo_birth"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3sp"
-                    android:text="生日：0000-00-00" />
-
-                <TextView
-                    android:id="@+id/userinfo_regdate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3sp"
-                    android:text="注册日期：0000-00-00 00:00:00" />
-
-                <TextView
-                    android:id="@+id/userinfo_lastvisit"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="10sp"
-                    android:text="上次登录：0000-00-00 00:00:00" />
-
-                <TextView
-                    android:id="@+id/userinfo_site"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3sp"
-                    android:text="主页：" />
-
-                <TextView
-                    android:id="@+id/userinfo_email"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3sp"
-                    android:text="E-mail：" />
-
-                <TextView
-                    android:id="@+id/userinfo_signature"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3sp"
-                    android:text="签名："
-                    android:textColorLink="#00f" />
-            </LinearLayout>
-        </FrameLayout>
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/userinfo_email"
+                android:text="签名："
+                android:textColorLink="#00f"/>
+        </RelativeLayout>
     </ScrollView>
 
-</LinearLayout>
+</FrameLayout>
