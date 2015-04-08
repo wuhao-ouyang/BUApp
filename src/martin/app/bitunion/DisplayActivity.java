@@ -6,7 +6,6 @@ import java.util.List;
 import martin.app.bitunion.fragment.ForumFragment;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.CommonIntents;
-import martin.app.bitunion.util.PostMethod;
 
 import android.content.Intent;
 import android.os.Bundle;

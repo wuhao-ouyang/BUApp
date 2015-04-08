@@ -6,7 +6,6 @@ import martin.app.bitunion.R;
 import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.model.BUUserInfo;
 import martin.app.bitunion.util.HtmlImageGetter;
-import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 import martin.app.bitunion.util.VolleyImageLoaderFactory;
 

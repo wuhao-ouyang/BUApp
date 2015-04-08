@@ -4,7 +4,6 @@ import org.json.JSONObject;
 
 import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
-import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 
 import android.annotation.TargetApi;
