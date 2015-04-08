@@ -1,41 +1,24 @@
 package martin.app.bitunion;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import martin.app.bitunion.fragment.ForumFragment;
-import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
-import martin.app.bitunion.model.BUThread;
-import martin.app.bitunion.util.DataParser;
+import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.PostMethod;
-import martin.app.bitunion.util.BUAppUtils.Result;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.util.SparseArray;
-import android.util.SparseBooleanArray;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -43,9 +26,6 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 
 public class DisplayActivity extends ActionBarActivity {
 
@@ -128,9 +108,9 @@ public class DisplayActivity extends ActionBarActivity {
                 break;
             case R.id.action_newthread:
                 Intent intent = new Intent(DisplayActivity.this, NewthreadActivity.class);
-                intent.putExtra("action", "newthread");
-                intent.putExtra("forumname", forumName);
-                intent.putExtra("fid", forumId);
+                intent.putExtra(CommonIntents.EXTRA_ACTION, NewthreadActivity.ACTION_NEW_THREAD);
+                intent.putExtra(CommonIntents.EXTRA_FORUM_NAME, forumName);
+                intent.putExtra(CommonIntents.EXTRA_FID, forumId);
                 startActivity(intent);
                 break;
         }

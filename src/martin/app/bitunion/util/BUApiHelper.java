@@ -62,7 +62,7 @@ public class BUApiHelper {
         params.put("action", "login");
         params.put("username", username);
         params.put("password", password);
-        sendPost(path, params, new Response.Listener<JSONObject>() {
+        httpPost(path, params, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 if (getResult(response) == BUAppUtils.Result.SUCCESS)
@@ -86,11 +86,12 @@ public class BUApiHelper {
             public void onResponse(JSONObject response) {
                 switch (getResult(response)) {
                     case FAILURE:
-                        Toast.makeText(BUApplication.getInstance(), BUAppUtils.LOGINFAIL, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(BUApplication.getInstance(), R.string.login_fail, Toast.LENGTH_SHORT).show();
                         break;
                     case SUCCESS:
-                        Toast.makeText(BUApplication.getInstance(), BUAppUtils.USERNAME + " " + mUsername + " "
-                                + BUAppUtils.LOGINSUCCESS, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(BUApplication.getInstance(),
+                                BUApplication.getInstance().getString(R.string.login_success).replace("$user_name", mUsername),
+                                Toast.LENGTH_SHORT).show();
                         mSession = response.optString("session");
                         BUApplication.settings.mSession = response.optString("session");
                         break;
@@ -102,7 +103,7 @@ public class BUApiHelper {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(BUApplication.getInstance(), BUAppUtils.NETWRONG, Toast.LENGTH_SHORT).show();
+                Toast.makeText(BUApplication.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -117,7 +118,7 @@ public class BUApiHelper {
         params.put("username", mUsername);
         params.put("password", mPassword);
         params.put("session", mSession);
-        sendPost(path, params, new Response.Listener<JSONObject>() {
+        httpPost(path, params, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 if (getResult(response) == BUAppUtils.Result.SUCCESS) {
@@ -135,7 +136,7 @@ public class BUApiHelper {
      * @param tid thread id
      * @param message message to be sent
      */
-    public static void sendNewPost(int tid, String message,
+    public static void postNewPost(int tid, String message,
                                    Response.Listener<JSONObject> responseListener,
                                    Response.ErrorListener errorListener) {
         if (tid <= 0 || message == null || message.isEmpty())
@@ -148,7 +149,30 @@ public class BUApiHelper {
         params.put("tid", Integer.toString(tid));
         params.put("message", message);
         params.put("attachment", "0");
-        sendPost(path, params, responseListener, errorListener);
+        httpPost(path, params, responseListener, errorListener);
+    }
+
+    /**
+     * Post a new thread on specified forum
+     * @param fid Forum id
+     * @param title New thread subject
+     * @param message New thread message
+     */
+    public static void postNewThread(int fid, String title, String message,
+                                     Response.Listener<JSONObject> responseListener,
+                                     Response.ErrorListener errorListener) {
+        if (fid < 0 || title == null || title.isEmpty() || message == null || message.isEmpty())
+            return;
+        String path = baseurl + "/bu_newpost.php";
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("action", "newthread");
+        params.put("username", mUsername);
+        params.put("session", mSession);
+        params.put("fid", Integer.toString(fid));
+        params.put("subject", title);
+        params.put("message", message);
+        params.put("attachment", "0");
+        httpPost(path, params, responseListener, errorListener);
     }
 
     /**
@@ -166,7 +190,7 @@ public class BUApiHelper {
         params.put("username", mUsername);
         params.put("session", mSession);
         params.put("uid", Integer.toString(uid));
-        sendPost(path, params, responseListener, errorListener);
+        httpPost(path, params, responseListener, errorListener);
     }
 
     /**
@@ -184,7 +208,7 @@ public class BUApiHelper {
         params.put("username", mUsername);
         params.put("session", mSession);
         params.put("queryusername", userName);
-        sendPost(path, params, responseListener, errorListener);
+        httpPost(path, params, responseListener, errorListener);
     }
 
     /**
@@ -206,7 +230,7 @@ public class BUApiHelper {
         params.put("fid", Integer.toString(fid));
         params.put("from", Integer.toString(from));
         params.put("to", Integer.toString(to));
-        sendPost(path, params, responseListener, errorListener);
+        httpPost(path, params, responseListener, errorListener);
     }
 
     public static void readPostList(int tid, int from, int to,
@@ -222,7 +246,7 @@ public class BUApiHelper {
         params.put("tid", Integer.toString(tid));
         params.put("from", Integer.toString(from));
         params.put("to", Integer.toString(to));
-        sendPost(path, params, responseListener, errorListener);
+        httpPost(path, params, responseListener, errorListener);
     }
 
     public static void init(Context context) {
@@ -258,7 +282,7 @@ public class BUApiHelper {
         baseurl = rooturl + "/open_api";
     }
 
-    private static void sendPost(final String path, Map<String, String> params,
+    private static void httpPost(final String path, Map<String, String> params,
                                  Response.Listener<JSONObject> responseListener,
                                  Response.ErrorListener errorListener) {
         JSONObject postReq = new JSONObject();

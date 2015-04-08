@@ -47,14 +47,6 @@ public class BUAppUtils {
     public static final String QUOTE_REGEX = QUOTE_HEAD
             + "(((?!<br><br><center><table border=)[\\w\\W])*?)" + QUOTE_TAIL;
 
-    public static final String NETWRONG = "网络错误";
-    public static final String LOGINFAIL = "登录失败";
-    public static final String POSTFAILURE = "发送失败";
-    public static final String POSTSUCCESS = "发送成功，刷新查看回复";
-    public static final String USERNAME = "用户";
-    public static final String LOGINSUCCESS = "登录成功";
-    public static final String CLIENTMESSAGETAG = "\n\n发送自 [url=https://play.google.com/store/apps/details?id=martin.app.bitunion][b]BUApp Android[/b][/url]";
-
     public static final int REQ_LOGGING = 0;
     public static final int REQ_FORUM = 1;
     public static final int REQ_THREAD = 2;
@@ -67,36 +59,9 @@ public class BUAppUtils {
     public enum Result {
         SUCCESS, // 返回数据成功，result字段为success
         FAILURE, // 返回数据失败，result字段为failure
-        SUCCESS_EMPTY, // 返回数据成功，但字段没有数据
         NETWRONG, // 没有返回数据
         UNKNOWN;
     };
-
-    public static String getUrl(int net, int urlType){
-        String ROOTURL, BASEURL;
-
-        ROOTURL = net == BITNET ? "http://www.bitunion.org" : "http://out.bitunion.org";
-        BASEURL = ROOTURL + "/open_api";
-        if (urlType == REQ_LOGGING)
-            return BASEURL + "/bu_logging.php";
-        if (urlType == REQ_FORUM)
-            return BASEURL + "/bu_forum.php";
-        if (urlType == REQ_THREAD)
-            return BASEURL + "/bu_thread.php";
-        if (urlType == REQ_PROFILE)
-            return BASEURL + "/bu_profile.php";
-        if (urlType == REQ_POST)
-            return BASEURL + "/bu_post.php";
-        if (urlType == REQ_FID_TID_SUM)
-            return BASEURL + "/bu_fid_tid.php";
-        if (urlType == NEWPOST)
-            return BASEURL + "/bu_newpost.php";
-        if (urlType == NEWTHREAD)
-            return BASEURL + "/bu_newpost.php";
-        Log.e("BUAppUtils", "getUrl Error!");
-        return "";
-
-    }
 
     public static InputStream getImageVewInputStream(String imagepath)
             throws IOException {

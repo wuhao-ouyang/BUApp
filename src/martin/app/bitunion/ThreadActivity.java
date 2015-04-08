@@ -1,10 +1,7 @@
 package martin.app.bitunion;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import martin.app.bitunion.fragment.ThreadFragment;
@@ -12,7 +9,7 @@ import martin.app.bitunion.fragment.UserInfoDialogFragment;
 import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUPost;
-import martin.app.bitunion.util.PostMethod;
+import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.BUAppUtils.Result;
 
 import android.app.AlertDialog;
@@ -21,9 +18,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -111,9 +106,9 @@ public class ThreadActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ThreadActivity.this, NewthreadActivity.class);
-                intent.putExtra("action", "newpost");
-                intent.putExtra("tid", threadId);
-                intent.putExtra("message", replyMessage.getText().toString());
+                intent.putExtra(CommonIntents.EXTRA_ACTION, NewthreadActivity.ACTION_NEW_POST);
+                intent.putExtra(CommonIntents.EXTRA_TID, threadId);
+                intent.putExtra(CommonIntents.EXTRA_MESSAGE, replyMessage.getText().toString());
                 startActivity(intent);
 
             }
@@ -360,10 +355,10 @@ public class ThreadActivity extends ActionBarActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         if (which == DialogInterface.BUTTON_POSITIVE) {
                             Log.i("MyReplySubmitListener", "Reply submitted>>" + message);
-                            String finalMsg = message;
+                            StringBuilder finalMsg = new StringBuilder(message);
                             if (BUApplication.settings.showsigature)
-                                finalMsg += BUAppUtils.CLIENTMESSAGETAG;
-                            BUApiHelper.sendNewPost(threadId, finalMsg, new Response.Listener<JSONObject>() {
+                                finalMsg.append(getString(R.string.buapp_client_postfix));
+                            BUApiHelper.postNewPost(threadId, finalMsg.toString(), new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject jsonObject) {
                                     if (BUApiHelper.getResult(jsonObject) == Result.SUCCESS) {

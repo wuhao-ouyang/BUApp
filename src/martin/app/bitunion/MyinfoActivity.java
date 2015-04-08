@@ -1,15 +1,9 @@
 package martin.app.bitunion;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils.Result;
-import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUUserInfo;
 import martin.app.bitunion.util.HtmlImageGetter;
 import martin.app.bitunion.util.PostMethod;
@@ -17,21 +11,15 @@ import martin.app.bitunion.util.VolleyImageLoaderFactory;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.ProgressDialog;
-import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.support.v4.app.DialogFragment;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;

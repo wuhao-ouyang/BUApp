@@ -1,17 +1,12 @@
 package martin.app.bitunion;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import martin.app.bitunion.util.BUAppUtils;
-import martin.app.bitunion.util.PostMethod;
+import martin.app.bitunion.util.BUApiHelper;
+import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.BUAppUtils.Result;
-import android.os.AsyncTask;
+
 import android.os.Bundle;
-import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -21,9 +16,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.support.v4.app.NavUtils;
+
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 
 public class NewthreadActivity extends ActionBarActivity {
+    public static final String ACTION_NEW_POST = "NewthreadActivity.ACTION_NEW_POST";
+    public static final String ACTION_NEW_THREAD = "NewthreadActivity.ACTION_NEW_THREAD";
 
     private EditText subjectbox;
     private EditText messagebox;
@@ -32,7 +31,7 @@ public class NewthreadActivity extends ActionBarActivity {
     private String title;
     private String action;
     private int fid = 0;
-    private String tid = null;
+    private int tid = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +40,6 @@ public class NewthreadActivity extends ActionBarActivity {
 
         subjectbox = (EditText) findViewById(R.id.newthread_subject);
         messagebox = (EditText) findViewById(R.id.newthread_message);
-        subjectbox.setOnFocusChangeListener(new MyOnFocusChangeListener());
-        messagebox.setOnFocusChangeListener(new MyOnFocusChangeListener());
 
         clearButton = (Button) findViewById(R.id.newthread_clear);
         sendButton = (Button) findViewById(R.id.newthread_send);
@@ -58,7 +55,7 @@ public class NewthreadActivity extends ActionBarActivity {
 
             @Override
             public void onClick(View v) {
-                if (action.equals("newthread"))
+                if (action.equals(ACTION_NEW_THREAD))
                     sendMessage(subjectbox.getText().toString(), messagebox.getText().toString());
                 else
                     sendMessage(messagebox.getText().toString());
@@ -67,16 +64,15 @@ public class NewthreadActivity extends ActionBarActivity {
 
         // Parse parameters sent by parent activity
         Intent intent = getIntent();
-        action = intent.getStringExtra("action");
+        action = intent.getStringExtra(CommonIntents.EXTRA_ACTION);
         Log.v("NewthreadActivity", "action>>" + action);
-        if (action.equals("newthread")){
-            fid = intent.getIntExtra("fid", 0);
-            title = intent.getStringExtra("forumname") + " - 发新话题";
+        if (action.equals(ACTION_NEW_THREAD)){
+            fid = intent.getIntExtra(CommonIntents.EXTRA_FID, 0);
+            title = intent.getStringExtra(CommonIntents.EXTRA_FORUM_NAME) + " - 发新话题";
         }
-        if (action.equals("newpost")){
-            subjectbox.setFocusable(false);
-            subjectbox.setBackgroundResource(R.drawable.edittext_background_disable);
-            tid = intent.getStringExtra("tid");
+        if (action.equals(ACTION_NEW_POST)){
+            subjectbox.setEnabled(false);
+            tid = intent.getIntExtra(CommonIntents.EXTRA_TID, 0);
             String m = intent.getStringExtra("message");
             messagebox.setText(m);
             messagebox.setSelection(messagebox.getText().toString().length());
@@ -102,8 +98,8 @@ public class NewthreadActivity extends ActionBarActivity {
             return;
         }
         if (BUApplication.settings.showsigature)
-            message += BUAppUtils.CLIENTMESSAGETAG;
-        new NewContentTask(subject, message, fid).execute();
+            message += getString(R.string.buapp_client_postfix);
+        BUApiHelper.postNewThread(fid, subject, message, mResponseListener, mErrorListener);
     }
 
     private void sendMessage(String message) {
@@ -112,20 +108,8 @@ public class NewthreadActivity extends ActionBarActivity {
             return;
         }
         if (BUApplication.settings.showsigature)
-            message += BUAppUtils.CLIENTMESSAGETAG;
-        new NewContentTask(message, tid).execute();
-    }
-
-    class MyOnFocusChangeListener implements View.OnFocusChangeListener{
-
-        @Override
-        public void onFocusChange(View v, boolean focus) {
-            if (focus)
-                ((EditText) v).setBackgroundResource(R.drawable.edittext_background_selected);
-            else
-                ((EditText) v).setBackgroundResource(R.drawable.edittext_background);
-        }
-
+            message += getString(R.string.buapp_client_postfix);
+        BUApiHelper.postNewPost(tid, message, mResponseListener, mErrorListener);
     }
 
     /**
@@ -155,84 +139,22 @@ public class NewthreadActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private class NewContentTask extends AsyncTask<Void, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-        String subject = "";
-        String message = "";
-        String tid = null;
-        int fid = 0;
-
-        public NewContentTask(String m, String tid) {
-            message = m;
-            this.tid = tid;
-        }
-
-        public NewContentTask(String s, String m, int fid) {
-            subject = s;
-            message = m;
-            this.fid = fid;
-        }
-
+    private Response.Listener<JSONObject> mResponseListener = new Response.Listener<JSONObject>() {
         @Override
-        protected Result doInBackground(Void... params) {
-            JSONObject postReq = new JSONObject();
-            try {
-                if (tid != null && !tid.isEmpty()) {
-                    postReq.put("action", "newreply");
-                    postReq.put("username", URLEncoder.encode(
-                            BUApplication.settings.mUsername, "utf-8"));
-                    postReq.put("session", BUApplication.settings.mSession);
-                    postReq.put("tid", tid);
-                    postReq.put("message", URLEncoder.encode(message, "utf-8"));
-                    postReq.put("attachment", 0);
-                    return postMethod.sendPost(BUAppUtils.getUrl(BUApplication.settings.mNetType, BUAppUtils.NEWPOST), postReq);
-                }
-                if (fid != 0){
-                    postReq.put("action", "newthread");
-                    postReq.put("username", URLEncoder.encode(
-                            BUApplication.settings.mUsername, "utf-8"));
-                    postReq.put("session", BUApplication.settings.mSession);
-                    postReq.put("fid", fid);
-                    postReq.put("subject", URLEncoder.encode(subject, "utf-8"));
-                    postReq.put("message", URLEncoder.encode(message, "utf-8"));
-                    postReq.put("attachment", 0);
-                    return postMethod.sendPost(BUAppUtils.getUrl(BUApplication.settings.mNetType, BUAppUtils.NEWTHREAD), postReq);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(final Result result) {
-            switch (result) {
-                default:
-                    return;
-                case FAILURE:
-                    showToast(BUAppUtils.POSTFAILURE);
-                    return;
-                case NETWRONG:
-                    showToast(BUAppUtils.NETWRONG);
-                    return;
-                case UNKNOWN:
-                    return;
-                case SUCCESS_EMPTY:
-                    if (action.equals("newpost"))
-                        showToast(BUAppUtils.POSTSUCCESS);
-                    if (action.equals("newthread"))
-                        showToast("发送成功，刷新查看新帖");
-                    finish();
+        public void onResponse(JSONObject response) {
+            if (BUApiHelper.getResult(response) == Result.SUCCESS) {
+                Toast.makeText(getApplicationContext(), R.string.message_sent_success, Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(getApplicationContext(), R.string.message_sent_fail, Toast.LENGTH_SHORT).show();
             }
         }
+    };
 
-    }
-
-    private void showToast(String text) {
-        Toast.makeText(NewthreadActivity.this, text, Toast.LENGTH_SHORT).show();
-    }
-
+    private Response.ErrorListener mErrorListener = new Response.ErrorListener() {
+        @Override
+        public void onErrorResponse(VolleyError volleyError) {
+            Toast.makeText(getApplicationContext(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
+        }
+    };
 }

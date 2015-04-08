@@ -136,7 +136,7 @@ public class ThreadFragment extends Fragment implements Updateable {
                 public void onErrorResponse(VolleyError error) {
                     mReqCount--;
                     notifyUpdated();
-                    Toast.makeText(BUApplication.getInstance(), BUAppUtils.NETWRONG, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(BUApplication.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
                 }
             });
             from += 20;

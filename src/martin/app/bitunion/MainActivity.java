@@ -130,7 +130,7 @@ public class MainActivity extends ActionBarActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == BUAppUtils.MAIN_REQ) {
             BUApplication.settings.mSession = data.getStringExtra("session");
-            showToast(BUAppUtils.USERNAME + " " + BUApplication.settings.mUsername + " " + BUAppUtils.LOGINSUCCESS);
+            showToast(getString(R.string.login_success).replace("$user_name", BUApplication.settings.mUsername));
         }
     }
 

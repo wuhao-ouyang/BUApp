@@ -128,7 +128,7 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
                 public void onErrorResponse(VolleyError error) {
                     mReqCount--;
                     notifyUpdated();
-                    Toast.makeText(BUApplication.getInstance(), BUAppUtils.NETWRONG, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(BUApplication.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
                 }
             });
             from += 20;

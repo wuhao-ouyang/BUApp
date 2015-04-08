@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:layout_weight="0.02"
-        android:background="@drawable/edittext_background"
+        android:background="@drawable/selector_bg_edittext"
         android:hint="主题"
         android:padding="5dp" />
 
@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.95"
-        android:background="@drawable/edittext_background"
+        android:background="@drawable/selector_bg_edittext"
         android:gravity="top"
         android:hint="内容"
         android:padding="5dp" />

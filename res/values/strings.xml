@@ -18,6 +18,7 @@
     <string name="title_activity_display">DisplayActivity</string>
     <string name="read_progress_message">读取中</string>
     <string name="title_activity_settings">设置</string>
+    <string name="buapp_client_postfix">\n\n发送自 [url=https://play.google.com/store/apps/details?id=martin.app.bitunion][b]BUApp Android[/b][/url]</string>
 
     <!-- Network response error -->
     <string name="network_unknown">网络异常</string>
@@ -38,6 +39,10 @@
     <string name="dialog_button_cancel">取消</string>
 
     <!-- Toast message -->
+    <string name="login_fail">登录失败</string>
+    <string name="login_success">用户 $user_name 登录成功</string>
     <string name="message_sending">消息发送中...</string>
+    <string name="message_sent_fail">发送失败</string>
+    <string name="message_sent_success">发送成功</string>
 
 </resources>

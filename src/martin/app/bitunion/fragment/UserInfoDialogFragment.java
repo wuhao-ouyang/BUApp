@@ -1,41 +1,25 @@
 package martin.app.bitunion.fragment;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import martin.app.bitunion.BUApplication;
-import martin.app.bitunion.MainActivity;
 import martin.app.bitunion.R;
 import martin.app.bitunion.util.BUApiHelper;
-import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUUserInfo;
 import martin.app.bitunion.util.HtmlImageGetter;
 import martin.app.bitunion.util.PostMethod;
 import martin.app.bitunion.util.BUAppUtils.Result;
 import martin.app.bitunion.util.VolleyImageLoaderFactory;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
