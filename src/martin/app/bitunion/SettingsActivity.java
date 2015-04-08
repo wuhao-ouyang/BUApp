@@ -1,16 +1,13 @@
 package martin.app.bitunion;
 
-import android.content.res.AssetManager;
-import android.net.Uri;
-import android.os.Bundle;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -21,14 +18,8 @@ import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.support.v4.app.NavUtils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import martin.app.bitunion.util.BUAppUtils;
 
@@ -58,7 +49,8 @@ public class SettingsActivity extends ActionBarActivity {
         // Show the Up button in the action bar.
         setupActionBar();
 
-        if (BUApplication.PIXDENSITY > DisplayMetrics.DENSITY_HIGH) {
+        float dpi = getResources().getDisplayMetrics().densityDpi;
+        if (dpi > DisplayMetrics.DENSITY_HIGH) {
             RECOMMENDTITESIZE = 14;
             RECOMMENDCONTENTSIZE = 14;
         } else {

@@ -64,6 +64,7 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
         progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
 
         if (BUApiHelper.isUserLoggedin()) {
+            setInfoContent(BUApiHelper.getLoggedinUser());
             readUserInfo();
         } else {
             BUApiHelper.tryLogin(new Response.Listener<JSONObject>() {
@@ -79,6 +80,8 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
     }
 
     private void setInfoContent(BUUserInfo info) {
+        if (info == null)
+            return;
         mAvatar.setImageUrl(BUApiHelper.getImageAbsoluteUrl(info.getAvatar()), VolleyImageLoaderFactory.getImageLoader(getApplicationContext()));
         mUsername.setText(info.getUsername());
         mGroup.setText("用户组：" + info.getStatus());

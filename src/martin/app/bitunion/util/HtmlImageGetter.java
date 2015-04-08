@@ -46,9 +46,8 @@ public class HtmlImageGetter implements Html.ImageGetter {
         if (imgCache.get(imgKey) != null)
             return imgCache.get(imgKey);
 
+        imgUrl = BUApiHelper.getImageAbsoluteUrl(imgUrl);
         Log.v("ImageGetter", "img not cached");
-        imgUrl = imgUrl.replaceAll("(http://)?((out.|kiss.|www.)?bitunion.org|btun.yi.org|10.1.10.253)", BUApplication.settings.ROOTURL);
-        imgUrl = imgUrl.replace("..", BUApplication.settings.ROOTURL);
 
         Log.v("ImageGetter", "img Url>>" + imgUrl);
         URLDrawable urlDrawable = new URLDrawable(defaultDrawable);

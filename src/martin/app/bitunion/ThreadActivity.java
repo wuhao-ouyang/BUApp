@@ -166,7 +166,7 @@ public class ThreadActivity extends ActionBarActivity {
             case R.id.action_sharelink:
                 StringBuilder sb = new StringBuilder(threadName);
                 sb.append('\n');
-                sb.append(BUApplication.settings.ROOTURL);
+                sb.append(BUApiHelper.getRootUrl());
                 sb.append("/viewthread.php?tid=");
                 sb.append(threadId);
 

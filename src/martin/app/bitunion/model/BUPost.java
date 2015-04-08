@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.MainActivity;
+import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
 
 import org.json.JSONException;
@@ -195,9 +196,7 @@ public class BUPost extends BUContent implements Parcelable {
             Log.i("BUPost", "Image Path>>>" + path);
             if (BUApplication.settings.showimage)
                 // 统一站内地址
-                path = path.replaceAll("(http://)?((out.|kiss.|www.)?"
-                                + "bitunion.org|btun.yi.org|10.1.10.253)",
-                        BUApplication.settings.ROOTURL);
+                path = BUApiHelper.getImageAbsoluteUrl(path);
             else if (!path.contains("smilies_") && !path.contains("bz_"))
                 path = "<img src='ic_action_picture'>";
             message = message.replace(m.group(0), path);
@@ -240,7 +239,7 @@ public class BUPost extends BUContent implements Parcelable {
         // 如果有附件图，以html标记形式添加在最后
         // 如果附件不为图片，以超链接形式添加
         if (attachment != "null" && attachment != null && !attachment.isEmpty()) {
-            String attUrl = BUApplication.settings.ROOTURL + "/" + attachment;
+            String attUrl = BUApiHelper.getRootUrl() + "/" + attachment;
             m += "<br>附件：<br>";
             String format = attachment.substring(attachment.length() - 4);
             if (".jpg.png.bmp.gif".contains(format) && BUApplication.settings.showimage)

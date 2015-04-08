@@ -80,22 +80,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onRestart() {
-        super.onRestart();
-        // 主要为login_activity结束后更新数据用
-        Log.v("MainActivity", "Cookie>>" + BUApplication.settings.mSession);
-    }
-
-    @Override
-    protected void onStop() {
-        SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
-        SharedPreferences.Editor editor = config.edit();
-        editor.putInt("nettype", BUApplication.settings.mNetType);
-        editor.commit();
-        super.onStop();
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
@@ -107,7 +91,7 @@ public class MainActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
             case R.id.action_login:
-                if (BUApplication.settings.mUsername == null || BUApplication.settings.mUsername.isEmpty()) {
+                if (BUApiHelper.isUserLoggedin()) {
                     Intent intent = new Intent(this, LoginActivity.class);
                     startActivityForResult(intent, BUAppUtils.MAIN_REQ);
                 } else {
@@ -128,9 +112,8 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == BUAppUtils.MAIN_REQ) {
-            BUApplication.settings.mSession = data.getStringExtra("session");
-            showToast(getString(R.string.login_success).replace("$user_name", BUApplication.settings.mUsername));
+        if (resultCode == RESULT_OK && requestCode == BUAppUtils.MAIN_REQ && BUApiHelper.getLoggedinUser() != null) {
+            showToast(getString(R.string.login_success).replace("$user_name", BUApiHelper.getLoggedinUser().getUsername()));
         }
     }
 

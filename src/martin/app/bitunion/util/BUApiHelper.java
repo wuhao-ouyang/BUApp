@@ -24,10 +24,17 @@ import java.util.Map;
 
 import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.R;
+import martin.app.bitunion.model.BUUserInfo;
 
+/**
+ * Api methods communicating with server, using {@link Volley} as network
+ * @see <a href="http://out.bitunion.org/viewthread.php?tid=10471436">Bitunion Api Documentation</a>
+ */
 public class BUApiHelper {
 
     private static final String TAG = BUApiHelper.class.getSimpleName();
+
+    private static BUUserInfo sLoggedinUser;
 
     private static String mUsername;
     private static String mPassword;
@@ -65,8 +72,10 @@ public class BUApiHelper {
         httpPost(path, params, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                if (getResult(response) == BUAppUtils.Result.SUCCESS)
+                if (getResult(response) == BUAppUtils.Result.SUCCESS) {
                     mSession = response.optString("session");
+                    updateUser();
+                }
                 responseListener.onResponse(response);
             }
         }, errorListener);
@@ -93,7 +102,7 @@ public class BUApiHelper {
                                 BUApplication.getInstance().getString(R.string.login_success).replace("$user_name", mUsername),
                                 Toast.LENGTH_SHORT).show();
                         mSession = response.optString("session");
-                        BUApplication.settings.mSession = response.optString("session");
+                        updateUser();
                         break;
                     case UNKNOWN:
                         Toast.makeText(BUApplication.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
@@ -257,15 +266,28 @@ public class BUApiHelper {
         setNetType(mNetType);
 
         mApiQueue = Volley.newRequestQueue(context);
+        // Need to read database
+        sLoggedinUser = null;
+    }
+
+    private static void updateUser() {
+        getUserProfile(null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                if (getResult(response) == BUAppUtils.Result.SUCCESS)
+                    sLoggedinUser = new BUUserInfo(response.optJSONObject("memberinfo"));
+            }
+        }, sErrorListener);
+    }
+
+    public static BUUserInfo getLoggedinUser() {
+        return sLoggedinUser;
     }
 
     public static void clearUser() {
         SharedPreferences config = BUApplication.getInstance()
                 .getSharedPreferences("config", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = config.edit();
-        BUApplication.settings.mUsername = mUsername = null;
-        BUApplication.settings.mPassword = mPassword = null;
-        BUApplication.settings.mSession = mSession = null;
         BUApplication.settings.mNetType = mNetType = BUAppUtils.OUTNET;
         editor.putInt("nettype", BUAppUtils.OUTNET);
         editor.putString("username", null);
@@ -318,6 +340,10 @@ public class BUApiHelper {
         return BUAppUtils.Result.UNKNOWN;
     }
 
+    public static String getRootUrl() {
+        return rooturl;
+    }
+
     public static String getImageAbsoluteUrl(String shortUrl) {
         String path;
         path = shortUrl;
@@ -326,31 +352,5 @@ public class BUApiHelper {
         path = path.replaceAll("^attachments/", rooturl + "/attachments/");
         return path;
     }
-
-//    private static String getUrl(int net, int urlType){
-//        String ROOTURL, BASEURL;
-//
-//        ROOTURL = (net == BUAppUtils.BITNET) ? "http://www.bitunion.org" : "http://out.bitunion.org";
-//        BASEURL = ROOTURL + "/open_api";
-//        if (urlType == REQ_LOGGING)
-//            return BASEURL + "/bu_logging.php";
-//        if (urlType == REQ_FORUM)
-//            return BASEURL + "/bu_forum.php";
-//        if (urlType == REQ_THREAD)
-//            return BASEURL + "/bu_thread.php";
-//        if (urlType == REQ_PROFILE)
-//            return BASEURL + "/bu_profile.php";
-//        if (urlType == REQ_POST)
-//            return BASEURL + "/bu_post.php";
-//        if (urlType == REQ_FID_TID_SUM)
-//            return BASEURL + "/bu_fid_tid.php";
-//        if (urlType == NEWPOST)
-//            return BASEURL + "/bu_newpost.php";
-//        if (urlType == NEWTHREAD)
-//            return BASEURL + "/bu_newpost.php";
-//        Log.e("BUAppUtils", "getUrl Error!");
-//        return "";
-//
-//    }
 
 }

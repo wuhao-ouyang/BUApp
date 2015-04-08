@@ -154,7 +154,6 @@ public class LoginActivity extends ActionBarActivity {
                 public void onResponse(JSONObject response) {
                     if (BUApiHelper.getResult(response) == Result.SUCCESS) {
                             saveConfig();
-                            mSession = response.optString("session");
                             setResult(RESULT_OK, null);
                             finish();
                     }
@@ -181,8 +180,6 @@ public class LoginActivity extends ActionBarActivity {
     }
 
     public void saveConfig() {
-        BUApplication.settings.mUsername = mUsername;
-        BUApplication.settings.mPassword = mPassword;
         BUApplication.settings.mNetType = mNetType;
         SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
         SharedPreferences.Editor editor = config.edit();
