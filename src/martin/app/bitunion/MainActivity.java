@@ -91,7 +91,7 @@ public class MainActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
             case R.id.action_login:
-                if (BUApiHelper.isUserLoggedin()) {
+                if (!BUApiHelper.isUserLoggedin()) {
                     Intent intent = new Intent(this, LoginActivity.class);
                     startActivityForResult(intent, BUAppUtils.MAIN_REQ);
                 } else {
@@ -106,15 +106,6 @@ public class MainActivity extends ActionBarActivity {
             default:}
         return true;
         // return super.onOptionsItemSelected(item);
-    }
-
-    // 得到login_activity返回的cookies
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == BUAppUtils.MAIN_REQ && BUApiHelper.getLoggedinUser() != null) {
-            showToast(getString(R.string.login_success).replace("$user_name", BUApiHelper.getLoggedinUser().getUsername()));
-        }
     }
 
     // ExpandableListView的数据接口

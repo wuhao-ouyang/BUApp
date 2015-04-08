@@ -59,7 +59,7 @@ public class BUApiHelper {
     /**
      * Login current user with response listener
      */
-    public static void tryLogin(String username, String password,
+    public static void tryLogin(final String username, final String password,
                                 final Response.Listener<JSONObject> responseListener,
                                 Response.ErrorListener errorListener) {
         if (username == null || password == null)
@@ -74,6 +74,8 @@ public class BUApiHelper {
             public void onResponse(JSONObject response) {
                 if (getResult(response) == BUAppUtils.Result.SUCCESS) {
                     mSession = response.optString("session");
+                    mUsername = username;
+                    mPassword = password;
                     updateUser();
                 }
                 responseListener.onResponse(response);

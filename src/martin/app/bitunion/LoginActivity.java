@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -153,9 +154,12 @@ public class LoginActivity extends ActionBarActivity {
                 @Override
                 public void onResponse(JSONObject response) {
                     if (BUApiHelper.getResult(response) == Result.SUCCESS) {
-                            saveConfig();
-                            setResult(RESULT_OK, null);
-                            finish();
+                        Toast.makeText(getApplicationContext(),
+                                getString(R.string.login_success).replace("$user_name", mUsername),
+                                Toast.LENGTH_SHORT).show();
+                        saveConfig();
+                        setResult(RESULT_OK, null);
+                        finish();
                     }
                 }
             }, new Response.ErrorListener() {
