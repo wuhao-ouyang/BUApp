@@ -195,38 +195,39 @@ public class DisplayActivity extends ActionBarActivity {
         }
     }
 
-    class MyOnTouchListener implements OnTouchListener{
+    private class MyOnTouchListener implements OnTouchListener {
 
-        double lastx = -1;
-        long lastswipetime = 0;
-        boolean swipetrig = false;
+        private double lastx = -1;
+        private long lastswipetime = 0;
+        private boolean swipetrig = false;
 
         @Override
         public boolean onTouch(View v, MotionEvent motion) {
             if (currentpage == 0)
-                switch (motion.getAction()) {
-                    case MotionEvent.ACTION_MOVE:
-                        int dpMoved = 0;
-                        if (lastx != -1)
-                            dpMoved = BUAppUtils.px2dip(getApplication(),
-                                    (float) (motion.getX() - lastx));
-                        lastx = motion.getX();
-                        if (dpMoved > 24)
-                            swipetrig = true;
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        lastx = -1;
-                        if (swipetrig) {
-                            if ((System.currentTimeMillis() - lastswipetime) >= BUAppUtils.EXIT_WAIT_TIME) {
-                                showToast("再次右滑返回");
-                                lastswipetime = System.currentTimeMillis();
-                            } else
-                                finish();
-                            swipetrig = false;
-                        }
-                        break;
-                    default:
-                }
+                return false;
+            switch (motion.getAction()) {
+                case MotionEvent.ACTION_MOVE:
+                    int dpMoved = 0;
+                    if (lastx != -1)
+                        dpMoved = BUAppUtils.px2dip(getApplication(),
+                                (float) (motion.getX() - lastx));
+                    lastx = motion.getX();
+                    if (dpMoved > 24)
+                        swipetrig = true;
+                    break;
+                case MotionEvent.ACTION_UP:
+                    lastx = -1;
+                    if (swipetrig) {
+                        if ((System.currentTimeMillis() - lastswipetime) >= BUAppUtils.EXIT_WAIT_TIME) {
+                            showToast("再次右滑返回");
+                            lastswipetime = System.currentTimeMillis();
+                        } else
+                            finish();
+                        swipetrig = false;
+                    }
+                    break;
+                default:
+            }
             return false;
         }
     }

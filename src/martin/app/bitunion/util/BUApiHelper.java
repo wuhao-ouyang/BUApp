@@ -2,7 +2,6 @@ package martin.app.bitunion.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -63,11 +62,11 @@ public class BUApiHelper {
         params.put("action", "login");
         params.put("username", username);
         params.put("password", password);
-        sendRequest(path, params, new Response.Listener<JSONObject>() {
+        sendPost(path, params, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 if (getResult(response) == BUAppUtils.Result.SUCCESS)
-                        mSession = response.optString("session");
+                    mSession = response.optString("session");
                 responseListener.onResponse(response);
             }
         }, errorListener);
@@ -118,7 +117,7 @@ public class BUApiHelper {
         params.put("username", mUsername);
         params.put("password", mPassword);
         params.put("session", mSession);
-        sendRequest(path, params, new Response.Listener<JSONObject>() {
+        sendPost(path, params, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 if (getResult(response) == BUAppUtils.Result.SUCCESS) {
@@ -129,6 +128,27 @@ public class BUApiHelper {
                 responseListener.onResponse(response);
             }
         }, errorListener);
+    }
+
+    /**
+     * Send post without attachment
+     * @param tid thread id
+     * @param message message to be sent
+     */
+    public static void sendNewPost(int tid, String message,
+                                   Response.Listener<JSONObject> responseListener,
+                                   Response.ErrorListener errorListener) {
+        if (tid <= 0 || message == null || message.isEmpty())
+            return;
+        String path = baseurl + "/bu_newpost.php";
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("action", "newreply");
+        params.put("username", mUsername);
+        params.put("session", mSession);
+        params.put("tid", Integer.toString(tid));
+        params.put("message", message);
+        params.put("attachment", "0");
+        sendPost(path, params, responseListener, errorListener);
     }
 
     /**
@@ -146,7 +166,7 @@ public class BUApiHelper {
         params.put("username", mUsername);
         params.put("session", mSession);
         params.put("uid", Integer.toString(uid));
-        sendRequest(path, params, responseListener, errorListener);
+        sendPost(path, params, responseListener, errorListener);
     }
 
     /**
@@ -164,7 +184,7 @@ public class BUApiHelper {
         params.put("username", mUsername);
         params.put("session", mSession);
         params.put("queryusername", userName);
-        sendRequest(path, params, responseListener, errorListener);
+        sendPost(path, params, responseListener, errorListener);
     }
 
     /**
@@ -186,7 +206,7 @@ public class BUApiHelper {
         params.put("fid", Integer.toString(fid));
         params.put("from", Integer.toString(from));
         params.put("to", Integer.toString(to));
-        sendRequest(path, params, responseListener, errorListener);
+        sendPost(path, params, responseListener, errorListener);
     }
 
     public static void readPostList(int tid, int from, int to,
@@ -202,7 +222,7 @@ public class BUApiHelper {
         params.put("tid", Integer.toString(tid));
         params.put("from", Integer.toString(from));
         params.put("to", Integer.toString(to));
-        sendRequest(path, params, responseListener, errorListener);
+        sendPost(path, params, responseListener, errorListener);
     }
 
     public static void init(Context context) {
@@ -238,9 +258,9 @@ public class BUApiHelper {
         baseurl = rooturl + "/open_api";
     }
 
-    private static void sendRequest(final String path, Map<String, String> params,
-                                    Response.Listener<JSONObject> responseListener,
-                                    Response.ErrorListener errorListener) {
+    private static void sendPost(final String path, Map<String, String> params,
+                                 Response.Listener<JSONObject> responseListener,
+                                 Response.ErrorListener errorListener) {
         JSONObject postReq = new JSONObject();
         try {
             for (Map.Entry<String, String> entry : params.entrySet())

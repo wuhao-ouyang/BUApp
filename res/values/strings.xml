@@ -17,10 +17,6 @@
     <string name="error_field_required">内容不能为空</string>
     <string name="title_activity_display">DisplayActivity</string>
     <string name="read_progress_message">读取中</string>
-    <string name="title_activity_thread">ThreadActivity</string>
-    <string name="title_activity_myinfo">MyinfoActivity</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="title_activity_newthread">NewthreadActivity</string>
     <string name="title_activity_settings">设置</string>
 
     <!-- Network response error -->
@@ -40,5 +36,8 @@
     <string name="send_message_message">确认要发送吗？</string>
     <string name="dialog_button_confirm">确认</string>
     <string name="dialog_button_cancel">取消</string>
+
+    <!-- Toast message -->
+    <string name="message_sending">消息发送中...</string>
 
 </resources>

@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import martin.app.bitunion.fragment.ThreadFragment;
 import martin.app.bitunion.fragment.UserInfoDialogFragment;
+import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.util.PostMethod;
@@ -44,6 +45,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 
 /**
  * @author Strider_oy
@@ -350,15 +354,30 @@ public class ThreadActivity extends ActionBarActivity {
         public void onClick(View v) {
             final String message = replyMessage.getText().toString();
             if (message != null && !message.isEmpty()) {
+                showToast(R.string.message_sending);
                 final DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (which == DialogInterface.BUTTON_POSITIVE) {
-                            Log.i("MyReplySubmitListener", "Reply sumitted>>" + message);
+                            Log.i("MyReplySubmitListener", "Reply submitted>>" + message);
                             String finalMsg = message;
                             if (BUApplication.settings.showsigature)
                                 finalMsg += BUAppUtils.CLIENTMESSAGETAG;
-                            new NewPostTask(finalMsg).execute();
+                            BUApiHelper.sendNewPost(threadId, finalMsg, new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject jsonObject) {
+                                    if (BUApiHelper.getResult(jsonObject) == Result.SUCCESS) {
+                                        replyMessage.setText("");
+                                    } else {
+                                        // TODO need to handle error
+                                    }
+                                }
+                            }, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError volleyError) {
+                                    showToast(R.string.network_unknown);
+                                }
+                            });
                         } else {
 
                         }
@@ -375,62 +394,16 @@ public class ThreadActivity extends ActionBarActivity {
         }
     }
 
-    private class NewPostTask extends AsyncTask<Void, Void, Result> {
-
-        PostMethod postMethod = new PostMethod();
-        String message = "";
-
-        public NewPostTask(String m) {
-            message = m;
-        }
-
-        @Override
-        protected Result doInBackground(Void... params) {
-            JSONObject postReq = new JSONObject();
-            try {
-                postReq.put("action", "newreply");
-                postReq.put("username", URLEncoder.encode(
-                        BUApplication.settings.mUsername, "utf-8"));
-                postReq.put("session", BUApplication.settings.mSession);
-                postReq.put("tid", threadId);
-                postReq.put("message", URLEncoder.encode(message, "utf-8"));
-                postReq.put("attachment", 0);
-                return postMethod.sendPost(BUAppUtils.getUrl(BUApplication.settings.mNetType, BUAppUtils.NEWPOST), postReq);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(final Result result) {
-            switch (result) {
-                default:
-                    return;
-                case FAILURE:
-                    showToast(BUAppUtils.POSTFAILURE);
-                    return;
-                case NETWRONG:
-                    showToast(BUAppUtils.NETWRONG);
-                    return;
-                case UNKNOWN:
-                    return;
-                case SUCCESS_EMPTY:
-                    showToast(BUAppUtils.POSTSUCCESS);
-                    replyMessage.setText("");
-            }
-        }
-
-    }
-
     private Toast toast = null;
     private void showToast(String text) {
         if (toast != null)
             toast.cancel();
         toast = Toast.makeText(ThreadActivity.this, text, Toast.LENGTH_SHORT);
         toast.show();
+    }
+
+    private void showToast(int resId) {
+        showToast(getString(resId));
     }
 
 }

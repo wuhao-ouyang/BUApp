@@ -51,7 +51,6 @@ public class BUAppUtils {
     public static final String LOGINFAIL = "登录失败";
     public static final String POSTFAILURE = "发送失败";
     public static final String POSTSUCCESS = "发送成功，刷新查看回复";
-    public static final String POSTEXECUTING = "消息发送中...";
     public static final String USERNAME = "用户";
     public static final String LOGINSUCCESS = "登录成功";
     public static final String CLIENTMESSAGETAG = "\n\n发送自 [url=https://play.google.com/store/apps/details?id=martin.app.bitunion][b]BUApp Android[/b][/url]";
@@ -97,16 +96,6 @@ public class BUAppUtils {
         Log.e("BUAppUtils", "getUrl Error!");
         return "";
 
-    }
-
-    public static JSONArray mergeJSONArray(JSONArray array1, JSONArray array2)
-            throws JSONException {
-        JSONArray array = new JSONArray(array1.toString());
-        if (array2.length() > 0 && array2 != null)
-            for (int i = 0; i < array2.length(); i++) {
-                array.put(array2.getJSONObject(i));
-            }
-        return array;
     }
 
     public static InputStream getImageVewInputStream(String imagepath)
