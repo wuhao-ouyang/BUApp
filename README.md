@@ -33,8 +33,10 @@ v0.6
 本地表情包
 
 
+
+
 ```
-Copyright 2015 Martin(martin_oy@qq.com)
+Copyright 2015 Martin
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
