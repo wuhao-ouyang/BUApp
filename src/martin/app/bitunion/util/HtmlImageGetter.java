@@ -1,6 +1,8 @@
 package martin.app.bitunion.util;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -8,6 +10,11 @@ import android.os.AsyncTask;
 import android.text.Html;
 import android.util.Log;
 import android.widget.TextView;
+
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
+
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,106 +26,104 @@ import martin.app.bitunion.R;
 
 public class HtmlImageGetter implements Html.ImageGetter {
 
-    private static HashMap<String, Drawable> imgCache = new HashMap<String, Drawable>();
-    private TextView htmlTextView;
-    private Drawable defaultDrawable;
     private Context mContext;
+    private TextView mContainer;
 
     public HtmlImageGetter(Context c, TextView view) {
         mContext = c;
-        htmlTextView = view;
-        defaultDrawable = mContext.getResources().getDrawable(
-                R.drawable.ic_action_picture);
+        mContainer = view;
     }
 
     @Override
     public Drawable getDrawable(String imgUrl) {
-        // Get MD5 of imgUrl
-        String imgKey = null;
-        try {
-            imgKey = BUAppUtils.hashImgUrl(imgUrl);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            Log.e("HtmlImageGetter", "Hash error>>" + imgUrl);
-        }
-
-        // Check if image is in cache
-        if (imgCache.get(imgKey) != null)
-            return imgCache.get(imgKey);
-
         imgUrl = BUApiHelper.getImageAbsoluteUrl(imgUrl);
-        Log.v("ImageGetter", "img not cached");
-
-        Log.v("ImageGetter", "img Url>>" + imgUrl);
-        URLDrawable urlDrawable = new URLDrawable(defaultDrawable);
-        new AsyncThread(urlDrawable).execute(imgKey, imgUrl);
+        UrlImageDownloader urlDrawable = new UrlImageDownloader(mContext.getResources(), imgUrl);
+        urlDrawable.drawable = mContext.getResources().getDrawable(R.drawable.ic_image_white_48dp);
+        VolleyImageLoaderFactory.getImageLoader(mContext).get(imgUrl, new VolleyImageListener(mContainer, urlDrawable));
         return urlDrawable;
     }
 
-    private class AsyncThread extends AsyncTask<String, Integer, Drawable> {
-        private String imgKey;
-        private URLDrawable drawable;
+    private static class VolleyImageListener implements ImageLoader.ImageListener {
+        private UrlImageDownloader urlImageDownloader;
+        private TextView container;
 
-        public AsyncThread(URLDrawable drawable) {
-            this.drawable = drawable;
+        private VolleyImageListener(TextView textView, UrlImageDownloader drawable) {
+            urlImageDownloader = drawable;
+            container = textView;
         }
 
         @Override
-        protected Drawable doInBackground(String... strings) {
-            imgKey = strings[0];
-            InputStream inps = null;
-            try {
-                inps = BUAppUtils.getImageVewInputStream(strings[1]);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            }
-            if (inps == null)
-                return null;
-            Drawable drawable = Drawable.createFromStream(inps, imgKey);
-            return drawable;
-        }
-
-        @Override
-        protected void onPostExecute(Drawable result) {
-            if (result == null)
+        public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+            if (response == null || response.getBitmap() == null)
                 return;
-            imgCache.put(imgKey, drawable);
-            drawable.setDrawable(result);
-            htmlTextView.setText(htmlTextView.getText());
+            Bitmap loadedImage = response.getBitmap();
+            int width = loadedImage.getWidth();
+            int height = loadedImage.getHeight();
+
+            int newWidth = width;
+            int newHeight = height;
+
+            if (width > container.getWidth()) {
+                newWidth = container.getWidth();
+                newHeight = (newWidth * height) / width;
+            }
+
+            Drawable result = new BitmapDrawable(container.getResources(), loadedImage);
+            result.setBounds(0, 0, newWidth, newHeight);
+
+            urlImageDownloader.setBounds(0, 0, newWidth, newHeight);
+            urlImageDownloader.drawable = result;
+
+            container.invalidate();
+        }
+
+        @Override
+        public void onErrorResponse(VolleyError error) {
+
         }
     }
 
-    public class URLDrawable extends BitmapDrawable {
+    private static class UrlImageDownloader extends BitmapDrawable {
+        public Drawable drawable;
 
-        private Drawable drawable;
-
-        @SuppressWarnings("deprecation")
-        public URLDrawable(Drawable defaultDraw) {
-            setDrawable(defaultDraw);
+        /**
+         * Create a drawable by decoding a bitmap from the given input stream.
+         *
+         * @param res
+         * @param is
+         */
+        public UrlImageDownloader(Resources res, InputStream is) {
+            super(res, is);
         }
 
-        private void setDrawable(Drawable ndrawable) {
-            drawable = ndrawable;
-//				float dpi = MainActivity.PIXDENSITY;
-            float scalingFactor = (float) htmlTextView.getMeasuredWidth()
-                    / drawable.getIntrinsicWidth();
-            if (drawable.getIntrinsicWidth() < 100) {
-                drawable.setBounds(0, 0, drawable.getIntrinsicWidth(),
-                        drawable.getIntrinsicHeight());
-                setBounds(0, 0, drawable.getIntrinsicWidth(),
-                        drawable.getIntrinsicHeight());
-                return;
-            }
-            drawable.setBounds(0, 0, htmlTextView.getMeasuredWidth(),
-                    (int) (drawable.getIntrinsicHeight() * scalingFactor));
-            setBounds(0, 0, htmlTextView.getMeasuredWidth(),
-                    (int) (drawable.getIntrinsicHeight() * scalingFactor));
+        /**
+         * Create a drawable by opening a given file path and decoding the bitmap.
+         *
+         * @param res
+         * @param filepath
+         */
+        public UrlImageDownloader(Resources res, String filepath) {
+            super(res, filepath);
+            drawable = new BitmapDrawable(res, filepath);
+        }
+
+        /**
+         * Create drawable from a bitmap, setting initial target density based on
+         * the display metrics of the resources.
+         *
+         * @param res
+         * @param bitmap
+         */
+        public UrlImageDownloader(Resources res, Bitmap bitmap) {
+            super(res, bitmap);
         }
 
         @Override
         public void draw(Canvas canvas) {
-            drawable.draw(canvas);
+            // override the draw to facilitate refresh function later
+            if (drawable != null) {
+                drawable.draw(canvas);
+            }
         }
     }
 }

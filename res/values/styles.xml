@@ -73,4 +73,14 @@
         <item name="background">@color/blue_dark</item>
     </style>
 
+    <style name="FloatingImageButton">
+        <item name="android:layout_width">55dp</item>
+        <item name="android:layout_height">55dp</item>
+        <item name="android:padding">15dp</item>
+    </style>
+
+    <style name="FloatingImageButton.Blue">
+        <item name="android:background">@drawable/ripple_circle_blue</item>
+    </style>
+
 </resources>

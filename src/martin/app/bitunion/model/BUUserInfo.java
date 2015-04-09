@@ -16,19 +16,19 @@ import org.json.JSONObject;
  */
 public class BUUserInfo {
 
-    String uid;
-    String status;
-    String username;
-    String avatar;
-    String credit;
-    String regdate;
-    String lastvisit;
-    String bday;
-    String signature;
-    String postnum;
-    String threadnum;
-    String email;
-    String site;
+    private String uid;
+    private String status;
+    private String username;
+    private String avatar;
+    private String credit;
+    private String regdate;
+    private String lastvisit;
+    private String bday;
+    private String signature;
+    private String postnum;
+    private String threadnum;
+    private String email;
+    private String site;
 
     public BUUserInfo(JSONObject json) {
         try {

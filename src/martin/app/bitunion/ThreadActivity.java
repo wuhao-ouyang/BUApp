@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import martin.app.bitunion.fragment.ThreadFragment;
 import martin.app.bitunion.fragment.UserInfoDialogFragment;
+import martin.app.bitunion.martin.app.bitunion.widget.ObservableWebView;
 import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUPost;
@@ -36,6 +37,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.View.OnTouchListener;
+import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -48,8 +50,7 @@ import com.android.volley.VolleyError;
  * @author Strider_oy
  *
  */
-public class ThreadActivity extends ActionBarActivity {
-
+public class ThreadActivity extends ActionBarActivity implements View.OnClickListener {
 
     private ThreadPagerAdapter mThreadAdapter;
 
@@ -57,6 +58,7 @@ public class ThreadActivity extends ActionBarActivity {
     private PagerTitleStrip mPagerTitleStrip;
     private LinearLayout replyContainer = null;
     private EditText replyMessage = null;
+    private View mReplyBtn;
 
     private int threadId;
     private String threadName;
@@ -94,12 +96,12 @@ public class ThreadActivity extends ActionBarActivity {
         // Get reply View container and hide for current
         replyContainer = (LinearLayout) findViewById(R.id.reply_layout);
         replyContainer.setVisibility(View.GONE);
-        replyMessage = (EditText) replyContainer
-                .findViewById(R.id.reply_message);
+        replyMessage = (EditText) replyContainer.findViewById(R.id.reply_message);
         // Button calls reply window to front
-        ImageButton replySubmit = (ImageButton) replyContainer
-                .findViewById(R.id.reply_submit);
+        ImageButton replySubmit = (ImageButton) replyContainer.findViewById(R.id.reply_submit);
         replySubmit.setOnClickListener(new MyReplySubmitListener());
+        mReplyBtn = findViewById(R.id.imgVw_reply_btn);
+        mReplyBtn.setOnClickListener(this);
         ImageButton advreply = (ImageButton) replyContainer.findViewById(R.id.reply_advanced);
         advreply.setOnClickListener(new View.OnClickListener() {
 
@@ -115,7 +117,7 @@ public class ThreadActivity extends ActionBarActivity {
         });
 
         postList.add(0);
-        if (lastpage > postList.size())
+        if (postList.size() <= lastpage)
             postList.add(0);
 
         // Create the adapter that will return a fragment for each of the three
@@ -126,11 +128,9 @@ public class ThreadActivity extends ActionBarActivity {
         mViewPager = (ViewPager) findViewById(R.id.viewpager_thread);
         mPagerTitleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip_thread);
         mPagerTitleStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-        mPagerTitleStrip.setBackgroundResource(R.color.blue_dark);
         mViewPager.setAdapter(mThreadAdapter);
         mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
         mViewPager.setOnTouchListener(new MyOnTouchListener());
-
     }
 
     @Override
@@ -154,14 +154,8 @@ public class ThreadActivity extends ActionBarActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
-                break;
+                return true;
             case R.id.action_refresh:
-                break;
-            case R.id.action_post:
-                if (!replyContainer.isShown())
-                    replyContainer.setVisibility(View.VISIBLE);
-                else
-                    replyContainer.setVisibility(View.GONE);
                 break;
             case R.id.action_sharelink:
                 StringBuilder sb = new StringBuilder(threadName);
@@ -176,10 +170,19 @@ public class ThreadActivity extends ActionBarActivity {
                 mime[0] = "text/plain";
                 ClipData clip = new ClipData("帖子链接", mime, cliptext);
                 clipboard.setPrimaryClip(clip);
-                showToast("帖子链接已经复制进剪切板");
+                showToast(R.string.thread_url_copied);
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.imgVw_reply_btn:
+                mReplyBtn.setEnabled(false);
                 break;
         }
-        return super.onOptionsItemSelected(item);
     }
 
     public void setQuoteText(BUPost quotePost) {
@@ -320,8 +323,6 @@ public class ThreadActivity extends ActionBarActivity {
     /**
      * Listen to the {@link ViewPager}, pre-load pages will be useful next to
      * current view.
-     *
-     * @author Strider_oy
      */
     private class MyOnPageChangeListener implements OnPageChangeListener {
 
@@ -336,9 +337,8 @@ public class ThreadActivity extends ActionBarActivity {
         @Override
         public void onPageSelected(int pos) {
             currentpage = pos;
-            while (pos > postList.size() - 2)
-                if (lastpage > postList.size())
-                    postList.add(0);
+            while (pos > postList.size() - 2 && postList.size() <= lastpage)
+                postList.add(0);
             mThreadAdapter.notifyDataSetChanged();
         }
     }

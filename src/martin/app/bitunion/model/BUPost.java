@@ -26,6 +26,7 @@ import android.text.Html;
 import android.util.Log;
 
 public class BUPost extends BUContent implements Parcelable {
+    private static final String TAG = BUPost.class.getSimpleName();
 
     private int pid;
     private int fid;
@@ -120,24 +121,18 @@ public class BUPost extends BUContent implements Parcelable {
             icon = jsonObject.getString("icon");
             author = URLDecoder.decode(jsonObject.getString("author"), "utf-8");
             authorid = jsonObject.getInt("authorid");
-            subject = URLDecoder.decode(jsonObject.getString("subject"),
-                    "utf-8");
+            subject = URLDecoder.decode(jsonObject.getString("subject"), "utf-8");
             dateline = jsonObject.getString("dateline");
-            message = URLDecoder.decode(jsonObject.getString("message"),
-                    "utf-8");
+            message = URLDecoder.decode(jsonObject.getString("message"), "utf-8");
             usesig = jsonObject.getString("usesig");
-            attachment = URLDecoder.decode(jsonObject.getString("attachment"),
-                    "utf-8");
+            attachment = URLDecoder.decode(jsonObject.getString("attachment"), "utf-8");
             uid = jsonObject.getInt("uid");
-            username = URLDecoder.decode(jsonObject.getString("username"),
-                    "utf-8");
+            username = URLDecoder.decode(jsonObject.getString("username"), "utf-8");
             avatar = URLDecoder.decode(jsonObject.getString("avatar"), "utf-8");
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.w(TAG, "Failed to parse post object!!!\n" + jsonObject, e);
         } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.w(TAG, "Failed to parse post object!!!\n" + jsonObject, e);
         }
         // Parse subject
         if (subject != "null" && subject != null && !subject.isEmpty()) {
@@ -198,7 +193,7 @@ public class BUPost extends BUContent implements Parcelable {
                 // 统一站内地址
                 path = BUApiHelper.getImageAbsoluteUrl(path);
             else if (!path.contains("smilies_") && !path.contains("bz_"))
-                path = "<img src='ic_action_picture'>";
+                path = "<img src='ic_image_white_48dp'>";
             message = message.replace(m.group(0), path);
         }
     }
@@ -286,14 +281,14 @@ public class BUPost extends BUContent implements Parcelable {
         Pattern p = Pattern.compile("<a href='(.+?)'(?:.target='.+?')>(.+?)</a>");
         Matcher m = p.matcher(quote);
         while (m.find()) {
-            String discuz ="[url=" + m.group(1) +"]" + m.group(2) + "[/url]";
+            String discuz = "[url=" + m.group(1) + "]" + m.group(2) + "[/url]";
             quote = quote.replace(m.group(0), discuz);
             m = p.matcher(quote);
         }
         // Change image to Discuz style
         p = Pattern.compile("<img src='([^>])'>");
         m = p.matcher(quote);
-        while (m.find()){
+        while (m.find()) {
             quote = quote.replace(m.group(0), "[img]" + m.group(1) + "[/img]");
             m = p.matcher(quote);
         }
@@ -309,14 +304,15 @@ public class BUPost extends BUContent implements Parcelable {
 
     /**
      * Change HTML message returned from server to application style.
+     *
      * @return String of costumed HTML style for layout
      */
-    public String getHtmlLayout(int count){
+    public String getHtmlLayout(int count) {
         String htmlcontent;
         htmlcontent = "<p><div class='tdiv'>" +
-                "<table width='100%' style='background-color:#92ACD3;padding:2px 5px;font-size:"+ BUApplication.settings.titletextsize +"px;'>" +
-                "<tr><td>#" + count + "&nbsp;<span onclick=authorOnClick(" + authorid +")>" + getAuthor() +
-                "</span>&nbsp;&nbsp;&nbsp;<span onclick=referenceOnClick("+ count +")><u>引用</u></span></td>" +
+                "<table width='100%' style='background-color:#92ACD3;padding:2px 5px;font-size:" + BUApplication.settings.titletextsize + "px;'>" +
+                "<tr><td>#" + count + "&nbsp;<span onclick=authorOnClick(" + authorid + ")>" + getAuthor() +
+                "</span>&nbsp;&nbsp;&nbsp;<span onclick=referenceOnClick(" + count + ")><u>引用</u></span></td>" +
                 "<td style='text-align:right;'>" + getDateline() + "</td></tr></table>" +
                 "</div>" +
                 "<div class='mdiv' width='100%' style='padding:5px;word-break:break-all;'>" +

@@ -44,5 +44,6 @@
     <string name="message_sending">消息发送中...</string>
     <string name="message_sent_fail">发送失败</string>
     <string name="message_sent_success">发送成功</string>
+    <string name="thread_url_copied">帖子链接已经复制进剪切板</string>
 
 </resources>

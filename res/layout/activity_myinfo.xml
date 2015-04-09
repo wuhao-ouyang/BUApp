@@ -21,7 +21,7 @@
                 android:id="@+id/myinfo_avatar"
                 android:layout_width="100sp"
                 android:layout_height="150sp"
-                android:src="@drawable/ic_action_picture" />
+                android:src="@drawable/ic_image_white_48dp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"

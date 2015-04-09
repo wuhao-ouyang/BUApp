@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.R;
 import martin.app.bitunion.ThreadActivity;
+import martin.app.bitunion.martin.app.bitunion.widget.ObservableWebView;
 import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUPost;
@@ -39,7 +40,8 @@ import com.android.volley.VolleyError;
  * dummy text.
  */
 @SuppressLint({ "JavascriptInterface", "SetJavaScriptEnabled" })
-public class ThreadFragment extends Fragment implements Updateable {
+public class ThreadFragment extends Fragment implements Updateable, ObservableWebView.OnScrollChangedCallback  {
+    private static final String TAG = ThreadFragment.class.getSimpleName();
 
     public static final String ARG_THREAD_ID = "ThreadFragment.tid";
     public static final String ARG_PAGE_NUMBER = "ThreadFragment.page";
@@ -50,7 +52,7 @@ public class ThreadFragment extends Fragment implements Updateable {
     private ArrayList<BUPost> postlist = new ArrayList<BUPost>();
 
     private SwipeRefreshLayout mRefreshLayout;
-    private WebView singlepageView = null;
+    private ObservableWebView singlepageView = null;
     private ProgressBar mSpinner;
 
     private int mReqCount;
@@ -86,7 +88,8 @@ public class ThreadFragment extends Fragment implements Updateable {
         mRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.lyt_refresh_frame);
         mRefreshLayout.setOnRefreshListener(this);
         mRefreshLayout.setEnabled(false);
-        singlepageView = (WebView) root.findViewById(R.id.webView_posts);
+        singlepageView = (ObservableWebView) root.findViewById(R.id.webView_posts);
+        singlepageView.setOnScrollChangedCallback(this);
         mSpinner = (ProgressBar) root.findViewById(R.id.progressBar);
         if (postlist == null || postlist.isEmpty()) {
             singlepageView.setVisibility(View.GONE);
@@ -101,7 +104,7 @@ public class ThreadFragment extends Fragment implements Updateable {
         singlepageView.getSettings().setJavaScriptEnabled(true);
         singlepageView.addJavascriptInterface(new JSInterface(getActivity()), "JSInterface");
         singlepageView.loadDataWithBaseURL("file:///android_res/drawable/", content, "text/html", "utf-8", null);
-        Log.i("ThreadFragment", "WebView created!>>" + mPageNum + ", Posts >>" + postlist.size());
+        Log.i(TAG, "WebView created!>>" + mPageNum + ", Posts >>" + postlist.size());
 
         onRefresh();
         return root;
@@ -158,7 +161,15 @@ public class ThreadFragment extends Fragment implements Updateable {
 
         String htmlcode = createHtmlCode();
         singlepageView.loadDataWithBaseURL("file:///android_res/drawable/", htmlcode, "text/html", "utf-8", null);
-        Log.v("ThreadFragment", "fragment>>" + this.mPageNum + "<<updated");
+        Log.v(TAG, "fragment " + this.mPageNum + " updated");
+    }
+
+    @Override
+    public void onScroll(WebView view, int l, int t) {
+        if (view.getScrollY() == 0)
+            mRefreshLayout.setEnabled(true);
+        else
+            mRefreshLayout.setEnabled(false);
     }
 
     private String createHtmlCode(){
