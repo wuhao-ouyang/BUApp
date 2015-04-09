@@ -115,8 +115,10 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
                 @Override
                 public void onResponse(JSONObject response) {
                     mReqCount--;
-                    if (BUApiHelper.getResult(response) != BUAppUtils.Result.SUCCESS)
+                    if (BUApiHelper.getResult(response) != BUAppUtils.Result.SUCCESS) {
+                        Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
                         return;
+                    }
                     threads.addAll(DataParser.jsonToThreadlist(response.optJSONArray("threadlist")));
                     if (!isUpdating()) {
                         threadlist = threads;

@@ -3,19 +3,19 @@
 
     <item
         android:id="@+id/action_post"
-        android:icon="@drawable/ic_action_edit"
+        android:icon="@drawable/ic_create_white_48dp"
         android:orderInCategory="100"
         app:showAsAction="ifRoom"
         android:title="@string/action_post"/>
     <item
         android:id="@+id/action_refresh"
-        android:icon="@drawable/ic_action_refresh"
+        android:icon="@drawable/ic_refresh_white_48dp"
         app:showAsAction="ifRoom"
         android:title="@string/action_refresh"/>
     
     <item
         android:id="@+id/action_sharelink"
-        android:icon="@drawable/ic_action_share"
+        android:icon="@drawable/ic_share_white_48dp"
         app:showAsAction="ifRoom"
         android:title="@string/action_sharelink"/>
 

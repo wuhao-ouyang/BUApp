@@ -3,13 +3,13 @@
 
     <item
         android:id="@+id/action_settings"
-        android:icon="@drawable/ic_action_settings"
+        android:icon="@drawable/ic_settings_white_48dp"
         android:orderInCategory="100"
         app:showAsAction="ifRoom"
         android:title="@string/action_settings"/>
     <item
         android:id="@+id/action_login"
-        android:icon="@drawable/ic_action_person"
+        android:icon="@drawable/ic_account_circle_white_48dp"
         app:showAsAction="ifRoom"
         android:title="@string/action_login"/>
 

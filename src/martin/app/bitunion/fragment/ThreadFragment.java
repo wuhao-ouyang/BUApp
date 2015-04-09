@@ -121,8 +121,10 @@ public class ThreadFragment extends Fragment implements Updateable {
                 @Override
                 public void onResponse(JSONObject response) {
                     mReqCount--;
-                    if (BUApiHelper.getResult(response) != BUAppUtils.Result.SUCCESS)
+                    if (BUApiHelper.getResult(response) != BUAppUtils.Result.SUCCESS) {
+                        Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
                         return;
+                    }
                     JSONArray postsJson = response.optJSONArray("postlist");
                     if (postsJson != null)
                         posts.addAll(DataParser.jsonToPostlist(postsJson));
