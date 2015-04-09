@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import martin.app.bitunion.model.BUForum;
 import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
+import martin.app.bitunion.util.CommonIntents;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -153,8 +154,8 @@ public class MainActivity extends ActionBarActivity {
                             return;}
                         Intent intent = new Intent(MainActivity.this,
                                 DisplayActivity.class);
-                        intent.putExtra("fid", forum.getFid());
-                        intent.putExtra("name", forum.getName());
+                        intent.putExtra(CommonIntents.EXTRA_FID, forum.getFid());
+                        intent.putExtra(CommonIntents.EXTRA_FORUM_NAME, forum.getName());
                         startActivityForResult(intent, BUAppUtils.MAIN_REQ);
                     } else showToast("请先登录");
                 }

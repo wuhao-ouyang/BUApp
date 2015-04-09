@@ -46,10 +46,6 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
-/**
- * @author Strider_oy
- *
- */
 public class ThreadActivity extends ActionBarActivity implements View.OnClickListener {
 
     private ThreadPagerAdapter mThreadAdapter;
@@ -73,9 +69,9 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         setContentView(R.layout.activity_thread);
 
         Intent intent = getIntent();
-        threadId = intent.getIntExtra("tid", 0);
-        threadName = intent.getStringExtra("subject");
-        replies = Integer.parseInt(intent.getStringExtra("replies")) + 1;
+        threadId = intent.getIntExtra(CommonIntents.EXTRA_TID, 0);
+        threadName = intent.getStringExtra(CommonIntents.EXTRA_THREAD_NAME);
+        replies = Integer.parseInt(intent.getStringExtra(CommonIntents.EXTRA_REPIES)) + 1;
 
         if (savedInstanceState != null && !savedInstanceState.isEmpty()) {
             threadId = savedInstanceState.getInt("tid");

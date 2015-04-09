@@ -50,8 +50,8 @@ public class DisplayActivity extends ActionBarActivity {
         setContentView(R.layout.activity_display);
 
         Intent intent = getIntent();
-        forumId = intent.getIntExtra("fid", 27);
-        forumName = intent.getStringExtra("name");
+        forumId = intent.getIntExtra(CommonIntents.EXTRA_FID, 27);
+        forumName = intent.getStringExtra(CommonIntents.EXTRA_FORUM_NAME);
 
         if (savedInstanceState != null && !savedInstanceState.isEmpty()) {
             forumId = savedInstanceState.getInt("fid");

@@ -9,6 +9,7 @@ import martin.app.bitunion.ThreadActivity;
 import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUThread;
+import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.DataParser;
 
 import org.json.JSONObject;
@@ -206,12 +207,10 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
 
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(getContext(),
-                            ThreadActivity.class);
-                    intent.putExtra("tid", threadItem.getTid());
-                    intent.putExtra("subject", threadItem.getSubject());
-                    intent.putExtra("replies", threadItem.getReplies());
-                    intent.putExtra("new", false);
+                    Intent intent = new Intent(getActivity(), ThreadActivity.class);
+                    intent.putExtra(CommonIntents.EXTRA_TID, threadItem.getTid());
+                    intent.putExtra(CommonIntents.EXTRA_THREAD_NAME, threadItem.getSubject());
+                    intent.putExtra(CommonIntents.EXTRA_REPIES, threadItem.getReplies());
                     startActivityForResult(intent, BUAppUtils.MAIN_REQ);
                 }
             });
