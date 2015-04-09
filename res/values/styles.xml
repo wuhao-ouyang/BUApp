@@ -29,10 +29,10 @@
     </style>
 
     <style name="ActivityAnimation" parent="@android:style/Animation">
-        <item name="android:activityOpenEnterAnimation">@anim/slide_horizontal_enter</item>
-        <item name="android:activityOpenExitAnimation">@anim/slide_horizontal_exit</item>
-        <item name="android:activityCloseEnterAnimation">@anim/slide_horizontal_enter</item>
-        <item name="android:activityCloseExitAnimation">@anim/slide_horizontal_exit</item>
+        <item name="android:activityOpenEnterAnimation">@anim/slide_enter_from_right</item>
+        <item name="android:activityOpenExitAnimation">@anim/slide_exit_to_left</item>
+        <item name="android:activityCloseEnterAnimation">@anim/slide_enter_from_left</item>
+        <item name="android:activityCloseExitAnimation">@anim/slide_exit_to_right</item>
     </style>
 
     <!-- Application theme. -->
