@@ -187,11 +187,9 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
             TextView viewsView = (TextView) view.findViewById(R.id.thread_views);
 //			TextView newPostTag = (TextView) view.findViewById(R.id.tag_new_post);
             if ((position % 2) == 1)
-                view.setBackgroundColor(getResources().getColor(
-                        R.color.blue_text_bg_light));
+                view.setBackgroundResource(R.drawable.ripple_text_bg_light);
             else
-                view.setBackgroundColor(getResources().getColor(
-                        R.color.blue_text_bg_dark));
+                view.setBackgroundResource(R.drawable.ripple_text_bg_dark);
             // TextView textView = new TextView(DisplayActivity.this);
             final BUThread threadItem = threadlist.get(position);
             subjView.setText(threadItem.getSubject());
