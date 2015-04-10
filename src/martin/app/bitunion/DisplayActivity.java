@@ -6,6 +6,7 @@ import java.util.List;
 import martin.app.bitunion.fragment.ForumFragment;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.CommonIntents;
+import martin.app.bitunion.widget.SwipeDetector;
 
 import android.content.Context;
 import android.content.Intent;
@@ -81,7 +82,8 @@ public class DisplayActivity extends ActionBarActivity {
         // mPagerTabStrip = (PagerTabStrip) findViewById(R.id.pager_tab_strip);
         mViewPager.setAdapter(mPagerAdapter);
         mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
-        mViewPager.setOnTouchListener(new ScrollListener(this));
+        int trigger = getResources().getDimensionPixelSize(R.dimen.swipe_trigger_limit);
+        mViewPager.setOnTouchListener(new SwipeDetector(trigger, new MySwipeListener()));
 
     }
 
@@ -178,35 +180,22 @@ public class DisplayActivity extends ActionBarActivity {
         }
     }
 
+    private long lastswipetime = 0;
     /**
      * Listener to swipe activity. Double one-direction swiping will kill
      * current activity thus lead to upper level of this application.
      */
-    private class ScrollListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
-        private GestureDetector detector;
-        private long lastswipetime = 0;
-        private int TRIGGER = 50;
+    private class MySwipeListener implements SwipeDetector.SwipeListener {
 
-        private ScrollListener(Context context) {
-            TRIGGER = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f,
-                    BUApplication.getInstance().getResources().getDisplayMetrics());
-            detector = new GestureDetector(context, this);
-        }
         @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (distanceX > TRIGGER && currentpage == 0) {
+        public void onSwiped(int swipeAction) {
+            if (swipeAction == SwipeDetector.SWIPE_RIGHT && currentpage == 0) {
                 if ((System.currentTimeMillis() - lastswipetime) >= BUAppUtils.EXIT_WAIT_TIME) {
                     showToast("再次右滑返回");
                     lastswipetime = System.currentTimeMillis();
                 } else
                     finish();
             }
-            return false;
-        }
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            return detector.onTouchEvent(event);
         }
     }
 

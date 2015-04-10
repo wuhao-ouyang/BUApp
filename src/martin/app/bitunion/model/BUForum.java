@@ -2,9 +2,9 @@ package martin.app.bitunion.model;
 
 public class BUForum extends BUContent {
 
-    private String name;
-    private int fid;
-    private int type;
+    private final String name;
+    private final int fid;
+    private final int type;
 
     public BUForum(String name, int fid, int type) {
         this.name = name;
@@ -14,10 +14,6 @@ public class BUForum extends BUContent {
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public int getFid() {

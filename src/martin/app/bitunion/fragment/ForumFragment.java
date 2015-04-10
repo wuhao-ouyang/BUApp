@@ -18,6 +18,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.transition.TransitionManager;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,7 +40,6 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
 
     public static final String ARG_PAGE_NUMBER = "page";
 
-    private LayoutInflater inflater;
     private SwipeRefreshLayout mRefreshLayout;
     private ListView mListView;
     private ProgressBar mSpinner;
@@ -61,6 +61,9 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
             threadlist = savedInstanceState.getParcelableArrayList("threadlist");
             mFid = savedInstanceState.getInt("fid");
             mPageNum = savedInstanceState.getInt("page");
+        } else {
+            mPageNum = getArguments().getInt("page");
+            mFid = getArguments().getInt("fid");
         }
     }
 
@@ -73,16 +76,16 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        this.inflater = inflater;
-		mPageNum = getArguments().getInt("page");
-		mFid = getArguments().getInt("fid");
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_display_threads, container, false);
+    }
 
-        View root = inflater.inflate(R.layout.fragment_display_threads, container, false);
-        mRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.lyt_refresh_frame);
-        mListView = (ListView) root.findViewById(R.id.forum_listview);
-        mSpinner = (ProgressBar) root.findViewById(R.id.progressBar);
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.lyt_refresh_frame);
+        mListView = (ListView) view.findViewById(R.id.forum_listview);
+        mSpinner = (ProgressBar) view.findViewById(R.id.progressBar);
         mRefreshLayout.setOnRefreshListener(this);
         if (threadlist == null || threadlist.isEmpty()) {
             mSpinner.setVisibility(View.VISIBLE);
@@ -96,7 +99,6 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
         mListView.setAdapter(mAdapter);
         mListView.setOnScrollListener(this);
         onRefresh();
-        return root;
     }
 
     @Override
@@ -181,7 +183,7 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = convertView;
             if (view == null)
-                view = inflater.inflate(R.layout.singlethreaditem, null);
+                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.singlethreaditem, null);
             TextView subjView = (TextView) view
                     .findViewById(R.id.thread_subject);
             TextView addinfoView = (TextView) view

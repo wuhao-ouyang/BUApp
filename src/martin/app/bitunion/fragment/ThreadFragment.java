@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.R;
-import martin.app.bitunion.ThreadActivity;
 import martin.app.bitunion.martin.app.bitunion.widget.ObservableWebView;
 import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
@@ -14,7 +13,6 @@ import martin.app.bitunion.util.DataParser;
 import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -50,7 +48,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
     private ArrayList<BUPost> postlist = new ArrayList<BUPost>();
 
     private SwipeRefreshLayout mRefreshLayout;
-    private ObservableWebView singlepageView = null;
+    private ObservableWebView mPageWebView = null;
     private ProgressBar mSpinner;
 
     private int mReqCount;
@@ -79,40 +77,43 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             mTid = savedInstanceState.getInt("tid");
             mPageNum = savedInstanceState.getInt("page_num");
             postlist = savedInstanceState.getParcelableArrayList("post_list");
+        } else {
+            mTid = getArguments().getInt(ARG_THREAD_ID);
+            mPageNum = getArguments().getInt(ARG_PAGE_NUMBER);
+            POS_OFFSET = mPageNum * BUAppUtils.POSTS_PER_PAGE + 1;
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        mTid = getArguments().getInt(ARG_THREAD_ID);
-        mPageNum = getArguments().getInt(ARG_PAGE_NUMBER);
-        POS_OFFSET = mPageNum * BUAppUtils.POSTS_PER_PAGE + 1;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_display_posts, container, false);
+    }
 
-        View root = inflater.inflate(R.layout.fragment_display_posts, container, false);
-        mRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.lyt_refresh_frame);
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.lyt_refresh_frame);
         mRefreshLayout.setOnRefreshListener(this);
         mRefreshLayout.setEnabled(false);
-        singlepageView = (ObservableWebView) root.findViewById(R.id.webView_posts);
-        singlepageView.setOnScrollChangedCallback(this);
-        mSpinner = (ProgressBar) root.findViewById(R.id.progressBar);
+        mPageWebView = (ObservableWebView) view.findViewById(R.id.webView_posts);
+        mPageWebView.setOnScrollChangedCallback(this);
+        mSpinner = (ProgressBar) view.findViewById(R.id.progressBar);
         if (postlist == null || postlist.isEmpty()) {
-            singlepageView.setVisibility(View.GONE);
+            mPageWebView.setVisibility(View.GONE);
             mSpinner.setVisibility(View.VISIBLE);
         } else {
-            singlepageView.setVisibility(View.VISIBLE);
+            mPageWebView.setVisibility(View.VISIBLE);
             mSpinner.setVisibility(View.GONE);
         }
 
         String content = createHtmlCode();
-        singlepageView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
-        singlepageView.getSettings().setJavaScriptEnabled(true);
-        singlepageView.addJavascriptInterface(new JSInterface(new JSHandler()), JSInterface.class.getSimpleName());
-        singlepageView.loadDataWithBaseURL("file:///android_res/drawable/", content, "text/html", "utf-8", null);
+        mPageWebView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
+        mPageWebView.getSettings().setJavaScriptEnabled(true);
+        mPageWebView.addJavascriptInterface(new JSInterface(new JSHandler()), JSInterface.class.getSimpleName());
+        mPageWebView.loadDataWithBaseURL("file:///android_res/drawable/", content, "text/html", "utf-8", null);
         Log.i(TAG, "WebView created!>>" + mPageNum + ", Posts >>" + postlist.size());
 
         onRefresh();
-        return root;
     }
 
     @Override
@@ -162,10 +163,10 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
     public void notifyUpdated() {
         mRefreshLayout.setRefreshing(false);
         mSpinner.setVisibility(View.GONE);
-        singlepageView.setVisibility(View.VISIBLE);
+        mPageWebView.setVisibility(View.VISIBLE);
 
         String htmlcode = createHtmlCode();
-        singlepageView.loadDataWithBaseURL("file:///android_res/drawable/", htmlcode, "text/html", "utf-8", null);
+        mPageWebView.loadDataWithBaseURL("file:///android_res/drawable/", htmlcode, "text/html", "utf-8", null);
         Log.v(TAG, "fragment " + this.mPageNum + " updated");
     }
 
