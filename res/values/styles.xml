@@ -13,6 +13,7 @@
         <item name="android:colorPrimaryDark" tools:ignore="NewApi">@color/blue_dark</item>
         <item name="android:statusBarColor" tools:ignore="NewApi">#4972af</item>
         <item name="android:actionBarStyle">@style/MyActionBar</item>
+        <item name="android:windowContentTransitions" tools:ignore="NewApi">true</item>
 
         <!-- Support library compatibility -->
         <item name="colorPrimary">@color/blue_light</item>
@@ -38,7 +39,7 @@
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-        <item name="android:windowAnimationStyle">@style/ActivityAnimation</item>
+        <!--<item name="android:windowAnimationStyle">@style/ActivityAnimation</item>-->
     </style>
 
     <style name="LoginFormContainer">

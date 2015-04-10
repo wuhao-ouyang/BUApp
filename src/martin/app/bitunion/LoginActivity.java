@@ -33,8 +33,6 @@ public class LoginActivity extends ActionBarActivity {
     // Values for username and password at the time of the login attempt.
     private String mUsername;
     private String mPassword;
-    private String mSession = "";
-    private int mNetType;
 
     // UI references.
     private EditText mUsernameView;
@@ -53,9 +51,7 @@ public class LoginActivity extends ActionBarActivity {
         readConfig();
         // Set up the default login form.
         mUsernameView = (EditText) findViewById(R.id.username);
-        mUsernameView.setText(mUsername);
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setText(mPassword);
 
         netGroup = (RadioGroup) findViewById(R.id.radioGroup1);
         netGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -63,9 +59,9 @@ public class LoginActivity extends ActionBarActivity {
             @Override
             public void onCheckedChanged(RadioGroup arg0, int arg1) {
                 if (arg1 == R.id.radio_in) {
-                    mNetType = BUAppUtils.BITNET;
+                    BUApplication.settings.mNetType = BUAppUtils.BITNET;
                 } else if (arg1 == R.id.radio_out) {
-                    mNetType = BUAppUtils.OUTNET;
+                    BUApplication.settings.mNetType = BUAppUtils.OUTNET;
                 }
             }
         });
@@ -184,19 +180,12 @@ public class LoginActivity extends ActionBarActivity {
     }
 
     public void saveConfig() {
-        BUApplication.settings.mNetType = mNetType;
-        SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
-        SharedPreferences.Editor editor = config.edit();
-        editor.putInt("nettype", mNetType);
-        editor.putString("username", mUsername);
-        editor.putString("password", mPassword);
-        editor.commit();
+        BUApplication.settings.readPreference(this);
+        BUApiHelper.saveUser(this);
     }
 
     public void readConfig() {
-        SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
-        mNetType = config.getInt("nettype", BUAppUtils.OUTNET);
-        mUsername = config.getString("username", null);
-        mPassword = config.getString("password", null);
+        BUApplication.settings.readPreference(this);
+        BUApiHelper.init(this);
     }
 }

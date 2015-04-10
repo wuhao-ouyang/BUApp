@@ -74,7 +74,7 @@
                         android:layout_height="wrap_content"
                         android:paddingLeft="20dp"
                         android:paddingRight="20dp"
-                        android:text="@string/action_login" />
+                        android:text="@string/menu_action_login" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

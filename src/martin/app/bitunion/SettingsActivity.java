@@ -34,11 +34,6 @@ public class SettingsActivity extends ActionBarActivity {
     private CheckBox showimg;
     private CheckBox referat;
 
-    private int titletextsize;
-    private int contenttextsize;
-    private boolean sig;
-    private boolean img;
-    private boolean ref;
     private int RECOMMENDTITESIZE;
     private int RECOMMENDCONTENTSIZE;
 
@@ -47,7 +42,7 @@ public class SettingsActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         // Show the Up button in the action bar.
-        setupActionBar();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         float dpi = getResources().getDisplayMetrics().densityDpi;
         if (dpi > DisplayMetrics.DENSITY_HIGH) {
@@ -57,15 +52,9 @@ public class SettingsActivity extends ActionBarActivity {
             RECOMMENDTITESIZE = 12;
             RECOMMENDCONTENTSIZE = 12;
         }
-        titletextsize = BUApplication.settings.titletextsize;
-        contenttextsize = BUApplication.settings.contenttextsize;
-        sig = BUApplication.settings.showsigature;
-        img = BUApplication.settings.showimage;
-        ref = BUApplication.settings.referenceat;
-
         TextView mVersion = (TextView) findViewById(R.id.settings_version);
         try {
-            mVersion.setText(mVersion.getText().toString() +  getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
+            mVersion.setText(mVersion.getText().toString() + getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
         } catch (NameNotFoundException e) {
             Log.e("SettingsActivity", "Version name not found!");
             e.printStackTrace();
@@ -95,14 +84,13 @@ public class SettingsActivity extends ActionBarActivity {
                     @Override
                     public void onProgressChanged(SeekBar seekBar,
                                                   int progress, boolean fromUser) {
-                        titletextsize = progress + 10;
-                        titleTextView.setText("帖子标题字体大小" + titletextsize
-                                + "\t(推荐" + RECOMMENDTITESIZE + ")");
-                        titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
-                                titletextsize);
+                        BUApplication.settings.titletextsize = progress + 10;
+                        titleTextView.setText("帖子标题字体大小" +
+                                BUApplication.settings.titletextsize + "\t(推荐" + RECOMMENDTITESIZE + ")");
+                        titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, BUApplication.settings.titletextsize);
                     }
                 });
-        titleSeekBar.setProgress(titletextsize - 10);
+        titleSeekBar.setProgress(BUApplication.settings.titletextsize - 10);
         // contentTextView.setText("帖子内容文本大小" + contenttextsize + "\t(推荐"+
         // RECOMMENDCONTENTSIZE +")");
         // contentTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
@@ -121,24 +109,23 @@ public class SettingsActivity extends ActionBarActivity {
                     @Override
                     public void onProgressChanged(SeekBar seekBar,
                                                   int progress, boolean fromUser) {
-                        contenttextsize = progress + 10;
-                        contentTextView.setText("帖子内容字体大小" + contenttextsize
+                        BUApplication.settings.contenttextsize = progress + 10;
+                        contentTextView.setText("帖子内容字体大小" + BUApplication.settings.contenttextsize
                                 + "\t(推荐" + RECOMMENDCONTENTSIZE + ")");
                         contentTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
-                                contenttextsize);
+                                BUApplication.settings.contenttextsize);
                     }
                 });
-        contentSeekBar.setProgress(contenttextsize - 10);
-        nettypeSwitch
-                .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        contentSeekBar.setProgress(BUApplication.settings.contenttextsize - 10);
+        nettypeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView,
-                                                 boolean isChecked) {
-                        Log.i("SettingsActivity", "外网模式>>" + isChecked);
-                        BUApplication.settings.mNetType = isChecked ? 1 : 0;
-                    }
-                });
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,
+                                         boolean isChecked) {
+                Log.i("SettingsActivity", "外网模式>>" + isChecked);
+                BUApplication.settings.mNetType = isChecked ? 1 : 0;
+            }
+        });
 
         showsig.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
@@ -146,58 +133,36 @@ public class SettingsActivity extends ActionBarActivity {
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 Log.i("SettingsActivity", "显示签名>>" + isChecked);
-                sig = isChecked;
+                BUApplication.settings.showsigature = isChecked;
             }
         });
-        showsig.setChecked(sig);
+        showsig.setChecked(BUApplication.settings.showsigature);
         showimg.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 Log.i("SettingsActivity", "显示图片>>" + isChecked);
-                img = isChecked;
+                BUApplication.settings.showimage = isChecked;
             }
         });
-        showimg.setChecked(img);
+        showimg.setChecked(BUApplication.settings.showimage);
         referat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 Log.i("SettingsActivity", "引用At>>" + isChecked);
-                ref = isChecked;
+                BUApplication.settings.referenceat = isChecked;
             }
         });
-        referat.setChecked(ref);
+        referat.setChecked(BUApplication.settings.referenceat);
     }
 
     protected void onDestroy() {
-        BUApplication.settings.titletextsize = titletextsize;
-        BUApplication.settings.contenttextsize = contenttextsize;
-        BUApplication.settings.showsigature = sig;
-        BUApplication.settings.showimage = img;
-        BUApplication.settings.referenceat = ref;
-        SharedPreferences config = getSharedPreferences("config", MODE_PRIVATE);
-        SharedPreferences.Editor editor = config.edit();
-        editor.putInt("titletextsize", titletextsize);
-        editor.putInt("contenttextsize", contenttextsize);
-        editor.putBoolean("showsigature", sig);
-        editor.putBoolean("showimage", img);
-        editor.putBoolean("referenceat", ref);
-        editor.commit();
-        Log.i("SettingActivity", "Config Saved>>" + titletextsize + ">>"
-                + contenttextsize);
+        BUApplication.settings.writePreference(this);
+        Log.i("SettingActivity", "Config Saved");
         super.onDestroy();
-    }
-
-    /**
-     * Set up the {@link android.app.ActionBar}.
-     */
-    private void setupActionBar() {
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
     }
 
     @Override

@@ -145,7 +145,7 @@ public class BUPost extends BUContent implements Parcelable {
         parseMessage();
     }
 
-    public void parseQuote() {
+    private void parseQuote() {
         message = message.replace("\"", "'");
         Pattern p = Pattern.compile(BUAppUtils.QUOTE_REGEX);
         Matcher m = p.matcher(message);
@@ -163,14 +163,16 @@ public class BUPost extends BUContent implements Parcelable {
         }
     }
 
-    public void parseMessage() {
+    private void parseMessage() {
         parseAt();
         parseImage();
         message = message.replace("[复制到剪贴板]", "");
     }
 
-    public void parseAt() {
-        // 找到@标记，并将超链接去掉
+    /**
+     * 找到@标记，并将超链接去掉
+     */
+    private void parseAt() {
         Pattern p = Pattern
                 .compile("<font color='Blue'>@<a href='/[^>]+'>([^\\s]+?)</a></font>");
         Matcher m = p.matcher(message);
@@ -180,7 +182,7 @@ public class BUPost extends BUContent implements Parcelable {
         }
     }
 
-    public void parseImage() {
+    private void parseImage() {
 //		message = message.replace("src='..", "scr='" + BUApplication.settings.ROOTURL);
         // 处理图片标签
         Pattern p = Pattern.compile("<img src='([^>']+)'[^>]*(width>)?[^>]*'>");
@@ -198,7 +200,7 @@ public class BUPost extends BUContent implements Parcelable {
         }
     }
 
-    public String parseLocalImage(String imgUrl) {
+    private String parseLocalImage(String imgUrl) {
         // 检查是否为本地表情文件
         Pattern p = Pattern.compile("\\.\\./images/(smilies|bz)/(.+?)\\.gif");
         Matcher m = p.matcher(imgUrl);
@@ -305,7 +307,7 @@ public class BUPost extends BUContent implements Parcelable {
     /**
      * Change HTML message returned from server to application style.
      *
-     * @return String of costumed HTML style for layout
+     * @return HTML text for layout
      */
     public String getHtmlLayout(int count) {
         String htmlcontent;

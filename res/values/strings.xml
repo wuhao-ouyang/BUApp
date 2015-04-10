@@ -2,13 +2,17 @@
 <resources>
 
     <string name="app_name">BUapp</string>
-    <string name="action_settings">设置</string>
-    <string name="action_login">登录</string>
-    <string name="action_refresh">刷新</string>
-    <string name="action_post">回复</string>
-    <string name="action_logout">登出</string>
-    <string name="action_info">关于</string>
-    <string name="action_sharelink">分享</string>
+
+    <!-- Menu Actions -->
+    <string name="menu_action_settings">设置</string>
+    <string name="menu_action_user">用户</string>
+    <string name="menu_action_login">登录</string>
+    <string name="menu_action_refresh">刷新</string>
+    <string name="menu_action_post">回复</string>
+    <string name="menu_action_logout">登出</string>
+    <string name="menu_action_info">关于</string>
+    <string name="menu_action_sharelink">分享</string>
+
     <string name="nettype_in">校园网</string>
     <string name="nettype_out">外网</string>
     <string name="prompt_username">用户名</string>

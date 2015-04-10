@@ -7,8 +7,10 @@ import martin.app.bitunion.fragment.ForumFragment;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.CommonIntents;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -18,6 +20,7 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v7.app.ActionBarActivity;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -77,7 +80,7 @@ public class DisplayActivity extends ActionBarActivity {
         // mPagerTabStrip = (PagerTabStrip) findViewById(R.id.pager_tab_strip);
         mViewPager.setAdapter(mPagerAdapter);
         mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
-        mViewPager.setOnTouchListener(new MyOnTouchListener());
+        mViewPager.setOnTouchListener(new ScrollListener());
 
     }
 
@@ -174,40 +177,33 @@ public class DisplayActivity extends ActionBarActivity {
         }
     }
 
-    private class MyOnTouchListener implements OnTouchListener {
-
-        private double lastx = -1;
+    /**
+     * Listener to swipe activity. Double one-direction swiping will kill
+     * current activity thus lead to upper level of this application.
+     */
+    private class ScrollListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
         private long lastswipetime = 0;
-        private boolean swipetrig = false;
+        private int TRIGGER = 50;
 
+        private ScrollListener() {
+            TRIGGER = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f,
+                    BUApplication.getInstance().getResources().getDisplayMetrics());
+        }
         @Override
-        public boolean onTouch(View v, MotionEvent motion) {
-            if (currentpage == 0)
-                return false;
-            switch (motion.getAction()) {
-                case MotionEvent.ACTION_MOVE:
-                    int dpMoved = 0;
-                    if (lastx != -1)
-                        dpMoved = BUAppUtils.px2dip(getApplication(),
-                                (float) (motion.getX() - lastx));
-                    lastx = motion.getX();
-                    if (dpMoved > 24)
-                        swipetrig = true;
-                    break;
-                case MotionEvent.ACTION_UP:
-                    lastx = -1;
-                    if (swipetrig) {
-                        if ((System.currentTimeMillis() - lastswipetime) >= BUAppUtils.EXIT_WAIT_TIME) {
-                            showToast("再次右滑返回");
-                            lastswipetime = System.currentTimeMillis();
-                        } else
-                            finish();
-                        swipetrig = false;
-                    }
-                    break;
-                default:
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            if (distanceX > TRIGGER && currentpage == 0) {
+                if ((System.currentTimeMillis() - lastswipetime) >= BUAppUtils.EXIT_WAIT_TIME) {
+                    showToast("再次右滑返回");
+                    lastswipetime = System.currentTimeMillis();
+                } else
+                    finish();
             }
             return false;
+        }
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            return onTouchEvent(event);
         }
     }
 

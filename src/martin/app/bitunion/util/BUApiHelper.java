@@ -2,6 +2,7 @@ package martin.app.bitunion.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -41,7 +42,6 @@ public class BUApiHelper {
     private static String mSession;
     private static String rooturl;
     private static String baseurl;
-    private static int mNetType;
 
     private static RequestQueue mApiQueue;
 
@@ -60,8 +60,8 @@ public class BUApiHelper {
      * Login current user with response listener
      */
     public static void tryLogin(final String username, final String password,
-                                final Response.Listener<JSONObject> responseListener,
-                                Response.ErrorListener errorListener) {
+                                @NonNull final Response.Listener<JSONObject> responseListener,
+                                @NonNull Response.ErrorListener errorListener) {
         if (username == null || password == null)
             return;
         String path = baseurl + "/bu_logging.php";
@@ -72,30 +72,7 @@ public class BUApiHelper {
         httpPost(path, params, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                if (getResult(response) == BUAppUtils.Result.SUCCESS) {
-                    mSession = response.optString("session");
-                    mUsername = username;
-                    mPassword = password;
-                    updateUser();
-                }
-                responseListener.onResponse(response);
-            }
-        }, errorListener);
-    }
-
-    public static void tryLogin(Response.Listener<JSONObject> responseListener,
-                                Response.ErrorListener errorListener) {
-        tryLogin(mUsername, mPassword, responseListener, errorListener);
-    }
-
-    /**
-     * Simple version of {@link BUApiHelper#tryLogin(Response.Listener, Response.ErrorListener)}
-     */
-    public static void tryLogin() {
-        tryLogin(new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                switch (getResult(response)) {
+                switch (BUApiHelper.getResult(response)) {
                     case FAILURE:
                         Toast.makeText(BUApplication.getInstance(), R.string.login_fail, Toast.LENGTH_SHORT).show();
                         break;
@@ -104,23 +81,26 @@ public class BUApiHelper {
                                 BUApplication.getInstance().getString(R.string.login_success).replace("$user_name", mUsername),
                                 Toast.LENGTH_SHORT).show();
                         mSession = response.optString("session");
+                        mUsername = username;
+                        mPassword = password;
                         updateUser();
                         break;
                     case UNKNOWN:
                         Toast.makeText(BUApplication.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
                         break;
                 }
+                responseListener.onResponse(response);
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(BUApplication.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
-            }
-        });
+        }, errorListener);
     }
 
-    public static void logoutUser(final Response.Listener<JSONObject> responseListener,
-                                  Response.ErrorListener errorListener) {
+    public static void tryLogin(@NonNull Response.Listener<JSONObject> responseListener,
+                                @NonNull Response.ErrorListener errorListener) {
+        tryLogin(mUsername, mPassword, responseListener, errorListener);
+    }
+
+    public static void logoutUser(@NonNull final Response.Listener<JSONObject> responseListener,
+                                  @NonNull Response.ErrorListener errorListener) {
         if (mUsername == null || mPassword == null)
             return;
         String path = baseurl + "/bu_logging.php";
@@ -262,14 +242,21 @@ public class BUApiHelper {
 
     public static void init(Context context) {
         SharedPreferences config = context.getSharedPreferences("config", Context.MODE_PRIVATE);
-        mNetType = config.getInt("nettype", BUAppUtils.OUTNET);
         mUsername = config.getString("username", null);
         mPassword = config.getString("password", null);
-        setNetType(mNetType);
+        setNetType(BUApplication.settings.mNetType);
 
         mApiQueue = Volley.newRequestQueue(context);
         // Need to read database
         sLoggedinUser = null;
+    }
+
+    public static void saveUser(Context context) {
+        SharedPreferences config = context.getSharedPreferences("config", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = config.edit();
+        editor.putString("username", mUsername);
+        editor.putString("password", mPassword);
+        editor.apply();
     }
 
     private static void updateUser() {
@@ -290,15 +277,14 @@ public class BUApiHelper {
         SharedPreferences config = BUApplication.getInstance()
                 .getSharedPreferences("config", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = config.edit();
-        BUApplication.settings.mNetType = mNetType = BUAppUtils.OUTNET;
+        BUApplication.settings.mNetType = BUAppUtils.OUTNET;
         editor.putInt("nettype", BUAppUtils.OUTNET);
         editor.putString("username", null);
         editor.putString("password", null);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setNetType(int net) {
-        mNetType = net;
         if (net == BUAppUtils.BITNET)
             rooturl = "http://www.bitunion.org";
         else if (net == BUAppUtils.OUTNET)

@@ -116,10 +116,6 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
             case android.R.id.home:
                 finish();
                 return true;
-            case R.id.action_refresh:
-                if (BUApiHelper.isUserLoggedin())
-
-                return true;
             case R.id.action_logout:
                 AlertDialog dialog = new AlertDialog.Builder(this)
                         .setTitle(R.string.logout_confirm_title)

@@ -5,12 +5,13 @@
         android:id="@+id/action_settings"
         android:icon="@drawable/ic_settings_white_48dp"
         android:orderInCategory="100"
-        app:showAsAction="ifRoom"
-        android:title="@string/action_settings"/>
+        app:showAsAction="never"
+        android:title="@string/menu_action_settings"/>
     <item
         android:id="@+id/action_login"
         android:icon="@drawable/ic_account_circle_white_48dp"
-        app:showAsAction="ifRoom"
-        android:title="@string/action_login"/>
+        app:showAsAction="never"
+        android:title="@string/menu_action_login"
+        android:enabled="false"/>
 
 </menu>

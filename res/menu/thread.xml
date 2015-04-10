@@ -4,13 +4,13 @@
     <item
         android:id="@+id/action_refresh"
         android:icon="@drawable/ic_refresh_white_48dp"
-        app:showAsAction="ifRoom"
-        android:title="@string/action_refresh"/>
-    
+        app:showAsAction="never"
+        android:title="@string/menu_action_refresh"/>
+
     <item
         android:id="@+id/action_sharelink"
         android:icon="@drawable/ic_share_white_48dp"
-        app:showAsAction="ifRoom"
-        android:title="@string/action_sharelink"/>
+        app:showAsAction="never"
+        android:title="@string/menu_action_sharelink"/>
 
 </menu>

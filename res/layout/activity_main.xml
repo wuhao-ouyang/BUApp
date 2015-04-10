@@ -4,11 +4,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.idunnololz.widgets.AnimatedExpandableListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/listview"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:transcriptMode="alwaysScroll">
-    </com.idunnololz.widgets.AnimatedExpandableListView>
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

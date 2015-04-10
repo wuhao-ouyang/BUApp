@@ -30,6 +30,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -126,7 +127,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         mPagerTitleStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         mViewPager.setAdapter(mThreadAdapter);
         mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
-        mViewPager.setOnTouchListener(new MyOnTouchListener());
+        mViewPager.setOnTouchListener(new ScrollListener());
     }
 
     @Override
@@ -198,7 +199,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
 
     @Override
     public void onBackPressed() {
-        if (replyContainer.isShown()) {
+        if (replyContainer.getVisibility() == View.VISIBLE) {
             replyContainer.setVisibility(View.GONE);
             return;
         } else
@@ -263,56 +264,30 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
     /**
      * Listener to swipe activity. Double one-direction swiping will kill
      * current activity thus lead to upper level of this application.
-     * @author Strider_oy
      */
-    private class MyOnTouchListener implements OnTouchListener {
+    private class ScrollListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
+        private long lastswipetime = 0;
+        private int TRIGGER = 50;
 
-        double lastx = -1;
-        long lastswipetimeright = 0;
-        long lastswipetimeleft = 0;
-        boolean rightswipetrig = false;
-        boolean leftswipetrig = false;
+        private ScrollListener() {
+            TRIGGER = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f,
+                    BUApplication.getInstance().getResources().getDisplayMetrics());
+        }
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            if (distanceX > TRIGGER && currentpage == 0) {
+                if ((System.currentTimeMillis() - lastswipetime) >= BUAppUtils.EXIT_WAIT_TIME) {
+                    showToast("再次右滑返回");
+                    lastswipetime = System.currentTimeMillis();
+                } else
+                    finish();
+            }
+            return false;
+        }
 
         @Override
-        public boolean onTouch(View v, MotionEvent motion) {
-            if (currentpage == 0 || currentpage == lastpage)
-                switch (motion.getAction()) {
-                    case MotionEvent.ACTION_MOVE:
-                        int dpMoved = 0;
-                        if (lastx != -1)
-                            dpMoved = BUAppUtils.px2dip(getApplication(),
-                                    (float) (motion.getX() - lastx));
-                        lastx = motion.getX();
-//					Log.i("TouchEvent", "dpmoved>>" + dpMoved);
-                        if (dpMoved > 24 && currentpage == 0)
-                            rightswipetrig = true;
-                        else if (dpMoved < -24 && currentpage == lastpage)
-                            leftswipetrig = true;
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        lastx = -1;
-                        if (rightswipetrig) {
-                            if ((System.currentTimeMillis() - lastswipetimeright) >= BUAppUtils.EXIT_WAIT_TIME) {
-                                showToast("再次右滑返回");
-                                lastswipetimeright = System.currentTimeMillis();
-                                lastswipetimeleft = 0;
-                            } else
-                                finish();
-                            rightswipetrig = false;
-                        }
-                        if (leftswipetrig) {
-                            if ((System.currentTimeMillis() - lastswipetimeleft) >= BUAppUtils.EXIT_WAIT_TIME) {
-                                showToast("再次左滑返回");
-                                lastswipetimeleft = System.currentTimeMillis();
-                                lastswipetimeright = 0;
-                            } else
-                                finish();
-                            leftswipetrig = false;
-                        }
-                        break;
-                    default:
-                }
-            return false;
+        public boolean onTouch(View v, MotionEvent event) {
+            return onTouchEvent(event);
         }
     }
 

@@ -47,15 +47,6 @@ public class BUAppUtils {
     public static final String QUOTE_REGEX = QUOTE_HEAD
             + "(((?!<br><br><center><table border=)[\\w\\W])*?)" + QUOTE_TAIL;
 
-    public static final int REQ_LOGGING = 0;
-    public static final int REQ_FORUM = 1;
-    public static final int REQ_THREAD = 2;
-    public static final int REQ_PROFILE = 3;
-    public static final int REQ_POST = 4;
-    public static final int NEWPOST = 5;
-    public static final int NEWTHREAD = 6;
-    public static final int REQ_FID_TID_SUM = 7;
-
     public enum Result {
         SUCCESS, // 返回数据成功，result字段为success
         FAILURE, // 返回数据失败，result字段为failure
