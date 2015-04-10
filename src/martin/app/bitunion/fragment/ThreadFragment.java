@@ -55,6 +55,13 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
 
     private int mReqCount;
 
+    private PostActionListener mPostActionListener;
+
+    public interface PostActionListener {
+        void onQuoteClick(BUPost post);
+        void onUserClick(int uid);
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -100,7 +107,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         String content = createHtmlCode();
         singlepageView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         singlepageView.getSettings().setJavaScriptEnabled(true);
-        singlepageView.addJavascriptInterface(new JSInterface(getActivity()), "JSInterface");
+        singlepageView.addJavascriptInterface(new JSInterface(new JSHandler()), JSInterface.class.getSimpleName());
         singlepageView.loadDataWithBaseURL("file:///android_res/drawable/", content, "text/html", "utf-8", null);
         Log.i(TAG, "WebView created!>>" + mPageNum + ", Posts >>" + postlist.size());
 
@@ -171,47 +178,53 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
     }
 
     private String createHtmlCode(){
-        String content = "<!DOCTYPE ><html><head><title></title>" +
+        StringBuilder content = new StringBuilder("<!DOCTYPE ><html><head><title></title>" +
                 "<style type=\"text/css\">" +
                 "img{max-width: 100%; width:auto; height: auto;}" +
                 "body{background-color: #D8E2EF; color: #284264;font-size:" + BUApplication.settings.contenttextsize +"px;}" +
                 "</style><script type='text/javascript'>" +
                 "function referenceOnClick(num){" +
-                "JSInterface.referenceOnClick(num);}" +
+                JSInterface.class.getSimpleName()+".referenceOnClick(num);}" +
                 "function authorOnClick(uid){" +
-                "JSInterface.authorOnClick(uid);}" +
-                "</script></head><body>";
+                JSInterface.class.getSimpleName()+".authorOnClick(uid);}" +
+                "</script></head><body>");
 
         int len = postlist.size();
         for (int i = 0; i < len; i++){
             BUPost postItem = postlist.get(i);
-            content += postItem.getHtmlLayout(POS_OFFSET+i);
+            content.append(postItem.getHtmlLayout(POS_OFFSET + i));
         }
-        content += "</body></html>";
-        return content;
+        content.append("</body></html>");
+        return content.toString();
     }
 
-    @SuppressLint("HandlerLeak")
-    private Handler handler = new Handler() {
+    public void setPostActionListener(PostActionListener l) {
+        mPostActionListener = l;
+    }
+
+    private class JSHandler extends Handler {
+
         public void handleMessage(android.os.Message msg) {
             if (msg.what == 0) {
-                BUPost post = postlist.get(msg.arg1 - 1 - mPageNum *BUAppUtils.POSTS_PER_PAGE);
-                ((ThreadActivity) ThreadFragment.this.getActivity()).setQuoteText(post);
+                BUPost post = postlist.get(msg.arg1 - POS_OFFSET);
+                if (mPostActionListener != null)
+                    mPostActionListener.onQuoteClick(post);
             }
             if (msg.what == 1) {
-                ((ThreadActivity) ThreadFragment.this.getActivity())
-                        .displayUserInfo(msg.arg1);
+                if (mPostActionListener != null)
+                    mPostActionListener.onUserClick(msg.arg1);
             }
         }
     };
 
-    private class JSInterface {
+    private static class JSInterface {
 
-        private Context mContext;
+        private JSHandler handler;
 
-        JSInterface(Context c) {
-            mContext = c;
+        private JSInterface(JSHandler h) {
+            handler = h;
         }
+
         @JavascriptInterface
         public void referenceOnClick(int count){
             handler.obtainMessage();

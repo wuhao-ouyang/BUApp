@@ -18,6 +18,8 @@
 -keepclassmembers class fqcn.of.javascript.interface.for.webview {
    public *;
 }
+-keepattributes JavascriptInterface
+
 # JavaScript interfaces
 -keep public class martin.app.bitunion.fragment.ThreadFragment$JSInterface
 -keep public class * implements martin.app.bitunion.fragment.ThreadFragment$JSInterface

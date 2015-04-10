@@ -47,7 +47,7 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
-public class ThreadActivity extends ActionBarActivity implements View.OnClickListener {
+public class ThreadActivity extends ActionBarActivity implements View.OnClickListener, ThreadFragment.PostActionListener {
 
     private ThreadPagerAdapter mThreadAdapter;
 
@@ -183,13 +183,22 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
     }
 
     public void setQuoteText(BUPost quotePost) {
-        if (!replyContainer.isShown())
-            replyContainer.setVisibility(View.VISIBLE);
-        replyMessage.setText(replyMessage.getText().toString() + quotePost.toQuote());
-        replyMessage.setSelection(replyMessage.getText().toString().length());	// 设置光标到文本末尾
+
     }
 
     public void displayUserInfo(int uid) {
+    }
+
+    @Override
+    public void onQuoteClick(BUPost post) {
+        if (!replyContainer.isShown())
+            replyContainer.setVisibility(View.VISIBLE);
+        replyMessage.setText(replyMessage.getText().toString() + post.toQuote());
+        replyMessage.setSelection(replyMessage.getText().toString().length());	// 设置光标到文本末尾
+    }
+
+    @Override
+    public void onUserClick(int uid) {
         UserInfoDialogFragment infoDialog = new UserInfoDialogFragment();
         Bundle args = new Bundle();
         args.putInt("uid", uid);
@@ -232,6 +241,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
             } else if (!frag.isUpdating()){
                 frag.onRefresh();
             }
+            frag.setPostActionListener(ThreadActivity.this);
             return frag;
         }
 
