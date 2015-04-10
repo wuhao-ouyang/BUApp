@@ -18,6 +18,12 @@
 -keepclassmembers class fqcn.of.javascript.interface.for.webview {
    public *;
 }
+# JavaScript interfaces
+-keep public class martin.app.bitunion.fragment.ThreadFragment$JSInterface
+-keep public class * implements martin.app.bitunion.fragment.ThreadFragment$JSInterface
+-keepclassmembers class martin.app.bitunion.fragment.ThreadFragment$JSInterface {
+    <methods>;
+}
 
 # Apache Http
 -dontwarn org.apache.http.**
