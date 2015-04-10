@@ -15,6 +15,7 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -150,6 +151,8 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
         mRefreshLayout.setRefreshing(false);
         mListView.setVisibility(View.VISIBLE);
         mSpinner.setVisibility(View.GONE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+            TransitionManager.beginDelayedTransition(mListView);
         mAdapter.notifyDataSetChanged();
     }
 

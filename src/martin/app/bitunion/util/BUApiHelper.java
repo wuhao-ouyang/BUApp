@@ -53,6 +53,10 @@ public class BUApiHelper {
         }
     };
 
+    public static boolean hasValidUser() {
+        return mUsername != null && mPassword != null;
+    }
+
     public static boolean isUserLoggedin() {
         return mSession != null && !mSession.isEmpty();
     }

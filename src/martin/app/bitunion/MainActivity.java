@@ -104,8 +104,6 @@ public class MainActivity extends ActionBarActivity {
         mRecyclerView.setItemAnimator(animator);
         mRecyclerView.setHasFixedSize(false);
         mRecyclerViewExpandableItemManager.attachRecyclerView(mRecyclerView);
-
-        setupUser();
     }
 
     @Override
@@ -131,29 +129,31 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void setupUser() {
-
-        BUApiHelper.tryLogin(new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                switch (BUApiHelper.getResult(response)) {
-                    case FAILURE:
-                        ToastUtil.showToast(R.string.login_fail);
-                        break;
-                    case SUCCESS:
-                        ToastUtil.showToast(R.string.login_success);
-                        updateOptionMenu();
-                        break;
-                    case UNKNOWN:
-                        ToastUtil.showToast(R.string.network_unknown);
-                        break;
+        if (BUApiHelper.hasValidUser())
+            BUApiHelper.tryLogin(new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    switch (BUApiHelper.getResult(response)) {
+                        case FAILURE:
+                            ToastUtil.showToast(R.string.login_fail);
+                            break;
+                        case SUCCESS:
+                            ToastUtil.showToast(R.string.login_success);
+                            updateOptionMenu();
+                            break;
+                        case UNKNOWN:
+                            ToastUtil.showToast(R.string.network_unknown);
+                            break;
+                    }
                 }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                ToastUtil.showToast(R.string.network_unknown);
-            }
-        });
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    ToastUtil.showToast(R.string.network_unknown);
+                }
+            });
+        else
+            updateOptionMenu();
     }
 
     @Override
@@ -161,6 +161,7 @@ public class MainActivity extends ActionBarActivity {
         mOptionMenu = menu;
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        setupUser();
         return true;
     }
 
@@ -170,6 +171,7 @@ public class MainActivity extends ActionBarActivity {
             loginItem.setTitle(R.string.menu_action_user);
         else
             loginItem.setTitle(R.string.menu_action_login);
+        loginItem.setEnabled(true);
     }
 
     /**
