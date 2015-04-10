@@ -1,15 +1,21 @@
 package martin.app.bitunion;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.transition.ChangeBounds;
+import android.transition.ChangeClipBounds;
 import android.transition.ChangeTransform;
+import android.transition.Scene;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,6 +28,12 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.h6ah4i.android.widget.advrecyclerview.animator.GeneralItemAnimator;
+import com.h6ah4i.android.widget.advrecyclerview.animator.RefactoredDefaultItemAnimator;
+import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager;
+import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractExpandableItemAdapter;
+import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractExpandableItemViewHolder;
+import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils;
 
 import org.json.JSONObject;
 
@@ -40,6 +52,10 @@ public class MainActivity extends ActionBarActivity {
     private Menu mOptionMenu;
     // 论坛列表视图
     private RecyclerView mRecyclerView;
+    private RecyclerView.LayoutManager mLayoutManager;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.Adapter mWrappedAdapter;
+    private RecyclerViewExpandableItemManager mRecyclerViewExpandableItemManager;
     // 单组论坛列表数据
     private ArrayList<BUForum> forumList = new ArrayList<BUForum>();
     // 所有论坛列表数据
@@ -57,8 +73,6 @@ public class MainActivity extends ActionBarActivity {
 
         getSupportActionBar().setTitle("北理FTP联盟");
 
-        mRecyclerView = (RecyclerView) this.findViewById(R.id.listview);
-
         // ExpandableListView的分组信息
         groupList = getResources().getStringArray(R.array.forum_group);
 
@@ -66,25 +80,54 @@ public class MainActivity extends ActionBarActivity {
         String[] forumNames = getResources().getStringArray(R.array.forums);
         int[] forumFids = getResources().getIntArray(R.array.fids);
         int[] forumTypes = getResources().getIntArray(R.array.types);
-        for (int i = 0; i < forumNames.length; i++) {
-            forumList.add(new BUForum(forumNames[i], forumFids[i],
-                    forumTypes[i]));
-        }
+        for (int i = 0; i < forumNames.length; i++)
+            forumList.add(new BUForum(forumNames[i], forumFids[i], forumTypes[i]));
         // 转换论坛列表信息为二维数组，方便ListViewAdapter读入
         for (int i = 0; i < groupList.length; i++) {
             ArrayList<BUForum> forums = new ArrayList<BUForum>();
-            for (BUForum forum : forumList) {
-                if (i == forum.getType()) {
+            for (BUForum forum : forumList)
+                if (i == forum.getType())
                     forums.add(forum);
-                }
-            }
             fArrayList.add(forums);
         }
-        // Log.v("martin", fArrayList.get(0).get(0).getName());
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setAdapter(new ForumListAdapter());
+
+        mRecyclerView = (RecyclerView) this.findViewById(R.id.listview);
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerViewExpandableItemManager = new RecyclerViewExpandableItemManager(null);
+        ForumListAdapter itemAdapter = new ForumListAdapter();
+        mAdapter = itemAdapter;
+        mWrappedAdapter = mRecyclerViewExpandableItemManager.createWrappedAdapter(itemAdapter);
+
+        final GeneralItemAnimator animator = new RefactoredDefaultItemAnimator();
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setAdapter(mWrappedAdapter);  // requires *wrapped* adapter
+        mRecyclerView.setItemAnimator(animator);
+        mRecyclerView.setHasFixedSize(false);
+        mRecyclerViewExpandableItemManager.attachRecyclerView(mRecyclerView);
 
         setupUser();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mRecyclerViewExpandableItemManager != null) {
+            mRecyclerViewExpandableItemManager.release();
+            mRecyclerViewExpandableItemManager = null;
+        }
+
+        if (mRecyclerView != null) {
+            mRecyclerView.setItemAnimator(null);
+            mRecyclerView.setAdapter(null);
+            mRecyclerView = null;
+        }
+
+        if (mWrappedAdapter != null) {
+            WrapperAdapterUtils.releaseAll(mWrappedAdapter);
+            mWrappedAdapter = null;
+        }
+        mAdapter = null;
+        mLayoutManager = null;
+        super.onDestroy();
     }
 
     private void setupUser() {
@@ -153,20 +196,71 @@ public class MainActivity extends ActionBarActivity {
         // return super.onOptionsItemSelected(item);
     }
 
-    private class ForumListAdapter extends RecyclerView.Adapter<ViewHolder>  {
+    private class ForumListAdapter extends AbstractExpandableItemAdapter<GroupViewHolder, ChildViewHolder>  {
 
-        private View getChildView(int groupPosition, int childPosition) {
-            TextView childTitle = new TextView(MainActivity.this);
-            childTitle.setBackgroundResource(R.drawable.ripple_main_row_click);
-            if (fArrayList.get(groupPosition).get(childPosition).getName().contains("--"))
-                childTitle.setTextSize(BUApplication.settings.titletextsize + 2);
+        private ForumListAdapter() {
+            setHasStableIds(true);
+        }
+
+        @Override
+        public int getGroupCount() {
+            return groupList.length;
+        }
+
+        @Override
+        public int getChildCount(int groupPosition) {
+            return fArrayList.get(groupPosition).size();
+        }
+
+        @Override
+        public long getGroupId(int groupPos) {
+            return groupPos;
+        }
+
+        @Override
+        public long getChildId(int groupPos, int childPos) {
+            return childPos;
+        }
+
+        @Override
+        public int getGroupItemViewType(int i) {
+            return 0;
+        }
+
+        @Override
+        public int getChildItemViewType(int i, int i1) {
+            return 0;
+        }
+
+        @Override
+        public GroupViewHolder onCreateGroupViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_forum_group, parent, false);
+            return new GroupViewHolder(view);
+        }
+
+        @Override
+        public ChildViewHolder onCreateChildViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_forum_title, parent, false);
+            return new ChildViewHolder(view);
+        }
+
+        @Override
+        public void onBindGroupViewHolder(GroupViewHolder groupVH, int groupPosition, int viewType) {
+            groupVH.groupName.setText(groupList[groupPosition]);
+            groupVH.itemView.setClickable(true);
+        }
+
+        @Override
+        public void onBindChildViewHolder(ChildViewHolder childViewHolder, int groupPos, int childPos, int viewType) {
+            if (fArrayList.get(groupPos).get(childPos).getName().contains("--"))
+                childViewHolder.childTitle.setTextSize(BUApplication.settings.titletextsize + 2);
             else
-                childTitle.setTextSize(BUApplication.settings.titletextsize + 2 + 4);
-            childTitle.setPadding(60, 10, 0, 10);
-            childTitle.setText(fArrayList.get(groupPosition).get(childPosition).getName());
-            final BUForum forum = fArrayList.get(groupPosition).get(childPosition);
+                childViewHolder.childTitle.setTextSize(BUApplication.settings.titletextsize + 2 + 4);
+            childViewHolder.childTitle.setBackgroundResource(R.drawable.ripple_main_row_click);
+            childViewHolder.childTitle.setText(fArrayList.get(groupPos).get(childPos).getName());
+            final BUForum forum = fArrayList.get(groupPos).get(childPos);
             // 注册OnClick事件，触摸点击转至DisplayActivity
-            childTitle.setOnClickListener(new OnClickListener() {
+            childViewHolder.childTitle.setOnClickListener(new OnClickListener() {
 
                 @Override
                 @SuppressWarnings("NewApi")
@@ -190,69 +284,33 @@ public class MainActivity extends ActionBarActivity {
                         ToastUtil.showToast("请先登录");
                 }
             });
-            return childTitle;
-        }
-
-        private int getChildrenCount(int groupPosition) {
-            return fArrayList.get(groupPosition).size();
         }
 
         @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_forum_group, parent, false);
-            return new ViewHolder(view);
+        public boolean onCheckCanExpandOrCollapseGroup(GroupViewHolder groupVH, int groupPosition, int x, int y, boolean expand) {
+            groupVH.indicator.setImageResource(expand ? R.drawable.ic_expand_more_grey600_48dp:R.drawable.ic_expand_less_grey600_48dp);
+            return true;
         }
-
-        @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.groupName.setTextSize(BUApplication.settings.titletextsize + 2 + 4 + 5);
-            holder.groupName.setText(groupList[position]);
-            // Inflate child views
-            if (holder.childsContainer.getChildCount() == 0) {
-                for (int i = 0; i < getChildrenCount(position); i++)
-                    holder.childsContainer.addView(getChildView(position, i));
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return groupList.length;
-        }
-
     }
 
-    private static class ViewHolder extends RecyclerView.ViewHolder implements OnClickListener {
-        boolean isExpanded;
-
+    private static class GroupViewHolder extends AbstractExpandableItemViewHolder {
         ImageView indicator;
         TextView groupName;
-        ViewGroup childsContainer;
 
-        public ViewHolder(View itemView) {
+        private GroupViewHolder(View itemView) {
             super(itemView);
             indicator = (ImageView) itemView.findViewById(R.id.imgVw_group_expand_indicator);
             groupName = (TextView) itemView.findViewById(R.id.txtVw_group_title);
-            childsContainer = (ViewGroup) itemView.findViewById(R.id.lyt_child_container);
-
-            isExpanded = false;
-            indicator.setImageResource(R.drawable.ic_expand_more_grey600_48dp);
-            childsContainer.setVisibility(View.GONE);
-
-            itemView.setOnClickListener(this);
+            groupName.setTextSize(BUApplication.settings.titletextsize + 2 + 4 + 5);
         }
+    }
 
-        @Override
-        public void onClick(View v) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-//                TransitionSet transition = new TransitionSet();
-//                transition.addTransition(new ChangeBounds());
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-//                    transition.addTransition(new ChangeTransform());
-                TransitionManager.beginDelayedTransition((ViewGroup) itemView.getParent());
-            }
-            isExpanded = !isExpanded;
-            indicator.setImageResource(isExpanded ? R.drawable.ic_expand_less_grey600_48dp : R.drawable.ic_expand_more_grey600_48dp);
-            childsContainer.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+    private static class ChildViewHolder extends AbstractExpandableItemViewHolder {
+        TextView childTitle;
+
+        private ChildViewHolder(View itemView) {
+            super(itemView);
+            childTitle = (TextView) itemView.findViewById(R.id.txtVw_forum_title);
         }
     }
 

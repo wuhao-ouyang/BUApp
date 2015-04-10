@@ -51,6 +51,7 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:22.0.0'
     compile 'com.android.support:recyclerview-v7:22.0.0'
+    compile 'com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.6.2'
     compile "com.android.support:appcompat-v7:22.0.0"
     compile 'com.mcxiaoke.volley:library:1.0.5'
     compile 'org.apache.httpcomponents:httpcore:4.3.+'
