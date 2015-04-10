@@ -1,3 +1,17 @@
+################
+## github
+###############
+README.md
+
+################
+## Android Studio
+################
+.idea/
+.gradle/
+**/build/
+*.iml
+*.apk
+
 #################
 ## Eclipse
 #################
@@ -5,11 +19,6 @@
 *.pydevproject
 .project
 .metadata
-.idea/
-.gradle/
-**/build/
-*.iml
-*.apk
 bin/
 tmp/
 gen/
