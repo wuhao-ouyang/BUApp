@@ -18,6 +18,7 @@ import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.GestureDetector;
@@ -80,7 +81,7 @@ public class DisplayActivity extends ActionBarActivity {
         // mPagerTabStrip = (PagerTabStrip) findViewById(R.id.pager_tab_strip);
         mViewPager.setAdapter(mPagerAdapter);
         mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
-        mViewPager.setOnTouchListener(new ScrollListener());
+        mViewPager.setOnTouchListener(new ScrollListener(this));
 
     }
 
@@ -182,12 +183,14 @@ public class DisplayActivity extends ActionBarActivity {
      * current activity thus lead to upper level of this application.
      */
     private class ScrollListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
+        private GestureDetector detector;
         private long lastswipetime = 0;
         private int TRIGGER = 50;
 
-        private ScrollListener() {
+        private ScrollListener(Context context) {
             TRIGGER = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f,
                     BUApplication.getInstance().getResources().getDisplayMetrics());
+            detector = new GestureDetector(context, this);
         }
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
@@ -203,7 +206,7 @@ public class DisplayActivity extends ActionBarActivity {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            return onTouchEvent(event);
+            return detector.onTouchEvent(event);
         }
     }
 

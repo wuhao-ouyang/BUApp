@@ -1,7 +1,6 @@
 package martin.app.bitunion.fragment;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.R;
@@ -19,7 +18,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -120,7 +118,9 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
                         Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    threads.addAll(DataParser.jsonToThreadlist(response.optJSONArray("threadlist")));
+                    ArrayList<BUThread> tempList = DataParser.parseThreadlist(response);
+                    if (tempList != null)
+                        threads.addAll(tempList);
                     if (!isUpdating()) {
                         threadlist = threads;
                         notifyUpdated();

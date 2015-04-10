@@ -44,7 +44,7 @@
 
     <!-- Toast message -->
     <string name="login_fail">登录失败</string>
-    <string name="login_success">用户 $user_name 登录成功</string>
+    <string name="login_success">登录成功</string>
     <string name="message_sending">消息发送中...</string>
     <string name="message_sent_fail">发送失败</string>
     <string name="message_sent_success">发送成功</string>

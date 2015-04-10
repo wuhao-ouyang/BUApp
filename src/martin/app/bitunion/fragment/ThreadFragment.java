@@ -11,8 +11,6 @@ import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.util.DataParser;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
@@ -128,9 +126,9 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
                         Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    JSONArray postsJson = response.optJSONArray("postlist");
-                    if (postsJson != null)
-                        posts.addAll(DataParser.jsonToPostlist(postsJson));
+                    ArrayList<BUPost> tempList = DataParser.parsePostlist(response);
+                    if (tempList != null)
+                        posts.addAll(tempList);
                     if (!isUpdating()) {
                         postlist = posts;
                         notifyUpdated();

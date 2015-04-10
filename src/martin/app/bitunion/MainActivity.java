@@ -26,6 +26,7 @@ import com.android.volley.VolleyError;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import martin.app.bitunion.model.BUForum;
 import martin.app.bitunion.util.BUApiHelper;
@@ -35,6 +36,7 @@ import martin.app.bitunion.util.ToastUtil;
 
 public class MainActivity extends ActionBarActivity {
 
+    // Actionbar menu instance
     private Menu mOptionMenu;
     // 论坛列表视图
     private RecyclerView mRecyclerView;
@@ -43,7 +45,7 @@ public class MainActivity extends ActionBarActivity {
     // 所有论坛列表数据
     private ArrayList<ArrayList<BUForum>> fArrayList = new ArrayList<ArrayList<BUForum>>();
     // 分组数据
-    private ArrayList<String> groupList;
+    private String[] groupList;
 
     // 上次按返回键的时间
     private long touchTime = 0;
@@ -58,13 +60,7 @@ public class MainActivity extends ActionBarActivity {
         mRecyclerView = (RecyclerView) this.findViewById(R.id.listview);
 
         // ExpandableListView的分组信息
-        groupList = new ArrayList<String>();
-        groupList.add(0, "系统管理区");
-        groupList.add(1, "直通理工区");
-        groupList.add(2, "技术讨论区");
-        groupList.add(3, "苦中作乐区");
-        groupList.add(4, "时尚生活区");
-        groupList.add(5, "其他功能");
+        groupList = getResources().getStringArray(R.array.forum_group);
 
         // 读取论坛列表信息
         String[] forumNames = getResources().getStringArray(R.array.forums);
@@ -75,7 +71,7 @@ public class MainActivity extends ActionBarActivity {
                     forumTypes[i]));
         }
         // 转换论坛列表信息为二维数组，方便ListViewAdapter读入
-        for (int i = 0; i < groupList.size(); i++) {
+        for (int i = 0; i < groupList.length; i++) {
             ArrayList<BUForum> forums = new ArrayList<BUForum>();
             for (BUForum forum : forumList) {
                 if (i == forum.getType()) {
@@ -101,6 +97,7 @@ public class MainActivity extends ActionBarActivity {
                         ToastUtil.showToast(R.string.login_fail);
                         break;
                     case SUCCESS:
+                        ToastUtil.showToast(R.string.login_success);
                         updateOptionMenu();
                         break;
                     case UNKNOWN:
@@ -177,10 +174,12 @@ public class MainActivity extends ActionBarActivity {
                     if (BUApiHelper.isUserLoggedin()) {
                         if (forum.getFid() == -1) {
                             // TODO 最新帖子
+                            ToastUtil.showToast("功能暂时无法使用");
                             return;
                         }
                         if (forum.getFid() == -2) {
                             // TODO 收藏夹
+                            ToastUtil.showToast("功能暂时无法使用");
                             return;
                         }
                         Intent intent = new Intent(MainActivity.this, DisplayActivity.class);
@@ -207,7 +206,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.groupName.setTextSize(BUApplication.settings.titletextsize + 2 + 4 + 5);
-            holder.groupName.setText(groupList.get(position));
+            holder.groupName.setText(groupList[position]);
             // Inflate child views
             if (holder.childsContainer.getChildCount() == 0) {
                 for (int i = 0; i < getChildrenCount(position); i++)
@@ -217,7 +216,7 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public int getItemCount() {
-            return groupList.size();
+            return groupList.length;
         }
 
     }

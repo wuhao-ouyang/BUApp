@@ -34,6 +34,7 @@ import martin.app.bitunion.model.BUUserInfo;
 public class BUApiHelper {
 
     private static final String TAG = BUApiHelper.class.getSimpleName();
+    private static final int RETRY_LIMIT = 2;
 
     private static BUUserInfo sLoggedinUser;
 
@@ -77,9 +78,6 @@ public class BUApiHelper {
                         Toast.makeText(BUApplication.getInstance(), R.string.login_fail, Toast.LENGTH_SHORT).show();
                         break;
                     case SUCCESS:
-                        Toast.makeText(BUApplication.getInstance(),
-                                BUApplication.getInstance().getString(R.string.login_success).replace("$user_name", mUsername),
-                                Toast.LENGTH_SHORT).show();
                         mSession = response.optString("session");
                         mUsername = username;
                         mPassword = password;

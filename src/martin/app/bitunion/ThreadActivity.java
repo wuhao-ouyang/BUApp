@@ -127,7 +127,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         mPagerTitleStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         mViewPager.setAdapter(mThreadAdapter);
         mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
-        mViewPager.setOnTouchListener(new ScrollListener());
+        mViewPager.setOnTouchListener(new ScrollListener(this));
     }
 
     @Override
@@ -266,12 +266,14 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
      * current activity thus lead to upper level of this application.
      */
     private class ScrollListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
+        private GestureDetector detector;
         private long lastswipetime = 0;
         private int TRIGGER = 50;
 
-        private ScrollListener() {
+        private ScrollListener(Context context) {
             TRIGGER = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f,
                     BUApplication.getInstance().getResources().getDisplayMetrics());
+            detector = new GestureDetector(context, this);
         }
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
@@ -287,7 +289,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            return onTouchEvent(event);
+            return detector.onTouchEvent(event);
         }
     }
 

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 论坛分组 -->
+    <string-array name="forum_group">
+        <item>系统管理区</item>
+        <item>直通理工区</item>
+        <item>技术讨论区</item>
+        <item>苦中作乐区</item>
+        <item>时尚生活区</item>
+        <item>其他功能</item>
+    </string-array>
 
     <string-array name="forums">
 

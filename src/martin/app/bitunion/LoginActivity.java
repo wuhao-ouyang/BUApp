@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import martin.app.bitunion.util.BUApiHelper;
 import martin.app.bitunion.util.BUAppUtils;
 import martin.app.bitunion.util.BUAppUtils.Result;
+import martin.app.bitunion.util.ToastUtil;
 
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
@@ -150,9 +151,7 @@ public class LoginActivity extends ActionBarActivity {
                 @Override
                 public void onResponse(JSONObject response) {
                     if (BUApiHelper.getResult(response) == Result.SUCCESS) {
-                        Toast.makeText(getApplicationContext(),
-                                getString(R.string.login_success).replace("$user_name", mUsername),
-                                Toast.LENGTH_SHORT).show();
+                        ToastUtil.showToast(R.string.login_success);
                         saveConfig();
                         setResult(RESULT_OK, null);
                         finish();
