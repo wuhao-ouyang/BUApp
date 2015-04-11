@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.json.JSONObject;
 
-import martin.app.bitunion.fragment.ForumFragment;
 import martin.app.bitunion.fragment.ThreadFragment;
 import martin.app.bitunion.fragment.UserInfoDialogFragment;
 import martin.app.bitunion.util.BUApi;
@@ -12,11 +11,9 @@ import martin.app.bitunion.util.Settings;
 import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.util.CommonIntents;
-import martin.app.bitunion.util.Utils.Result;
 import martin.app.bitunion.widget.SwipeDetector;
 
 import android.animation.Animator;
-import android.animation.ValueAnimator;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -367,7 +364,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                             BUApi.postNewPost(threadId, finalMsg.toString(), new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject jsonObject) {
-                                    if (BUApi.getResult(jsonObject) == Result.SUCCESS) {
+                                    if (BUApi.getResult(jsonObject) == BUApi.Result.SUCCESS) {
                                         replyMessage.setText("");
                                     } else {
                                         // TODO need to handle error

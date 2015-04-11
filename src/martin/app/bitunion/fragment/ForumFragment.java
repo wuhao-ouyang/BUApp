@@ -7,7 +7,6 @@ import martin.app.bitunion.R;
 import martin.app.bitunion.ThreadActivity;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.Settings;
-import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.model.BUThread;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.DataParser;
@@ -118,7 +117,7 @@ public class ForumFragment extends Fragment implements Updateable, AbsListView.O
                 @Override
                 public void onResponse(JSONObject response) {
                     mReqCount--;
-                    if (BUApi.getResult(response) != Utils.Result.SUCCESS) {
+                    if (BUApi.getResult(response) != BUApi.Result.SUCCESS) {
                         Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
                         return;
                     }

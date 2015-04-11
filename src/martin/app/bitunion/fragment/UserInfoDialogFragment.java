@@ -6,7 +6,6 @@ import martin.app.bitunion.R;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.model.BUUser;
 import martin.app.bitunion.util.HtmlImageGetter;
-import martin.app.bitunion.util.Utils.Result;
 import martin.app.bitunion.util.VolleyImageLoaderFactory;
 
 import android.app.Dialog;
@@ -111,7 +110,7 @@ public class UserInfoDialogFragment extends DialogFragment {
         BUApi.getUserProfile(uid, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                if (BUApi.getResult(response) == Result.SUCCESS && !response.isNull("memberinfo")) {
+                if (BUApi.getResult(response) == BUApi.Result.SUCCESS && !response.isNull("memberinfo")) {
                     BUUser info = new BUUser(response.optJSONObject("memberinfo"));
                     setTextContent(info);
                 } else

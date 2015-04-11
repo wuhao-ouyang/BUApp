@@ -3,7 +3,6 @@ package martin.app.bitunion;
 import org.json.JSONObject;
 
 import martin.app.bitunion.util.BUApi;
-import martin.app.bitunion.util.Utils.Result;
 import martin.app.bitunion.util.Constants;
 import martin.app.bitunion.util.ToastUtil;
 
@@ -148,7 +147,7 @@ public class LoginActivity extends ActionBarActivity {
             BUApi.tryLogin(mUsername, mPassword, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    if (BUApi.getResult(response) == Result.SUCCESS) {
+                    if (BUApi.getResult(response) == BUApi.Result.SUCCESS) {
                         ToastUtil.showToast(R.string.login_success);
                         saveConfig();
                         setResult(RESULT_OK, null);

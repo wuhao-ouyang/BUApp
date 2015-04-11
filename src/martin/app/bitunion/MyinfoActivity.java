@@ -3,7 +3,6 @@ package martin.app.bitunion;
 import org.json.JSONObject;
 
 import martin.app.bitunion.util.BUApi;
-import martin.app.bitunion.util.Utils.Result;
 import martin.app.bitunion.model.BUUser;
 import martin.app.bitunion.util.HtmlImageGetter;
 import martin.app.bitunion.util.VolleyImageLoaderFactory;
@@ -70,7 +69,7 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
             BUApi.tryLogin(new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    if (BUApi.getResult(response) == Result.SUCCESS)
+                    if (BUApi.getResult(response) == BUApi.Result.SUCCESS)
                         readUserInfo();
                     else
                         showToast(getString(R.string.login_error));
@@ -134,7 +133,7 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
         BUApi.getUserProfile(null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                if (BUApi.getResult(response) == Result.SUCCESS && !response.isNull("memberinfo")) {
+                if (BUApi.getResult(response) == BUApi.Result.SUCCESS && !response.isNull("memberinfo")) {
                     if (progressDialog.isShowing())
                         progressDialog.dismiss();
                     BUUser info = new BUUser(response.optJSONObject("memberinfo"));
@@ -159,7 +158,7 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
             BUApi.logoutUser(new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    if (BUApi.getResult(response) == Result.SUCCESS) {
+                    if (BUApi.getResult(response) == BUApi.Result.SUCCESS) {
                         BUApi.clearUser();
                         finish();
                     } else {

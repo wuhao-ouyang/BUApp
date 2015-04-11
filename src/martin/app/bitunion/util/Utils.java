@@ -10,6 +10,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.MainActivity;
@@ -37,12 +39,7 @@ public class Utils {
     public static final String QUOTE_REGEX = QUOTE_HEAD
             + "(((?!<br><br><center><table border=)[\\w\\W])*?)" + QUOTE_TAIL;
 
-    public enum Result {
-        SUCCESS, // 返回数据成功，result字段为success
-        FAILURE, // 返回数据失败，result字段为failure
-        NETWRONG, // 没有返回数据
-        UNKNOWN;
-    };
+    ;
 
     public static String replaceHtmlChar(String str) {
         String htmlstring = str;
@@ -64,6 +61,15 @@ public class Utils {
         while (imgKey.length() < 32)
             imgKey = "0" + imgKey;
         return imgKey;
+    }
+
+    /**
+     * Get readable string of file size (e.g. 24B, 245k, 4.5M)
+     * @return display string
+     */
+    public static String getFileSizeString(long fileSize) {
+        // TODO
+        return null;
     }
 
     public static String readTextFromInputStream(InputStream is) throws IOException {

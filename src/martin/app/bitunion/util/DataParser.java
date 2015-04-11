@@ -12,18 +12,23 @@ import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.model.BUThread;
 
 public class DataParser {
+    private static final String TAG = DataParser.class.getSimpleName();
 
     public static ArrayList<BUThread> parseThreadlist(JSONObject rawJson) {
         JSONArray array = rawJson.optJSONArray("threadlist");
         if (array == null)
             return null;
         ArrayList<BUThread> list = new ArrayList<BUThread>();
-        for (int i = 0; i < array.length(); i++)
-            try {
-                list.add(new BUThread(array.getJSONObject(i)));
-            } catch (JSONException e) {
-                Log.w("JSONError", "Error>>\n" + array.toString(), e);
-            }
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject threadObj = array.optJSONObject(i);
+            if (threadObj != null)
+                try {
+                    list.add(new BUThread(threadObj));
+                } catch (JSONException e) {
+                    Log.w(TAG, "Failed parsing thread >> " + threadObj.toString(), e);
+                    continue;
+                }
+        }
         return list;
     }
 
@@ -32,12 +37,16 @@ public class DataParser {
         if (array == null)
             return null;
         ArrayList<BUPost> list = new ArrayList<BUPost>();
-        for (int i = 0; i < array.length(); i++)
-            try {
-                list.add(new BUPost(array.getJSONObject(i)));
-            } catch (JSONException e) {
-                Log.w("JSONError", "Error>>\n" + array.toString(), e);
-            }
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject postObj = array.optJSONObject(i);
+            if (postObj != null)
+                try {
+                    list.add(new BUPost(postObj));
+                } catch (JSONException e) {
+                    Log.w(TAG, "Failed parsing post >> " + postObj.toString(), e);
+                    continue;
+                }
+        }
         return list;
     }
 }

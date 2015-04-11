@@ -38,12 +38,26 @@ public class BUPost extends BUContent implements Parcelable {
     private String dateline;
     private String message;
     private String usesig;
-    private String attachment;
+    private Attachment attachment;
     private int uid;
     private String username;
     private String avatar;
-
     private List<BUQuote> quotes = new ArrayList<BUQuote>();
+
+    public static class Attachment {
+        public final String fileName;
+        public final String fileType;
+        public final String size;
+        public final String url;
+        public final int downloads;
+        public Attachment(String name, String type, String size, String url, int dwn) {
+            fileName = name;
+            fileType = type;
+            this.size = size;
+            this.url = url;
+            downloads = dwn;
+        }
+    }
 
     @Override
     public int describeContents() {
@@ -63,7 +77,15 @@ public class BUPost extends BUContent implements Parcelable {
         dest.writeString(dateline);
         dest.writeString(message);
         dest.writeString(usesig);
-        dest.writeString(attachment);
+        if (attachment != null) {
+            dest.writeByte((byte) 0x01);
+            dest.writeString(attachment.fileName);
+            dest.writeString(attachment.fileType);
+            dest.writeString(attachment.size);
+            dest.writeString(attachment.url);
+            dest.writeInt(attachment.downloads);
+        } else
+            dest.writeByte((byte) 0x00);
         dest.writeInt(uid);
         dest.writeString(username);
         dest.writeString(avatar);
@@ -89,12 +111,18 @@ public class BUPost extends BUContent implements Parcelable {
         dateline = in.readString();
         message = in.readString();
         usesig = in.readString();
-        attachment = in.readString();
+        if (in.readByte() == 0x01) {
+            String name = in.readString();
+            String type = in.readString();
+            String size = in.readString();
+            String url = in.readString();
+            int dwn = in.readInt();
+            attachment = new Attachment(name, type, size, url, dwn);
+        }
         uid = in.readInt();
         username = in.readString();
         avatar = in.readString();
-        boolean hasQuotes = in.readByte() != 0x00;
-        if (hasQuotes) {
+        if (in.readByte() != 0x01) {
             quotes = Arrays.asList((BUQuote[]) in.readParcelableArray(BUQuote.class.getClassLoader()));
         }
     }
@@ -111,30 +139,36 @@ public class BUPost extends BUContent implements Parcelable {
         }
     };
 
-    public BUPost(JSONObject jsonObject) {
+    public BUPost(JSONObject jsonObject) throws JSONException{
+        String tmp;
         try {
-            pid = jsonObject.getInt("pid");
-            fid = jsonObject.getInt("fid");
+            pid = jsonObject.optInt("pid");
+            fid = jsonObject.optInt("fid");
             tid = jsonObject.getInt("tid");
-            aid = jsonObject.getInt("aid");
-            icon = jsonObject.getString("icon");
+            aid = jsonObject.optInt("aid");
+            icon = jsonObject.optString("icon");
             author = URLDecoder.decode(jsonObject.getString("author"), "utf-8");
             authorid = jsonObject.getInt("authorid");
-            subject = URLDecoder.decode(jsonObject.getString("subject"), "utf-8");
+            subject = URLDecoder.decode(jsonObject.optString("subject", ""), "utf-8");
             dateline = jsonObject.getString("dateline");
-            message = URLDecoder.decode(jsonObject.getString("message"), "utf-8");
+            message = URLDecoder.decode(jsonObject.optString("message", ""), "utf-8");
             usesig = jsonObject.getString("usesig");
-            attachment = URLDecoder.decode(jsonObject.getString("attachment"), "utf-8");
+            if (!jsonObject.isNull("attachment")) {
+                attachment = new Attachment(
+                        URLDecoder.decode(jsonObject.optString("filename", ""), "utf-8"),
+                        URLDecoder.decode(jsonObject.optString("filetype", ""), "utf-8"),
+                        URLDecoder.decode(jsonObject.optString("attachsize", ""), "utf-8"),
+                        URLDecoder.decode(jsonObject.optString("attachment", ""), "utf-8"),
+                        jsonObject.optInt("downloads", 0));
+            }
             uid = jsonObject.getInt("uid");
             username = URLDecoder.decode(jsonObject.getString("username"), "utf-8");
-            avatar = URLDecoder.decode(jsonObject.getString("avatar"), "utf-8");
-        } catch (JSONException e) {
-            Log.w(TAG, "Failed to parse post object!!!\n" + jsonObject, e);
+            avatar = URLDecoder.decode(jsonObject.optString("avatar", ""), "utf-8");
         } catch (UnsupportedEncodingException e) {
-            Log.w(TAG, "Failed to parse post object!!!\n" + jsonObject, e);
+            e.printStackTrace();
         }
         // Parse subject
-        if (subject != "null" && subject != null && !subject.isEmpty()) {
+        if (subject != null && !subject.isEmpty()) {
             subject = subject.replaceAll("<[^>]+>", "");
             subject = Utils.replaceHtmlChar(subject);
         } else
@@ -201,10 +235,11 @@ public class BUPost extends BUContent implements Parcelable {
 
     private String parseLocalImage(String imgUrl) {
         // 检查是否为本地表情文件
-        Pattern p = Pattern.compile("\\.\\./images/(smilies|bz)/(.+?)\\.gif");
+        Pattern p = Pattern.compile("\\.\\./images/(smilies|bz)/(.+?)\\.gif$");
         Matcher m = p.matcher(imgUrl);
         if (m.find()) {
-            imgUrl = m.group(1) + "_" + m.group(2);
+            imgUrl = m.group(1) + "_" + m.group(2)+".gif";
+            Log.d("BUPost", "local emotion >> " + imgUrl);
         }
         return imgUrl;
     }
@@ -231,25 +266,21 @@ public class BUPost extends BUContent implements Parcelable {
     }
 
     public String getMessage() {
-        String m = message;
+        StringBuilder m = new StringBuilder(message);
         // 如果有附件图，以html标记形式添加在最后
         // 如果附件不为图片，以超链接形式添加
-        if (attachment != "null" && attachment != null && !attachment.isEmpty()) {
-            String attUrl = BUApi.getRootUrl() + "/" + attachment;
-            m += "<br>附件：<br>";
-            String format = attachment.substring(attachment.length() - 4);
-            if (".jpg.png.bmp.gif".contains(format) && BUApplication.settings.showImage)
-                m += "<a href='" + attUrl + "'><img src='" + attUrl
-                        + "'></a>";
+        if (attachment != null) {
+            String attUrl = BUApi.getRootUrl() + "/" + attachment.url;
+            m.append("<br>");
+            m.append("<b>附件:</b> ");m.append(attachment.fileName);m.append(" <i>" + attachment.size + "</i>");
+            m.append("<br>");
+            if (attachment.fileType.startsWith("image/") && BUApplication.settings.showImage)
+                m.append("<a href='" + attUrl + "'><img src='" + attUrl + "'></a>");
             else
-                m += "<a href='" + attUrl + "'>" + attUrl + "</a>";
+                m.append("<a href='" + attUrl + "'>" + attachment.fileName + "</a>");
             Log.v("Attachment", ">>" + attUrl);
         }
-        return m;
-    }
-
-    public String getAttachment() {
-        return attachment;
+        return m.toString();
     }
 
     public String getUsername() {

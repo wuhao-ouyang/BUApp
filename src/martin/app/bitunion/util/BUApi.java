@@ -39,11 +39,22 @@ public class BUApi {
 
     private static String mUsername;
     private static String mPassword;
+
     private static String mSession;
+
+    private static final String SCHEME = "http";
+    private static String domain;
     private static String rooturl;
     private static String baseurl;
 
     private static RequestQueue mApiQueue;
+
+    public enum Result {
+        SUCCESS, // 返回数据成功，result字段为success
+        FAILURE, // 返回数据失败，result字段为failure
+        NETWRONG, // 没有返回数据
+        UNKNOWN;
+    }
 
     public static Response.ErrorListener sErrorListener = new Response.ErrorListener() {
         @Override
@@ -58,6 +69,10 @@ public class BUApi {
 
     public static boolean isUserLoggedin() {
         return mSession != null && !mSession.isEmpty();
+    }
+
+    public static String getSession() {
+        return mSession;
     }
 
     /**
@@ -82,6 +97,7 @@ public class BUApi {
                         break;
                     case SUCCESS:
                         mSession = response.optString("session");
+                        Log.v(TAG, "sid="+mSession);
                         mUsername = username;
                         mPassword = password;
                         updateUser();
@@ -112,7 +128,7 @@ public class BUApi {
         httpPost(path, params, 1, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                if (getResult(response) == Utils.Result.SUCCESS) {
+                if (getResult(response) == Result.SUCCESS) {
                     mUsername = null;
                     mPassword = null;
                     mSession = null;
@@ -258,7 +274,7 @@ public class BUApi {
         getUserProfile(null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                if (getResult(response) == Utils.Result.SUCCESS)
+                if (getResult(response) == Result.SUCCESS)
                     sLoggedinUser = new BUUser(response.optJSONObject("memberinfo"));
             }
         }, sErrorListener);
@@ -281,9 +297,10 @@ public class BUApi {
 
     public static void setNetType(int net) {
         if (net == Constants.BITNET)
-            rooturl = "http://www.bitunion.org";
+            domain = "www.bitunion.org";
         else if (net == Constants.OUTNET)
-            rooturl = "http://out.bitunion.org";
+            domain = "out.bitunion.org";
+        rooturl = SCHEME + "://" + domain;
         baseurl = rooturl + "/open_api";
     }
 
@@ -316,7 +333,7 @@ public class BUApi {
                             tryLogin(new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject response) {
-                                    if (getResult(response) == Utils.Result.SUCCESS) {
+                                    if (getResult(response) == Result.SUCCESS) {
                                         appendUserCookie(params);
                                         httpPost(path, params, retryLimit - 1, responseListener, errorListener);
                                     }
@@ -357,12 +374,12 @@ public class BUApi {
         });
     }
 
-    public static Utils.Result getResult(JSONObject response) {
+    public static Result getResult(JSONObject response) {
         if ("fail".equals(response.optString("result")))
-            return Utils.Result.FAILURE;
+            return Result.FAILURE;
         if ("success".equals(response.optString("result")))
-            return Utils.Result.SUCCESS;
-        return Utils.Result.UNKNOWN;
+            return Result.SUCCESS;
+        return Result.UNKNOWN;
     }
 
     public static String getRootUrl() {
@@ -377,5 +394,4 @@ public class BUApi {
         path = path.replaceAll("^attachments/", rooturl + "/attachments/");
         return path;
     }
-
 }

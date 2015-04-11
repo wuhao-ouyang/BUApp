@@ -70,7 +70,7 @@ public class BUThread extends BUContent implements Parcelable {
         }
     };
 
-    public BUThread(JSONObject object) {
+    public BUThread(JSONObject object) throws JSONException{
         try {
             tid = object.getInt("tid");
             author = URLDecoder.decode(object.getString("author"), "utf-8");
@@ -81,11 +81,7 @@ public class BUThread extends BUContent implements Parcelable {
             lastposter = object.getString("lastposter");
             views = object.getInt("views");
             replies = object.getInt("replies");
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 //		Pattern p = Pattern.compile("<[^>]+>");

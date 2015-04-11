@@ -4,7 +4,6 @@ import org.json.JSONObject;
 
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.CommonIntents;
-import martin.app.bitunion.util.Utils.Result;
 
 import android.os.Bundle;
 import android.content.Intent;
@@ -142,7 +141,7 @@ public class NewthreadActivity extends ActionBarActivity {
     private Response.Listener<JSONObject> mResponseListener = new Response.Listener<JSONObject>() {
         @Override
         public void onResponse(JSONObject response) {
-            if (BUApi.getResult(response) == Result.SUCCESS) {
+            if (BUApi.getResult(response) == BUApi.Result.SUCCESS) {
                 Toast.makeText(getApplicationContext(), R.string.message_sent_success, Toast.LENGTH_SHORT).show();
                 finish();
             } else {

@@ -6,7 +6,6 @@ import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.R;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.Settings;
-import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.util.DataParser;
 import martin.app.bitunion.widget.ObservableWebView;
@@ -23,6 +22,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -107,11 +107,12 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             mSpinner.setVisibility(View.GONE);
         }
 
+        CookieManager.getInstance().setCookie(BUApi.getRootUrl(), "sid=" + BUApi.getSession() + "; domain=out.bitunion.org");
         String content = createHtmlCode();
         mPageWebView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         mPageWebView.getSettings().setJavaScriptEnabled(true);
         mPageWebView.addJavascriptInterface(new JSInterface(new JSHandler()), JSInterface.class.getSimpleName());
-        mPageWebView.loadDataWithBaseURL("file:///android_res/drawable/", content, "text/html", "utf-8", null);
+        mPageWebView.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
         Log.i(TAG, "WebView created!>>" + mPageNum + ", Posts >>" + postlist.size());
 
         onRefresh();
@@ -131,7 +132,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
                 @Override
                 public void onResponse(JSONObject response) {
                     mReqCount--;
-                    if (BUApi.getResult(response) != Utils.Result.SUCCESS) {
+                    if (BUApi.getResult(response) != BUApi.Result.SUCCESS) {
                         Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -167,7 +168,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         mPageWebView.setVisibility(View.VISIBLE);
 
         String htmlcode = createHtmlCode();
-        mPageWebView.loadDataWithBaseURL("file:///android_res/drawable/", htmlcode, "text/html", "utf-8", null);
+        mPageWebView.loadDataWithBaseURL("file:///android_asset/", htmlcode, "text/html", "utf-8", null);
         Log.v(TAG, "fragment " + this.mPageNum + " updated");
     }
 
