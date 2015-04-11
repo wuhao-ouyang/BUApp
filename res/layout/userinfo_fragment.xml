@@ -123,6 +123,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_marginBottom="3dp"
                 android:layout_below="@+id/userinfo_lastvisit"
+                android:autoLink="web"
                 android:text="主页："/>
 
             <TextView
@@ -132,6 +133,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_marginBottom="3dp"
                 android:layout_below="@+id/userinfo_site"
+                android:autoLink="email"
                 android:text="E-mail："/>
 
             <TextView

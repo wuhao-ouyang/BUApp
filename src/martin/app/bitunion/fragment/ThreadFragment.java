@@ -107,7 +107,6 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             mSpinner.setVisibility(View.GONE);
         }
 
-        CookieManager.getInstance().setCookie(BUApi.getRootUrl(), "sid=" + BUApi.getSession() + "; domain=out.bitunion.org");
         String content = createHtmlCode();
         mPageWebView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         mPageWebView.getSettings().setJavaScriptEnabled(true);
@@ -186,10 +185,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
                 "img{max-width: 100%; width:auto; height: auto;}" +
                 "body{background-color: #D8E2EF; color: #284264;font-size:" + BUApplication.settings.contenttextsize +"px;}" +
                 "</style><script type='text/javascript'>" +
-                "function referenceOnClick(num){" +
-                JSInterface.class.getSimpleName()+".referenceOnClick(num);}" +
-                "function authorOnClick(uid){" +
-                JSInterface.class.getSimpleName()+".authorOnClick(uid);}" +
+                JSInterface.javaScript() +
                 "</script></head><body>");
 
         int len = postlist.size();
@@ -228,6 +224,15 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             handler = h;
         }
 
+        private static final String javaScript() {
+            return "function referenceOnClick(num){" +
+                    JSInterface.class.getSimpleName()+".referenceOnClick(num);}" +
+                    "function authorOnClick(uid){" +
+                    JSInterface.class.getSimpleName()+".authorOnClick(uid);}" +
+                    "function imageOnClick(url){" +
+                    JSInterface.class.getSimpleName()+".imageOnClick(url);}";
+        }
+
         @JavascriptInterface
         public void referenceOnClick(int count){
             handler.obtainMessage();
@@ -246,6 +251,12 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             msg.arg1 = uid;
             handler.sendMessage(msg);
             Log.i("JavascriptInterface", "Author ID>>" + uid);
+        }
+
+        @JavascriptInterface
+        public void imageOnClick(String url) {
+            // TODO
+            Log.i("JavascriptInterface", "image>>" + url);
         }
     }
 }

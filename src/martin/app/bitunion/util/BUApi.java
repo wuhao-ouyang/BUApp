@@ -2,8 +2,11 @@ package martin.app.bitunion.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
@@ -71,8 +74,8 @@ public class BUApi {
         return mSession != null && !mSession.isEmpty();
     }
 
-    public static String getSession() {
-        return mSession;
+    static String getSessionCookie() {
+        return "sid="+mSession;
     }
 
     /**
@@ -97,6 +100,17 @@ public class BUApi {
                         break;
                     case SUCCESS:
                         mSession = response.optString("session");
+                        final CookieManager cookieMngr = CookieManager.getInstance();
+                        cookieMngr.setCookie(BUApi.getRootUrl(), getSessionCookie());
+                        new Runnable(){
+                            @Override
+                            public void run() {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                                    cookieMngr.flush();
+                                else
+                                    CookieSyncManager.getInstance().sync();
+                            }
+                        }.run();
                         Log.v(TAG, "sid="+mSession);
                         mUsername = username;
                         mPassword = password;

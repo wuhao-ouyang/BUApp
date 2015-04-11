@@ -272,12 +272,12 @@ public class BUPost extends BUContent implements Parcelable {
         if (attachment != null) {
             String attUrl = BUApi.getRootUrl() + "/" + attachment.url;
             m.append("<br>");
-            m.append("<b>附件:</b> ");m.append(attachment.fileName);m.append(" <i>" + attachment.size + "</i>");
+            m.append("<b>附件:</b> ");
+            m.append("<a href='"+attUrl+"'>"+attachment.fileName+"</a>");
+            m.append(" <i>" + attachment.size + "</i>");
             m.append("<br>");
             if (attachment.fileType.startsWith("image/") && BUApplication.settings.showImage)
-                m.append("<a href='" + attUrl + "'><img src='" + attUrl + "'></a>");
-            else
-                m.append("<a href='" + attUrl + "'>" + attachment.fileName + "</a>");
+                m.append("<span onclick=imageOnClick('" + attUrl+ "')><img src='" + attUrl + "'></span>");
             Log.v("Attachment", ">>" + attUrl);
         }
         return m.toString();
