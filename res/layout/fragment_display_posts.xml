@@ -7,7 +7,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <martin.app.bitunion.martin.app.bitunion.widget.ObservableWebView
+        <martin.app.bitunion.widget.ObservableWebView
             android:id="@+id/webView_posts"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
