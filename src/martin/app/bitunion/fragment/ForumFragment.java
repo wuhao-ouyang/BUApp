@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.R;
 import martin.app.bitunion.ThreadActivity;
-import martin.app.bitunion.util.BUApiHelper;
-import martin.app.bitunion.util.BUAppUtils;
+import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.util.Settings;
+import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.model.BUThread;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.DataParser;
@@ -45,7 +46,7 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
     private ListView mListView;
     private ProgressBar mSpinner;
 
-    private ArrayList<BUThread> threadlist = new ArrayList<BUThread>(BUAppUtils.THREADS_PER_PAGE);
+    private ArrayList<BUThread> threadlist = new ArrayList<BUThread>(Settings.THREADS_PER_PAGE);
     private ThreadsListAdapter mAdapter;
 
     private int mReqCount = 0;
@@ -108,16 +109,16 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
             return;
         mRefreshLayout.setRefreshing(true);
         mReqCount = 0;
-        int from = mPageNum * BUAppUtils.THREADS_PER_PAGE;
-        int to = (mPageNum + 1) * BUAppUtils.THREADS_PER_PAGE;
-        final ArrayList<BUThread> threads = new ArrayList<BUThread>(BUAppUtils.THREADS_PER_PAGE);
+        int from = mPageNum * Settings.THREADS_PER_PAGE;
+        int to = (mPageNum + 1) * Settings.THREADS_PER_PAGE;
+        final ArrayList<BUThread> threads = new ArrayList<BUThread>(Settings.THREADS_PER_PAGE);
         while (from < to) {
             mReqCount++;
-            BUApiHelper.readThreads(mFid, from, from + 20, new Response.Listener<JSONObject>() {
+            BUApi.readThreads(mFid, from, from + 20, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
                     mReqCount--;
-                    if (BUApiHelper.getResult(response) != BUAppUtils.Result.SUCCESS) {
+                    if (BUApi.getResult(response) != Utils.Result.SUCCESS) {
                         Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -216,7 +217,7 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
                     intent.putExtra(CommonIntents.EXTRA_TID, threadItem.getTid());
                     intent.putExtra(CommonIntents.EXTRA_THREAD_NAME, threadItem.getSubject());
                     intent.putExtra(CommonIntents.EXTRA_REPIES, threadItem.getReplies());
-                    startActivityForResult(intent, BUAppUtils.MAIN_REQ);
+                    startActivity(intent);
                 }
             });
 

@@ -2,9 +2,9 @@ package martin.app.bitunion;
 
 import org.json.JSONObject;
 
-import martin.app.bitunion.util.BUApiHelper;
+import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.CommonIntents;
-import martin.app.bitunion.util.BUAppUtils.Result;
+import martin.app.bitunion.util.Utils.Result;
 
 import android.os.Bundle;
 import android.content.Intent;
@@ -97,9 +97,9 @@ public class NewthreadActivity extends ActionBarActivity {
             messagebox.setError("内容长度不能小于5");
             return;
         }
-        if (BUApplication.settings.showsigature)
+        if (BUApplication.settings.showSignature)
             message += getString(R.string.buapp_client_postfix);
-        BUApiHelper.postNewThread(fid, subject, message, mResponseListener, mErrorListener);
+        BUApi.postNewThread(fid, subject, message, mResponseListener, mErrorListener);
     }
 
     private void sendMessage(String message) {
@@ -107,9 +107,9 @@ public class NewthreadActivity extends ActionBarActivity {
             messagebox.setError("回复不能为空");
             return;
         }
-        if (BUApplication.settings.showsigature)
+        if (BUApplication.settings.showSignature)
             message += getString(R.string.buapp_client_postfix);
-        BUApiHelper.postNewPost(tid, message, mResponseListener, mErrorListener);
+        BUApi.postNewPost(tid, message, mResponseListener, mErrorListener);
     }
 
     /**
@@ -142,7 +142,7 @@ public class NewthreadActivity extends ActionBarActivity {
     private Response.Listener<JSONObject> mResponseListener = new Response.Listener<JSONObject>() {
         @Override
         public void onResponse(JSONObject response) {
-            if (BUApiHelper.getResult(response) == Result.SUCCESS) {
+            if (BUApi.getResult(response) == Result.SUCCESS) {
                 Toast.makeText(getApplicationContext(), R.string.message_sent_success, Toast.LENGTH_SHORT).show();
                 finish();
             } else {

@@ -4,11 +4,12 @@ import java.util.ArrayList;
 
 import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.R;
-import martin.app.bitunion.martin.app.bitunion.widget.ObservableWebView;
-import martin.app.bitunion.util.BUApiHelper;
-import martin.app.bitunion.util.BUAppUtils;
+import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.util.Settings;
+import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.util.DataParser;
+import martin.app.bitunion.widget.ObservableWebView;
 
 import org.json.JSONObject;
 
@@ -80,7 +81,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         } else {
             mTid = getArguments().getInt(ARG_THREAD_ID);
             mPageNum = getArguments().getInt(ARG_PAGE_NUMBER);
-            POS_OFFSET = mPageNum * BUAppUtils.POSTS_PER_PAGE + 1;
+            POS_OFFSET = mPageNum * Settings.POSTS_PER_PAGE + 1;
         }
     }
 
@@ -121,16 +122,16 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         if (isUpdating())
             return;
         mReqCount = 0;
-        int from = mPageNum*BUAppUtils.POSTS_PER_PAGE;
-        int to = (mPageNum+1)*BUAppUtils.POSTS_PER_PAGE;
-        final ArrayList<BUPost> posts = new ArrayList<BUPost>(BUAppUtils.POSTS_PER_PAGE);
+        int from = mPageNum* Settings.POSTS_PER_PAGE;
+        int to = (mPageNum+1)* Settings.POSTS_PER_PAGE;
+        final ArrayList<BUPost> posts = new ArrayList<BUPost>(Settings.POSTS_PER_PAGE);
         while (from < to) {
             mReqCount++;
-            BUApiHelper.readPostList(mTid, from, from + 20, new Response.Listener<JSONObject>() {
+            BUApi.readPostList(mTid, from, from + 20, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
                     mReqCount--;
-                    if (BUApiHelper.getResult(response) != BUAppUtils.Result.SUCCESS) {
+                    if (BUApi.getResult(response) != Utils.Result.SUCCESS) {
                         Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
                         return;
                     }

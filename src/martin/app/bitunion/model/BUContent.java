@@ -1,5 +1,7 @@
 package martin.app.bitunion.model;
 
-public class BUContent {
+import android.os.Parcelable;
+
+public abstract class BUContent implements Parcelable {
 
 }

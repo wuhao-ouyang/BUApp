@@ -13,7 +13,7 @@ import java.util.TimeZone;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import martin.app.bitunion.util.BUAppUtils;
+import martin.app.bitunion.util.Utils;
 
 public class BUThread extends BUContent implements Parcelable {
 
@@ -96,7 +96,7 @@ public class BUThread extends BUContent implements Parcelable {
 //		m.appendTail(sb);
 //		subject = sb.toString();
         subject = subject.replaceAll("<[^>]+>", "");
-        subject = BUAppUtils.replaceHtmlChar(subject);
+        subject = Utils.replaceHtmlChar(subject);
     }
 
     public int getTid() {

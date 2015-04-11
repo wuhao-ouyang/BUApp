@@ -3,10 +3,10 @@ package martin.app.bitunion.fragment;
 import org.json.JSONObject;
 
 import martin.app.bitunion.R;
-import martin.app.bitunion.util.BUApiHelper;
-import martin.app.bitunion.model.BUUserInfo;
+import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.model.BUUser;
 import martin.app.bitunion.util.HtmlImageGetter;
-import martin.app.bitunion.util.BUAppUtils.Result;
+import martin.app.bitunion.util.Utils.Result;
 import martin.app.bitunion.util.VolleyImageLoaderFactory;
 
 import android.app.Dialog;
@@ -87,8 +87,8 @@ public class UserInfoDialogFragment extends DialogFragment {
         return view;
     }
 
-    public void setTextContent(BUUserInfo info) {
-        mAvatar.setImageUrl(BUApiHelper.getImageAbsoluteUrl(info.getAvatar()), VolleyImageLoaderFactory.getImageLoader(getActivity()));
+    public void setTextContent(BUUser info) {
+        mAvatar.setImageUrl(BUApi.getImageAbsoluteUrl(info.getAvatar()), VolleyImageLoaderFactory.getImageLoader(getActivity()));
         mUsername.setText(info.getUsername());
         mGroup.setText("用户组：" + info.getStatus());
         mCredit.setText("积分：" + info.getCredit());
@@ -108,11 +108,11 @@ public class UserInfoDialogFragment extends DialogFragment {
     }
 
     private void readUserInfo() {
-        BUApiHelper.getUserProfile(uid, new Response.Listener<JSONObject>() {
+        BUApi.getUserProfile(uid, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                if (BUApiHelper.getResult(response) == Result.SUCCESS && !response.isNull("memberinfo")){
-                    BUUserInfo info = new BUUserInfo(response.optJSONObject("memberinfo"));
+                if (BUApi.getResult(response) == Result.SUCCESS && !response.isNull("memberinfo")) {
+                    BUUser info = new BUUser(response.optJSONObject("memberinfo"));
                     setTextContent(info);
                 } else
                     Toast.makeText(getActivity(), "Server Error: " + response.toString(), Toast.LENGTH_SHORT).show();

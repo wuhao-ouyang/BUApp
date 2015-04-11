@@ -1,4 +1,4 @@
-package martin.app.bitunion.martin.app.bitunion.widget;
+package martin.app.bitunion.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;

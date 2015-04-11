@@ -14,7 +14,7 @@ import org.json.JSONObject;
  * @author Strider_oy
  *
  */
-public class BUUserInfo {
+public class BUUser {
 
     private String uid;
     private String status;
@@ -30,7 +30,7 @@ public class BUUserInfo {
     private String email;
     private String site;
 
-    public BUUserInfo(JSONObject json) {
+    public BUUser(JSONObject json) {
         try {
             uid = json.getString("uid");
             status = json.getString("status");

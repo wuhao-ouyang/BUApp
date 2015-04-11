@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/txtVw_forum_title"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingTop="5dp"
-    android:paddingBottom="5dp"
-    android:paddingLeft="40dp"
-    android:paddingRight="40dp"
-    android:layout_marginBottom="1dp"
-    android:text="text forum title"/>
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/txtVw_forum_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ripple_main_row_click"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp"
+        android:layout_marginBottom="1dp"
+        android:text="text forum title"/>
+</FrameLayout>

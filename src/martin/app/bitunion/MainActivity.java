@@ -1,21 +1,10 @@
 package martin.app.bitunion;
 
-import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.transition.ChangeBounds;
-import android.transition.ChangeClipBounds;
-import android.transition.ChangeTransform;
-import android.transition.Scene;
-import android.transition.TransitionManager;
-import android.transition.TransitionSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,7 +13,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -38,11 +26,10 @@ import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import martin.app.bitunion.model.BUForum;
-import martin.app.bitunion.util.BUApiHelper;
-import martin.app.bitunion.util.BUAppUtils;
+import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.ToastUtil;
 
@@ -129,11 +116,11 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void setupUser() {
-        if (BUApiHelper.hasValidUser())
-            BUApiHelper.tryLogin(new Response.Listener<JSONObject>() {
+        if (BUApi.hasValidUser())
+            BUApi.tryLogin(new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    switch (BUApiHelper.getResult(response)) {
+                    switch (BUApi.getResult(response)) {
                         case FAILURE:
                             ToastUtil.showToast(R.string.login_fail);
                             break;
@@ -167,7 +154,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void updateOptionMenu() {
         MenuItem loginItem = mOptionMenu.findItem(R.id.action_login);
-        if (BUApiHelper.isUserLoggedin())
+        if (BUApi.isUserLoggedin())
             loginItem.setTitle(R.string.menu_action_user);
         else
             loginItem.setTitle(R.string.menu_action_login);
@@ -181,9 +168,9 @@ public class MainActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
             case R.id.action_login:
-                if (!BUApiHelper.isUserLoggedin()) {
+                if (!BUApi.isUserLoggedin()) {
                     Intent intent = new Intent(this, LoginActivity.class);
-                    startActivityForResult(intent, BUAppUtils.MAIN_REQ);
+                    startActivity(intent);
                 } else {
                     Intent intent = new Intent(this, MyinfoActivity.class);
                     startActivity(intent);
@@ -255,10 +242,9 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onBindChildViewHolder(ChildViewHolder childViewHolder, int groupPos, int childPos, int viewType) {
             if (fArrayList.get(groupPos).get(childPos).getName().contains("--"))
-                childViewHolder.childTitle.setTextSize(BUApplication.settings.titletextsize + 2);
+                childViewHolder.childTitle.setTextSize(16);
             else
-                childViewHolder.childTitle.setTextSize(BUApplication.settings.titletextsize + 2 + 4);
-            childViewHolder.childTitle.setBackgroundResource(R.drawable.ripple_main_row_click);
+                childViewHolder.childTitle.setTextSize(20);
             childViewHolder.childTitle.setText(fArrayList.get(groupPos).get(childPos).getName());
             final BUForum forum = fArrayList.get(groupPos).get(childPos);
             // 注册OnClick事件，触摸点击转至DisplayActivity
@@ -267,7 +253,7 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 @SuppressWarnings("NewApi")
                 public void onClick(View v) {
-                    if (BUApiHelper.isUserLoggedin()) {
+                    if (BUApi.isUserLoggedin()) {
                         if (forum.getFid() == -1) {
                             // TODO 最新帖子
                             ToastUtil.showToast("功能暂时无法使用");
@@ -303,7 +289,6 @@ public class MainActivity extends ActionBarActivity {
             super(itemView);
             indicator = (ImageView) itemView.findViewById(R.id.imgVw_group_expand_indicator);
             groupName = (TextView) itemView.findViewById(R.id.txtVw_group_title);
-            groupName.setTextSize(BUApplication.settings.titletextsize + 2 + 4 + 5);
         }
     }
 
@@ -319,7 +304,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onBackPressed() {
         long currentTime = System.currentTimeMillis();
-        if((currentTime-touchTime)>= BUAppUtils.EXIT_WAIT_TIME) {
+        if((currentTime-touchTime)>= Utils.EXIT_WAIT_TIME) {
             ToastUtil.showToast("再按一次退出程序");
             touchTime = currentTime;
         }else {

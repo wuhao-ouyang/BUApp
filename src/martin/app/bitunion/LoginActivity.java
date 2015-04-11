@@ -2,14 +2,13 @@ package martin.app.bitunion;
 
 import org.json.JSONObject;
 
-import martin.app.bitunion.util.BUApiHelper;
-import martin.app.bitunion.util.BUAppUtils;
-import martin.app.bitunion.util.BUAppUtils.Result;
+import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.util.Utils.Result;
+import martin.app.bitunion.util.Constants;
 import martin.app.bitunion.util.ToastUtil;
 
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -20,7 +19,6 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -60,9 +58,9 @@ public class LoginActivity extends ActionBarActivity {
             @Override
             public void onCheckedChanged(RadioGroup arg0, int arg1) {
                 if (arg1 == R.id.radio_in) {
-                    BUApplication.settings.mNetType = BUAppUtils.BITNET;
+                    BUApplication.settings.netType = Constants.BITNET;
                 } else if (arg1 == R.id.radio_out) {
-                    BUApplication.settings.mNetType = BUAppUtils.OUTNET;
+                    BUApplication.settings.netType = Constants.OUTNET;
                 }
             }
         });
@@ -147,10 +145,10 @@ public class LoginActivity extends ActionBarActivity {
             // perform the user login attempt.
 //			mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
             showProgress(true);
-            BUApiHelper.tryLogin(mUsername, mPassword, new Response.Listener<JSONObject>() {
+            BUApi.tryLogin(mUsername, mPassword, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    if (BUApiHelper.getResult(response) == Result.SUCCESS) {
+                    if (BUApi.getResult(response) == Result.SUCCESS) {
                         ToastUtil.showToast(R.string.login_success);
                         saveConfig();
                         setResult(RESULT_OK, null);
@@ -180,11 +178,11 @@ public class LoginActivity extends ActionBarActivity {
 
     public void saveConfig() {
         BUApplication.settings.readPreference(this);
-        BUApiHelper.saveUser(this);
+        BUApi.saveUser(this);
     }
 
     public void readConfig() {
         BUApplication.settings.readPreference(this);
-        BUApiHelper.init(this);
+        BUApi.init(this);
     }
 }

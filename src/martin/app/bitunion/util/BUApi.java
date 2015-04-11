@@ -25,18 +25,18 @@ import java.util.Map;
 
 import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.R;
-import martin.app.bitunion.model.BUUserInfo;
+import martin.app.bitunion.model.BUUser;
 
 /**
  * Api methods communicating with server, using {@link Volley} as network
  * @see <a href="http://out.bitunion.org/viewthread.php?tid=10471436">Bitunion Api Documentation</a>
  */
-public class BUApiHelper {
+public class BUApi {
 
-    private static final String TAG = BUApiHelper.class.getSimpleName();
+    private static final String TAG = BUApi.class.getSimpleName();
     private static final int RETRY_LIMIT = 2;
 
-    private static BUUserInfo sLoggedinUser;
+    private static BUUser sLoggedinUser;
 
     private static String mUsername;
     private static String mPassword;
@@ -77,7 +77,7 @@ public class BUApiHelper {
         httpPost(path, params, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                switch (BUApiHelper.getResult(response)) {
+                switch (BUApi.getResult(response)) {
                     case FAILURE:
                         Toast.makeText(BUApplication.getInstance(), R.string.login_fail, Toast.LENGTH_SHORT).show();
                         break;
@@ -114,7 +114,7 @@ public class BUApiHelper {
         httpPost(path, params, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                if (getResult(response) == BUAppUtils.Result.SUCCESS) {
+                if (getResult(response) == Utils.Result.SUCCESS) {
                     mUsername = null;
                     mPassword = null;
                     mSession = null;
@@ -246,7 +246,7 @@ public class BUApiHelper {
         SharedPreferences config = context.getSharedPreferences("config", Context.MODE_PRIVATE);
         mUsername = config.getString("username", null);
         mPassword = config.getString("password", null);
-        setNetType(BUApplication.settings.mNetType);
+        setNetType(BUApplication.settings.netType);
 
         mApiQueue = Volley.newRequestQueue(context);
         // Need to read database
@@ -265,13 +265,13 @@ public class BUApiHelper {
         getUserProfile(null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                if (getResult(response) == BUAppUtils.Result.SUCCESS)
-                    sLoggedinUser = new BUUserInfo(response.optJSONObject("memberinfo"));
+                if (getResult(response) == Utils.Result.SUCCESS)
+                    sLoggedinUser = new BUUser(response.optJSONObject("memberinfo"));
             }
         }, sErrorListener);
     }
 
-    public static BUUserInfo getLoggedinUser() {
+    public static BUUser getLoggedinUser() {
         return sLoggedinUser;
     }
 
@@ -279,17 +279,17 @@ public class BUApiHelper {
         SharedPreferences config = BUApplication.getInstance()
                 .getSharedPreferences("config", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = config.edit();
-        BUApplication.settings.mNetType = BUAppUtils.OUTNET;
-        editor.putInt("nettype", BUAppUtils.OUTNET);
+        BUApplication.settings.netType = Constants.OUTNET;
+        editor.putInt("nettype", Constants.OUTNET);
         editor.putString("username", null);
         editor.putString("password", null);
         editor.apply();
     }
 
     public static void setNetType(int net) {
-        if (net == BUAppUtils.BITNET)
+        if (net == Constants.BITNET)
             rooturl = "http://www.bitunion.org";
-        else if (net == BUAppUtils.OUTNET)
+        else if (net == Constants.OUTNET)
             rooturl = "http://out.bitunion.org";
         baseurl = rooturl + "/open_api";
     }
@@ -322,12 +322,12 @@ public class BUApiHelper {
         });
     }
 
-    public static BUAppUtils.Result getResult(JSONObject response) {
+    public static Utils.Result getResult(JSONObject response) {
         if ("fail".equals(response.optString("result")))
-            return BUAppUtils.Result.FAILURE;
+            return Utils.Result.FAILURE;
         if ("success".equals(response.optString("result")))
-            return BUAppUtils.Result.SUCCESS;
-        return BUAppUtils.Result.UNKNOWN;
+            return Utils.Result.SUCCESS;
+        return Utils.Result.UNKNOWN;
     }
 
     public static String getRootUrl() {

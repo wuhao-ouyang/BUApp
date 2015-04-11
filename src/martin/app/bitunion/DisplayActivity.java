@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import martin.app.bitunion.fragment.ForumFragment;
-import martin.app.bitunion.util.BUAppUtils;
+import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.widget.SwipeDetector;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -19,15 +17,10 @@ import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
@@ -190,7 +183,7 @@ public class DisplayActivity extends ActionBarActivity {
         @Override
         public void onSwiped(int swipeAction) {
             if (swipeAction == SwipeDetector.SWIPE_RIGHT && currentpage == 0) {
-                if ((System.currentTimeMillis() - lastswipetime) >= BUAppUtils.EXIT_WAIT_TIME) {
+                if ((System.currentTimeMillis() - lastswipetime) >= Utils.EXIT_WAIT_TIME) {
                     showToast("再次右滑返回");
                     lastswipetime = System.currentTimeMillis();
                 } else

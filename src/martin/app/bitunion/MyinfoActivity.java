@@ -2,9 +2,9 @@ package martin.app.bitunion;
 
 import org.json.JSONObject;
 
-import martin.app.bitunion.util.BUApiHelper;
-import martin.app.bitunion.util.BUAppUtils.Result;
-import martin.app.bitunion.model.BUUserInfo;
+import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.util.Utils.Result;
+import martin.app.bitunion.model.BUUser;
 import martin.app.bitunion.util.HtmlImageGetter;
 import martin.app.bitunion.util.VolleyImageLoaderFactory;
 
@@ -63,26 +63,26 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
 
         progressDialog = new ProgressDialog(this, R.style.ProgressDialog);
 
-        if (BUApiHelper.isUserLoggedin()) {
-            setInfoContent(BUApiHelper.getLoggedinUser());
+        if (BUApi.isUserLoggedin()) {
+            setInfoContent(BUApi.getLoggedinUser());
             readUserInfo();
         } else {
-            BUApiHelper.tryLogin(new Response.Listener<JSONObject>() {
+            BUApi.tryLogin(new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    if (BUApiHelper.getResult(response) == Result.SUCCESS)
+                    if (BUApi.getResult(response) == Result.SUCCESS)
                         readUserInfo();
                     else
                         showToast(getString(R.string.login_error));
                 }
-            }, BUApiHelper.sErrorListener);
+            }, BUApi.sErrorListener);
         }
     }
 
-    private void setInfoContent(BUUserInfo info) {
+    private void setInfoContent(BUUser info) {
         if (info == null)
             return;
-        mAvatar.setImageUrl(BUApiHelper.getImageAbsoluteUrl(info.getAvatar()), VolleyImageLoaderFactory.getImageLoader(getApplicationContext()));
+        mAvatar.setImageUrl(BUApi.getImageAbsoluteUrl(info.getAvatar()), VolleyImageLoaderFactory.getImageLoader(getApplicationContext()));
         mUsername.setText(info.getUsername());
         mGroup.setText("用户组：" + info.getStatus());
         mCredit.setText("积分：" + info.getCredit());
@@ -131,13 +131,13 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
 
     private void readUserInfo() {
         progressDialog.show();
-        BUApiHelper.getUserProfile(null, new Response.Listener<JSONObject>() {
+        BUApi.getUserProfile(null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                if (BUApiHelper.getResult(response) == Result.SUCCESS && !response.isNull("memberinfo")){
+                if (BUApi.getResult(response) == Result.SUCCESS && !response.isNull("memberinfo")) {
                     if (progressDialog.isShowing())
                         progressDialog.dismiss();
-                    BUUserInfo info = new BUUserInfo(response.optJSONObject("memberinfo"));
+                    BUUser info = new BUUser(response.optJSONObject("memberinfo"));
                     setInfoContent(info);
                 } else
                     showToast("Server Error: " + response.toString());
@@ -156,11 +156,11 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
     @Override
     public void onClick(DialogInterface dialog, int which) {
         if (which == DialogInterface.BUTTON_POSITIVE)
-            BUApiHelper.logoutUser(new Response.Listener<JSONObject>() {
+            BUApi.logoutUser(new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    if (BUApiHelper.getResult(response) == Result.SUCCESS) {
-                        BUApiHelper.clearUser();
+                    if (BUApi.getResult(response) == Result.SUCCESS) {
+                        BUApi.clearUser();
                         finish();
                     } else {
                         Toast.makeText(getApplicationContext(), R.string.logout_error, Toast.LENGTH_SHORT).show();

@@ -6,22 +6,14 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.text.Html;
-import android.util.Log;
 import android.widget.TextView;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 
-import org.w3c.dom.Text;
-
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 
-import martin.app.bitunion.BUApplication;
 import martin.app.bitunion.R;
 
 public class HtmlImageGetter implements Html.ImageGetter {
@@ -36,7 +28,7 @@ public class HtmlImageGetter implements Html.ImageGetter {
 
     @Override
     public Drawable getDrawable(String imgUrl) {
-        imgUrl = BUApiHelper.getImageAbsoluteUrl(imgUrl);
+        imgUrl = BUApi.getImageAbsoluteUrl(imgUrl);
         UrlImageDownloader urlDrawable = new UrlImageDownloader(mContext.getResources(), imgUrl);
         urlDrawable.drawable = mContext.getResources().getDrawable(R.drawable.ic_image_white_48dp);
         VolleyImageLoaderFactory.getImageLoader(mContext).get(imgUrl, new VolleyImageListener(mContainer, urlDrawable));

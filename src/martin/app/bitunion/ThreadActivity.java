@@ -4,16 +4,19 @@ import java.util.ArrayList;
 
 import org.json.JSONObject;
 
+import martin.app.bitunion.fragment.ForumFragment;
 import martin.app.bitunion.fragment.ThreadFragment;
 import martin.app.bitunion.fragment.UserInfoDialogFragment;
-import martin.app.bitunion.martin.app.bitunion.widget.ObservableWebView;
-import martin.app.bitunion.util.BUApiHelper;
-import martin.app.bitunion.util.BUAppUtils;
+import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.util.Settings;
+import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.util.CommonIntents;
-import martin.app.bitunion.util.BUAppUtils.Result;
+import martin.app.bitunion.util.Utils.Result;
 import martin.app.bitunion.widget.SwipeDetector;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -31,15 +34,11 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.View.OnTouchListener;
-import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -81,10 +80,10 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
             replies = savedInstanceState.getInt("replies");
         }
 
-        if (replies % BUAppUtils.POSTS_PER_PAGE == 0)
-            lastpage = replies / BUAppUtils.POSTS_PER_PAGE - 1;
+        if (replies % Settings.POSTS_PER_PAGE == 0)
+            lastpage = replies / Settings.POSTS_PER_PAGE - 1;
         else
-            lastpage = replies / BUAppUtils.POSTS_PER_PAGE;
+            lastpage = replies / Settings.POSTS_PER_PAGE;
         Log.v("ThreadActivity", "lastpage>>>>>" + lastpage);
 
         // Setup the action bar.
@@ -155,11 +154,15 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                 finish();
                 return true;
             case R.id.action_refresh:
-                break;
+                mThreadAdapter.notifyRefresh(currentpage);
+                return true;
+            case R.id.action_reply:
+                setShowReplyBox(true);
+                return true;
             case R.id.action_sharelink:
                 StringBuilder sb = new StringBuilder(threadName);
                 sb.append('\n');
-                sb.append(BUApiHelper.getRootUrl());
+                sb.append(BUApi.getRootUrl());
                 sb.append("/viewthread.php?tid=");
                 sb.append(threadId);
 
@@ -184,12 +187,44 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         }
     }
 
+    private void setShowReplyBox(boolean show) {
+        if (show && replyContainer.getVisibility() == View.GONE) {
+            replyContainer.setVisibility(View.VISIBLE);
+            replyContainer.animate().translationYBy(replyContainer.getHeight())
+                    .setDuration(500l)
+                    .start();
+        } else if (!show && replyContainer.getVisibility() == View.VISIBLE){
+            replyContainer.animate().translationYBy(replyContainer.getHeight())
+                    .setDuration(500l)
+                    .setListener(new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            replyContainer.setVisibility(View.GONE);
+                        }
+
+                        @Override
+                        public void onAnimationCancel(Animator animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animator animation) {
+
+                        }
+                    }).start();
+        }
+    }
+
     @Override
     public void onQuoteClick(BUPost post) {
-        if (!replyContainer.isShown())
-            replyContainer.setVisibility(View.VISIBLE);
+
         replyMessage.setText(replyMessage.getText().toString() + post.toQuote());
-        replyMessage.setSelection(replyMessage.getText().toString().length());	// 设置光标到文本末尾
+        replyMessage.setSelection(replyMessage.getText().toString().length());
     }
 
     @Override
@@ -204,7 +239,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
     @Override
     public void onBackPressed() {
         if (replyContainer.getVisibility() == View.VISIBLE) {
-            replyContainer.setVisibility(View.GONE);
+            setShowReplyBox(false);
             return;
         } else
             super.onBackPressed();
@@ -264,6 +299,12 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
             super.destroyItem(container, position, object);
         }
 
+        public void notifyRefresh(int page) {
+            ThreadFragment frag = registeredFragments.get(page);
+            if (frag != null && !frag.isUpdating())
+                frag.onRefresh();
+        }
+
     }
 
     private long lastswipetime = 0;
@@ -276,7 +317,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         @Override
         public void onSwiped(int swipeAction) {
             if (swipeAction == SwipeDetector.SWIPE_RIGHT && currentpage == 0) {
-                if ((System.currentTimeMillis() - lastswipetime) >= BUAppUtils.EXIT_WAIT_TIME) {
+                if ((System.currentTimeMillis() - lastswipetime) >= Utils.EXIT_WAIT_TIME) {
                     showToast("再次右滑返回");
                     lastswipetime = System.currentTimeMillis();
                 } else
@@ -313,7 +354,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         @Override
         public void onClick(View v) {
             final String message = replyMessage.getText().toString();
-            if (message != null && !message.isEmpty()) {
+            if (!message.isEmpty()) {
                 showToast(R.string.message_sending);
                 final DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
                     @Override
@@ -321,12 +362,12 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                         if (which == DialogInterface.BUTTON_POSITIVE) {
                             Log.i("MyReplySubmitListener", "Reply submitted>>" + message);
                             StringBuilder finalMsg = new StringBuilder(message);
-                            if (BUApplication.settings.showsigature)
+                            if (BUApplication.settings.showSignature)
                                 finalMsg.append(getString(R.string.buapp_client_postfix));
-                            BUApiHelper.postNewPost(threadId, finalMsg.toString(), new Response.Listener<JSONObject>() {
+                            BUApi.postNewPost(threadId, finalMsg.toString(), new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject jsonObject) {
-                                    if (BUApiHelper.getResult(jsonObject) == Result.SUCCESS) {
+                                    if (BUApi.getResult(jsonObject) == Result.SUCCESS) {
                                         replyMessage.setText("");
                                     } else {
                                         // TODO need to handle error

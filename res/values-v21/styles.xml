@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!--<style name="FloatingImageButton">-->
-        <!--<item name="android:layout_width">55dp</item>-->
-        <!--<item name="android:layout_height">55dp</item>-->
-        <!--<item name="android:padding">15dp</item>-->
-        <!--<item name="android:stateListAnimator">@anim/floating_button_anim</item>-->
-    <!--</style>-->
-</resources>

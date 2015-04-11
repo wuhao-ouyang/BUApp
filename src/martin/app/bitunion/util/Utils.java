@@ -29,18 +29,8 @@ import android.text.Html;
 import android.util.Log;
 import android.widget.TextView;
 
-public class BUAppUtils {
-
-    public static final int BITNET = 0;
-    public static final int OUTNET = 1;
-    public static final int MAIN_REQ = 1;
-    public static final int DISPLAY_REQ = 3;
-    public static final int DISPLAY_RESULT = 4;
-
+public class Utils {
     public static final int EXIT_WAIT_TIME = 2000;
-
-    public static final int POSTS_PER_PAGE = 40; // 每页显示帖子数量
-    public static final int THREADS_PER_PAGE = 40; // 每页显示帖子数量
 
     public static final String QUOTE_HEAD = "<br><br><center><table border='0' width='90%' cellspacing='0' cellpadding='0'><tr><td>&nbsp;&nbsp;引用(?:\\[<a href='[\\w\\.&\\?=]+?'>查看原帖</a>])*?.</td></tr><tr><td><table.{101,102}bgcolor='ALTBG2'>";
     public static final String QUOTE_TAIL = "</td></tr></table></td></tr></table></center><br>";
@@ -53,40 +43,6 @@ public class BUAppUtils {
         NETWRONG, // 没有返回数据
         UNKNOWN;
     };
-
-    public static InputStream getImageVewInputStream(String imagepath)
-            throws IOException {
-        if (imagepath.contains("bitunion.org"))
-            if (imagepath.contains(".php?"))
-                return null;
-        if (!BUApplication.settings.showimage)
-            return null;
-
-        InputStream inputStream = null;
-        URL url = new URL(imagepath);
-        if (url != null) {
-            HttpURLConnection httpConnection = (HttpURLConnection) url
-                    .openConnection();
-            httpConnection.setConnectTimeout(5000); // 设置连接超时
-            httpConnection.setRequestMethod("GET");
-            if (httpConnection.getResponseCode() == 200) {
-                inputStream = httpConnection.getInputStream();
-            }
-        }
-        return inputStream;
-    }
-
-    /**
-     * 将px转换为dip
-     *
-     * @param context
-     * @param pxValue
-     * @return
-     */
-    public static int px2dip(Context context, float pxValue) {
-        final float scale = context.getResources().getDisplayMetrics().density;
-        return (int) (pxValue / scale + 0.5f);
-    }
 
     public static String replaceHtmlChar(String str) {
         String htmlstring = str;

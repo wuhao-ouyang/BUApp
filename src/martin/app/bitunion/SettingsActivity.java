@@ -3,7 +3,6 @@ package martin.app.bitunion;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,7 +20,8 @@ import android.widget.TextView;
 
 import java.io.IOException;
 
-import martin.app.bitunion.util.BUAppUtils;
+import martin.app.bitunion.util.Constants;
+import martin.app.bitunion.util.Utils;
 
 public class SettingsActivity extends ActionBarActivity {
 
@@ -69,7 +69,7 @@ public class SettingsActivity extends ActionBarActivity {
         referat = (CheckBox) findViewById(R.id.setting_refat);
         nettypeSwitch = (Switch) findViewById(R.id.netswitch);
 
-        nettypeSwitch.setChecked(BUApplication.settings.mNetType == 1);
+        nettypeSwitch.setChecked(BUApplication.settings.netType == 1);
         titleSeekBar
                 .setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
@@ -123,7 +123,7 @@ public class SettingsActivity extends ActionBarActivity {
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 Log.i("SettingsActivity", "外网模式>>" + isChecked);
-                BUApplication.settings.mNetType = isChecked ? 1 : 0;
+                BUApplication.settings.netType = isChecked ? Constants.OUTNET : Constants.BITNET;
             }
         });
 
@@ -133,30 +133,30 @@ public class SettingsActivity extends ActionBarActivity {
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 Log.i("SettingsActivity", "显示签名>>" + isChecked);
-                BUApplication.settings.showsigature = isChecked;
+                BUApplication.settings.showSignature = isChecked;
             }
         });
-        showsig.setChecked(BUApplication.settings.showsigature);
+        showsig.setChecked(BUApplication.settings.showSignature);
         showimg.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 Log.i("SettingsActivity", "显示图片>>" + isChecked);
-                BUApplication.settings.showimage = isChecked;
+                BUApplication.settings.showImage = isChecked;
             }
         });
-        showimg.setChecked(BUApplication.settings.showimage);
+        showimg.setChecked(BUApplication.settings.showImage);
         referat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 Log.i("SettingsActivity", "引用At>>" + isChecked);
-                BUApplication.settings.referenceat = isChecked;
+                BUApplication.settings.useReferAt = isChecked;
             }
         });
-        referat.setChecked(BUApplication.settings.referenceat);
+        referat.setChecked(BUApplication.settings.useReferAt);
     }
 
     protected void onDestroy() {
@@ -180,7 +180,7 @@ public class SettingsActivity extends ActionBarActivity {
             case R.id.action_info:
                 String message = null;
                 try {
-                    message = BUAppUtils.readTextFromInputStream(getAssets().open("about.txt"));
+                    message = Utils.readTextFromInputStream(getAssets().open("about.txt"));
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;

@@ -13,9 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import martin.app.bitunion.BUApplication;
-import martin.app.bitunion.MainActivity;
-import martin.app.bitunion.util.BUApiHelper;
-import martin.app.bitunion.util.BUAppUtils;
+import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.util.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -137,7 +136,7 @@ public class BUPost extends BUContent implements Parcelable {
         // Parse subject
         if (subject != "null" && subject != null && !subject.isEmpty()) {
             subject = subject.replaceAll("<[^>]+>", "");
-            subject = BUAppUtils.replaceHtmlChar(subject);
+            subject = Utils.replaceHtmlChar(subject);
         } else
             subject = null;
 
@@ -147,7 +146,7 @@ public class BUPost extends BUContent implements Parcelable {
 
     private void parseQuote() {
         message = message.replace("\"", "'");
-        Pattern p = Pattern.compile(BUAppUtils.QUOTE_REGEX);
+        Pattern p = Pattern.compile(Utils.QUOTE_REGEX);
         Matcher m = p.matcher(message);
         while (m.find()) {
             BUQuote q = new BUQuote(m.group(1));
@@ -191,9 +190,9 @@ public class BUPost extends BUContent implements Parcelable {
             String path = "<img src='" + parseLocalImage(m.group(1)) + "'>";
             Log.i("BUPost", "Post>>" + author);
             Log.i("BUPost", "Image Path>>>" + path);
-            if (BUApplication.settings.showimage)
+            if (BUApplication.settings.showImage)
                 // 统一站内地址
-                path = BUApiHelper.getImageAbsoluteUrl(path);
+                path = BUApi.getImageAbsoluteUrl(path);
             else if (!path.contains("smilies_") && !path.contains("bz_"))
                 path = "<img src='ic_image_white_48dp'>";
             message = message.replace(m.group(0), path);
@@ -236,10 +235,10 @@ public class BUPost extends BUContent implements Parcelable {
         // 如果有附件图，以html标记形式添加在最后
         // 如果附件不为图片，以超链接形式添加
         if (attachment != "null" && attachment != null && !attachment.isEmpty()) {
-            String attUrl = BUApiHelper.getRootUrl() + "/" + attachment;
+            String attUrl = BUApi.getRootUrl() + "/" + attachment;
             m += "<br>附件：<br>";
             String format = attachment.substring(attachment.length() - 4);
-            if (".jpg.png.bmp.gif".contains(format) && BUApplication.settings.showimage)
+            if (".jpg.png.bmp.gif".contains(format) && BUApplication.settings.showImage)
                 m += "<a href='" + attUrl + "'><img src='" + attUrl
                         + "'></a>";
             else
@@ -298,7 +297,7 @@ public class BUPost extends BUContent implements Parcelable {
         quote = Html.fromHtml(quote).toString();
         quote = "[quote=" + pid + "][b]" + getAuthor() + "[/b] "
                 + getDateline() + "\n" + quote + "[/quote]\n";
-        if (!BUApplication.settings.referenceat)
+        if (!BUApplication.settings.useReferAt)
             return quote;
         else
             return quote + "[@]" + getAuthor() + "[/@]\n";
