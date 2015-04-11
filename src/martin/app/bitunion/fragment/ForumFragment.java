@@ -36,11 +36,11 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
-public class ForumFragment extends Fragment implements Updateable, SwipeRefreshLayout.OnRefreshListener,
-        AbsListView.OnScrollListener {
+public class ForumFragment extends Fragment implements Updateable, AbsListView.OnScrollListener {
     private static final String TAG = ForumFragment.class.getSimpleName();
 
-    public static final String ARG_PAGE_NUMBER = "page";
+    public static final String ARG_PAGE = "page";
+    public static final String ARG_FID = "fid";
 
     private SwipeRefreshLayout mRefreshLayout;
     private ListView mListView;
@@ -64,8 +64,8 @@ public class ForumFragment extends Fragment implements Updateable, SwipeRefreshL
             mFid = savedInstanceState.getInt("fid");
             mPageNum = savedInstanceState.getInt("page");
         } else {
-            mPageNum = getArguments().getInt("page");
-            mFid = getArguments().getInt("fid");
+            mPageNum = getArguments().getInt(ARG_PAGE);
+            mFid = getArguments().getInt(ARG_FID);
         }
     }
 

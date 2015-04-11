@@ -132,8 +132,8 @@ public class DisplayActivity extends ActionBarActivity {
 //			Log.v("adapter", "getItem>>"+position);
             Bundle args = new Bundle();
             if (mPageList.get(position) != null) {
-                args.putInt(ForumFragment.ARG_PAGE_NUMBER, position);
-                args.putInt("fid", forumId);
+                args.putInt(ForumFragment.ARG_PAGE, position);
+                args.putInt(ForumFragment.ARG_FID, forumId);
             }
             ForumFragment frag = registeredFragments.get(position);
             if (frag == null) {

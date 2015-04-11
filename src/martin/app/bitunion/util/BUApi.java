@@ -34,7 +34,6 @@ import martin.app.bitunion.model.BUUser;
 public class BUApi {
 
     private static final String TAG = BUApi.class.getSimpleName();
-    private static final int RETRY_LIMIT = 2;
 
     private static BUUser sLoggedinUser;
 
@@ -108,16 +107,16 @@ public class BUApi {
         String path = baseurl + "/bu_logging.php";
         Map<String, String> params = new HashMap<String, String>();
         params.put("action", "logout");
-        params.put("username", mUsername);
         params.put("password", mPassword);
-        params.put("session", mSession);
-        httpPost(path, params, new Response.Listener<JSONObject>() {
+        appendUserCookie(params);
+        httpPost(path, params, 1, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 if (getResult(response) == Utils.Result.SUCCESS) {
                     mUsername = null;
                     mPassword = null;
                     mSession = null;
+                    saveUser(BUApplication.getInstance());
                 }
                 responseListener.onResponse(response);
             }
@@ -137,12 +136,11 @@ public class BUApi {
         String path = baseurl + "/bu_newpost.php";
         Map<String, String> params = new HashMap<String, String>();
         params.put("action", "newreply");
-        params.put("username", mUsername);
-        params.put("session", mSession);
         params.put("tid", Integer.toString(tid));
         params.put("message", message);
         params.put("attachment", "0");
-        httpPost(path, params, responseListener, errorListener);
+        appendUserCookie(params);
+        httpPost(path, params, 1, responseListener, errorListener);
     }
 
     /**
@@ -159,13 +157,12 @@ public class BUApi {
         String path = baseurl + "/bu_newpost.php";
         Map<String, String> params = new HashMap<String, String>();
         params.put("action", "newthread");
-        params.put("username", mUsername);
-        params.put("session", mSession);
         params.put("fid", Integer.toString(fid));
         params.put("subject", title);
         params.put("message", message);
         params.put("attachment", "0");
-        httpPost(path, params, responseListener, errorListener);
+        appendUserCookie(params);
+        httpPost(path, params, 1, responseListener, errorListener);
     }
 
     /**
@@ -180,10 +177,9 @@ public class BUApi {
         String path = baseurl + "/bu_profile.php";
         Map<String, String> params = new HashMap<String, String>();
         params.put("action", "profile");
-        params.put("username", mUsername);
-        params.put("session", mSession);
         params.put("uid", Integer.toString(uid));
-        httpPost(path, params, responseListener, errorListener);
+        appendUserCookie(params);
+        httpPost(path, params, 1, responseListener, errorListener);
     }
 
     /**
@@ -198,10 +194,9 @@ public class BUApi {
         String path = baseurl + "/bu_profile.php";
         Map<String, String> params = new HashMap<String, String>();
         params.put("action", "profile");
-        params.put("username", mUsername);
-        params.put("session", mSession);
         params.put("queryusername", userName);
-        httpPost(path, params, responseListener, errorListener);
+        appendUserCookie(params);
+        httpPost(path, params, 1, responseListener, errorListener);
     }
 
     /**
@@ -218,12 +213,11 @@ public class BUApi {
         String path = baseurl + "/bu_thread.php";
         Map<String, String> params = new HashMap<String, String>();
         params.put("action", "thread");
-        params.put("username", mUsername);
-        params.put("session", mSession);
         params.put("fid", Integer.toString(fid));
         params.put("from", Integer.toString(from));
         params.put("to", Integer.toString(to));
-        httpPost(path, params, responseListener, errorListener);
+        appendUserCookie(params);
+        httpPost(path, params, 1, responseListener, errorListener);
     }
 
     public static void readPostList(int tid, int from, int to,
@@ -234,12 +228,11 @@ public class BUApi {
         String path = baseurl + "/bu_post.php";
         Map<String, String> params = new HashMap<String, String>();
         params.put("action", "post");
-        params.put("username", mUsername);
-        params.put("session", mSession);
         params.put("tid", Integer.toString(tid));
         params.put("from", Integer.toString(from));
         params.put("to", Integer.toString(to));
-        httpPost(path, params, responseListener, errorListener);
+        appendUserCookie(params);
+        httpPost(path, params, 1, responseListener, errorListener);
     }
 
     public static void init(Context context) {
@@ -294,9 +287,51 @@ public class BUApi {
         baseurl = rooturl + "/open_api";
     }
 
-    private static void httpPost(final String path, Map<String, String> params,
-                                 Response.Listener<JSONObject> responseListener,
-                                 Response.ErrorListener errorListener) {
+    private static void appendUserCookie(Map<String, String> params) {
+        params.put("username", mUsername);
+        params.put("session", mSession);
+    }
+
+    /**
+     * A hacky wrapper method of {@link BUApi#httpPost(String, Map, int, Response.Listener, Response.ErrorListener)},
+     * makes it recursively retry login action with an upper limit.
+     * Api session will expire if try login on web, login again will fix this. This should be an api bug
+     * @param retryLimit The limit of how many times should we retry login
+     */
+    private static void httpPost(final String path, final Map<String, String> params,
+                                 final int retryLimit,
+                                 final Response.Listener<JSONObject> responseListener,
+                                 final Response.ErrorListener errorListener) {
+        if (retryLimit <= 0)
+            httpPost(path, params, responseListener, errorListener);
+        else
+            httpPost(path, params, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    switch (getResult(response)) {
+                        case SUCCESS:
+                            responseListener.onResponse(response);
+                            break;
+                        case FAILURE:
+                            tryLogin(new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    if (getResult(response) == Utils.Result.SUCCESS) {
+                                        appendUserCookie(params);
+                                        httpPost(path, params, retryLimit - 1, responseListener, errorListener);
+                                    }
+                                }
+                            }, errorListener);
+                            break;
+                        default:
+                    }
+                }
+            }, errorListener);
+    }
+
+    private static void httpPost(final String path, final Map<String, String> params,
+                                 final Response.Listener<JSONObject> responseListener,
+                                 final Response.ErrorListener errorListener) {
         JSONObject postReq = new JSONObject();
         try {
             for (Map.Entry<String, String> entry : params.entrySet())
