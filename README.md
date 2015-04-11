@@ -2,6 +2,15 @@
 #####北理FTP联盟android客户端
 
 ```
+v1.0
+同步浏览器cookie,session过期后自动重连
+Bug:
+多线程刷新session时会有bug,如果有ip+logged错误，可以尝试刷新。
+如果反复出现错误，请彻底终止app后重新进入。
+
+v0.9.1
+修复登录后app崩溃
+修复一个获取网络图片的bug
 v0.9.0
 更新Material design主题，使用Volley重写部分API，优化线程管理
 
