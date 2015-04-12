@@ -13,8 +13,6 @@ import com.android.volley.toolbox.Volley;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
 
 public class VolleyImageLoaderFactory {
 
@@ -36,6 +34,8 @@ public class VolleyImageLoaderFactory {
     }
 
     static void flush() {
+        if (sContext == null)
+            return;
         sImageQueue = Volley.newRequestQueue(sContext, new HurlStack() {
             @Override
             protected HttpURLConnection createConnection(URL url) throws IOException {

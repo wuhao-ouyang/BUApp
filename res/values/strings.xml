@@ -13,6 +13,7 @@
     <string name="menu_action_logout">登出</string>
     <string name="menu_action_info">关于</string>
     <string name="menu_action_sharelink">分享</string>
+    <string name="menu_open_in_browser">用浏览器打开</string>
 
     <string name="nettype_in">校园网</string>
     <string name="nettype_out">外网</string>
@@ -50,5 +51,7 @@
     <string name="message_sent_fail">发送失败</string>
     <string name="message_sent_success">发送成功</string>
     <string name="thread_url_copied">帖子链接已经复制进剪切板</string>
+    <string name="message_cant_be_empty">回复不能为空</string>
+    <string name="swipe_right_go_back">再次右滑返回</string>
 
 </resources>

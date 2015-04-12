@@ -119,11 +119,11 @@ public class ForumFragment extends Fragment implements Updateable, AbsListView.O
                     mReqCount--;
                     if (BUApi.getResult(response) != BUApi.Result.SUCCESS) {
                         Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
-                        return;
+                    } else {
+                        ArrayList<BUThread> tempList = DataParser.parseThreadlist(response);
+                        if (tempList != null)
+                            threads.addAll(tempList);
                     }
-                    ArrayList<BUThread> tempList = DataParser.parseThreadlist(response);
-                    if (tempList != null)
-                        threads.addAll(tempList);
                     if (!isUpdating()) {
                         threadlist = threads;
                         notifyUpdated();

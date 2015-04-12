@@ -1,13 +1,5 @@
 package martin.app.bitunion;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import martin.app.bitunion.fragment.ForumFragment;
-import martin.app.bitunion.util.Utils;
-import martin.app.bitunion.util.CommonIntents;
-import martin.app.bitunion.widget.SwipeDetector;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -22,7 +14,15 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
-import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import martin.app.bitunion.fragment.ForumFragment;
+import martin.app.bitunion.util.CommonIntents;
+import martin.app.bitunion.util.ToastUtil;
+import martin.app.bitunion.util.Utils;
+import martin.app.bitunion.widget.SwipeDetector;
 
 public class DisplayActivity extends ActionBarActivity {
 
@@ -184,7 +184,7 @@ public class DisplayActivity extends ActionBarActivity {
         public void onSwiped(int swipeAction) {
             if (swipeAction == SwipeDetector.SWIPE_RIGHT && currentpage == 0) {
                 if ((System.currentTimeMillis() - lastswipetime) >= Utils.EXIT_WAIT_TIME) {
-                    showToast("再次右滑返回");
+                    ToastUtil.showToast(R.string.swipe_right_go_back);
                     lastswipetime = System.currentTimeMillis();
                 } else
                     finish();
@@ -209,9 +209,5 @@ public class DisplayActivity extends ActionBarActivity {
                 mPageList.add(0);
             mPagerAdapter.notifyDataSetChanged();
         }
-    }
-
-    private void showToast(String text) {
-        Toast.makeText(DisplayActivity.this, text, Toast.LENGTH_SHORT).show();
     }
 }

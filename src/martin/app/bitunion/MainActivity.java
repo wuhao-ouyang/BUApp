@@ -29,9 +29,9 @@ import java.util.ArrayList;
 
 import martin.app.bitunion.model.BUForum;
 import martin.app.bitunion.util.BUApi;
-import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.ToastUtil;
+import martin.app.bitunion.util.Utils;
 
 public class MainActivity extends ActionBarActivity {
 

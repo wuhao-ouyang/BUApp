@@ -1,31 +1,32 @@
 package martin.app.bitunion;
 
-import org.json.JSONObject;
-
-import martin.app.bitunion.util.BUApi;
-import martin.app.bitunion.model.BUUser;
-import martin.app.bitunion.util.HtmlImageGetter;
-import martin.app.bitunion.util.VolleyImageLoaderFactory;
-
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.app.ProgressDialog;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.NetworkImageView;
+import com.bumptech.glide.Glide;
+
+import org.json.JSONObject;
+
+import martin.app.bitunion.model.BUUser;
+import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.util.HtmlImageGetter;
+import martin.app.bitunion.util.VolleyImageLoaderFactory;
 
 public class MyinfoActivity extends ActionBarActivity implements DialogInterface.OnClickListener {
 
-    private NetworkImageView mAvatar;
+    private ImageView mAvatar;
     private TextView mUsername;
     private TextView mGroup;
     private TextView mCredit;
@@ -49,7 +50,7 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
         if (savedInstanceState != null && !savedInstanceState.isEmpty())
             return;
 
-        mAvatar = (NetworkImageView) findViewById(R.id.myinfo_avatar);
+        mAvatar = (ImageView) findViewById(R.id.myinfo_avatar);
         mUsername = (TextView) findViewById(R.id.myinfo_username);
         mGroup = (TextView) findViewById(R.id.myinfo_group);
         mCredit = (TextView) findViewById(R.id.myinfo_credit);
@@ -81,7 +82,12 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
     private void setInfoContent(BUUser info) {
         if (info == null)
             return;
-        mAvatar.setImageUrl(BUApi.getImageAbsoluteUrl(info.getAvatar()), VolleyImageLoaderFactory.getImageLoader(getApplicationContext()));
+        Glide.with(this).load(BUApi.getImageAbsoluteUrl(info.getAvatar()))
+                .fitCenter()
+                .placeholder(R.drawable.noavatar)
+                .crossFade()
+                .into(mAvatar);
+//        mAvatar.setImageUrl(, VolleyImageLoaderFactory.getImageLoader(getApplicationContext()));
         mUsername.setText(info.getUsername());
         mGroup.setText("用户组：" + info.getStatus());
         mCredit.setText("积分：" + info.getCredit());

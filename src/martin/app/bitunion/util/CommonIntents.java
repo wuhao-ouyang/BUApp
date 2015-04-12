@@ -8,4 +8,5 @@ public class CommonIntents {
     public static final String EXTRA_THREAD_NAME = "BUApp.CommonIntents.thread_name";
     public static final String EXTRA_REPIES = "BUApp.CommonIntents.replies";
     public static final String EXTRA_MESSAGE = "BUApp.CommonIntents.message";
+    public static final String EXTRA_IMAGE_URL = "BUApp.CommonIntents.EXTRA_IMAGE_URL";
 }

@@ -99,6 +99,7 @@ public class BUApi {
                         Toast.makeText(BUApplication.getInstance(), R.string.login_fail, Toast.LENGTH_SHORT).show();
                         break;
                     case SUCCESS:
+                        // Update session cookie
                         mSession = response.optString("session");
                         final CookieManager cookieMngr = CookieManager.getInstance();
                         cookieMngr.setCookie(BUApi.getRootUrl(), getSessionCookie());
@@ -111,7 +112,9 @@ public class BUApi {
                                     CookieSyncManager.getInstance().sync();
                             }
                         }.run();
+                        VolleyImageLoaderFactory.flush();
                         Log.v(TAG, "sid="+mSession);
+
                         mUsername = username;
                         mPassword = password;
                         updateUser();

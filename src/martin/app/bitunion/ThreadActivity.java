@@ -8,12 +8,14 @@ import martin.app.bitunion.fragment.ThreadFragment;
 import martin.app.bitunion.fragment.UserInfoDialogFragment;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.Settings;
+import martin.app.bitunion.util.ToastUtil;
 import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.widget.SwipeDetector;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -154,7 +156,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                 mThreadAdapter.notifyRefresh(currentpage);
                 return true;
             case R.id.action_reply:
-                setShowReplyBox(true);
+                toogleReplyBox();
                 return true;
             case R.id.action_sharelink:
                 StringBuilder sb = new StringBuilder(threadName);
@@ -169,7 +171,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                 mime[0] = "text/plain";
                 ClipData clip = new ClipData("帖子链接", mime, cliptext);
                 clipboard.setPrimaryClip(clip);
-                showToast(R.string.thread_url_copied);
+                ToastUtil.showToast(R.string.thread_url_copied);
                 return true;
         }
         return false;
@@ -184,36 +186,23 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         }
     }
 
-    private void setShowReplyBox(boolean show) {
-        if (show && replyContainer.getVisibility() == View.GONE) {
+    private void toogleReplyBox() {
+        if (replyContainer.getVisibility() == View.GONE) {
             replyContainer.setVisibility(View.VISIBLE);
-            replyContainer.animate().translationYBy(replyContainer.getHeight())
+            replyContainer.animate().translationYBy(-replyContainer.getHeight())
                     .setDuration(500l)
                     .start();
-        } else if (!show && replyContainer.getVisibility() == View.VISIBLE){
+        } else if (replyContainer.getVisibility() == View.VISIBLE){
             replyContainer.animate().translationYBy(replyContainer.getHeight())
                     .setDuration(500l)
-                    .setListener(new Animator.AnimatorListener() {
-                        @Override
-                        public void onAnimationStart(Animator animation) {
-
-                        }
-
+                    .setListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
                             replyContainer.setVisibility(View.GONE);
                         }
-
-                        @Override
-                        public void onAnimationCancel(Animator animation) {
-
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animator animation) {
-
-                        }
-                    }).start();
+                    })
+                    .start();
         }
     }
 
@@ -236,16 +225,12 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
     @Override
     public void onBackPressed() {
         if (replyContainer.getVisibility() == View.VISIBLE) {
-            setShowReplyBox(false);
+            toogleReplyBox();
             return;
         } else
             super.onBackPressed();
     }
 
-    /**
-     * A {@link FragmentStatePagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
     public class ThreadPagerAdapter extends FragmentStatePagerAdapter {
 
         private SparseArray<ThreadFragment> registeredFragments = new SparseArray<ThreadFragment>();
@@ -315,7 +300,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         public void onSwiped(int swipeAction) {
             if (swipeAction == SwipeDetector.SWIPE_RIGHT && currentpage == 0) {
                 if ((System.currentTimeMillis() - lastswipetime) >= Utils.EXIT_WAIT_TIME) {
-                    showToast("再次右滑返回");
+                    ToastUtil.showToast(R.string.swipe_right_go_back);
                     lastswipetime = System.currentTimeMillis();
                 } else
                     finish();
@@ -352,7 +337,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         public void onClick(View v) {
             final String message = replyMessage.getText().toString();
             if (!message.isEmpty()) {
-                showToast(R.string.message_sending);
+                ToastUtil.showToast(R.string.message_sending);
                 final DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -373,7 +358,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                             }, new Response.ErrorListener() {
                                 @Override
                                 public void onErrorResponse(VolleyError volleyError) {
-                                    showToast(R.string.network_unknown);
+                                    ToastUtil.showToast(R.string.network_unknown);
                                 }
                             });
                         } else {
@@ -388,20 +373,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                         .setNegativeButton(R.string.dialog_button_cancel, clickListener)
                         .create().show();
             } else
-                showToast("回复不能为空");
+                ToastUtil.showToast(R.string.message_cant_be_empty);
         }
     }
-
-    private Toast toast = null;
-    private void showToast(String text) {
-        if (toast != null)
-            toast.cancel();
-        toast = Toast.makeText(ThreadActivity.this, text, Toast.LENGTH_SHORT);
-        toast.show();
-    }
-
-    private void showToast(int resId) {
-        showToast(getString(resId));
-    }
-
 }

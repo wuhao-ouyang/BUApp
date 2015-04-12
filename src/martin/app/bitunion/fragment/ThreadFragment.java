@@ -3,8 +3,10 @@ package martin.app.bitunion.fragment;
 import java.util.ArrayList;
 
 import martin.app.bitunion.BUApplication;
+import martin.app.bitunion.ImageViewerActivity;
 import martin.app.bitunion.R;
 import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.Settings;
 import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.util.DataParser;
@@ -13,6 +15,8 @@ import martin.app.bitunion.widget.ObservableWebView;
 import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -110,7 +114,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         String content = createHtmlCode();
         mPageWebView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         mPageWebView.getSettings().setJavaScriptEnabled(true);
-        mPageWebView.addJavascriptInterface(new JSInterface(new JSHandler()), JSInterface.class.getSimpleName());
+        mPageWebView.addJavascriptInterface(new JSInterface(new JSHandler(getActivity())), JSInterface.class.getSimpleName());
         mPageWebView.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
         Log.i(TAG, "WebView created!>>" + mPageNum + ", Posts >>" + postlist.size());
 
@@ -133,11 +137,11 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
                     mReqCount--;
                     if (BUApi.getResult(response) != BUApi.Result.SUCCESS) {
                         Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
-                        return;
+                    } else {
+                        ArrayList<BUPost> tempList = DataParser.parsePostlist(response);
+                        if (tempList != null)
+                            posts.addAll(tempList);
                     }
-                    ArrayList<BUPost> tempList = DataParser.parsePostlist(response);
-                    if (tempList != null)
-                        posts.addAll(tempList);
                     if (!isUpdating()) {
                         postlist = posts;
                         notifyUpdated();
@@ -202,6 +206,11 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
     }
 
     private class JSHandler extends Handler {
+        private final Context context;
+
+        private JSHandler(Context context) {
+            this.context = context;
+        }
 
         public void handleMessage(android.os.Message msg) {
             if (msg.what == 0) {
@@ -255,8 +264,10 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
 
         @JavascriptInterface
         public void imageOnClick(String url) {
-            // TODO
             Log.i("JavascriptInterface", "image>>" + url);
+            Intent i = new Intent(handler.context, ImageViewerActivity.class);
+            i.putExtra(CommonIntents.EXTRA_IMAGE_URL, url);
+            handler.context.startActivity(i);
         }
     }
 }
