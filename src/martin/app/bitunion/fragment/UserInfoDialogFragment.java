@@ -69,7 +69,12 @@ public class UserInfoDialogFragment extends DialogFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.userinfo_fragment, null);
+        return inflater.inflate(R.layout.userinfo_fragment, null);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         userinfoForm = (ScrollView) view.findViewById(R.id.userinfo_contentform);
         readingstatusForm = view.findViewById(R.id.userinfo_reading_status);
 
@@ -88,7 +93,6 @@ public class UserInfoDialogFragment extends DialogFragment {
         mSignt = (TextView) view.findViewById(R.id.userinfo_signature);
 
         readUserInfo();
-        return view;
     }
 
     public void setTextContent(BUUser info) {
