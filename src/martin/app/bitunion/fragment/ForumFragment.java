@@ -2,7 +2,7 @@ package martin.app.bitunion.fragment;
 
 import java.util.ArrayList;
 
-import martin.app.bitunion.BUApplication;
+import martin.app.bitunion.BUApp;
 import martin.app.bitunion.R;
 import martin.app.bitunion.ThreadActivity;
 import martin.app.bitunion.util.BUApi;
@@ -50,10 +50,6 @@ public class ForumFragment extends Fragment implements Updateable, AbsListView.O
 
     private int mReqCount = 0;
     private int mPageNum, mFid;
-
-    public ForumFragment() {
-
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -118,7 +114,7 @@ public class ForumFragment extends Fragment implements Updateable, AbsListView.O
                 public void onResponse(JSONObject response) {
                     mReqCount--;
                     if (BUApi.getResult(response) != BUApi.Result.SUCCESS) {
-                        Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(BUApp.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
                     } else {
                         ArrayList<BUThread> tempList = DataParser.parseThreadlist(response);
                         if (tempList != null)
@@ -134,7 +130,7 @@ public class ForumFragment extends Fragment implements Updateable, AbsListView.O
                 public void onErrorResponse(VolleyError error) {
                     mReqCount--;
                     notifyUpdated();
-                    Toast.makeText(BUApplication.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(BUApp.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
                 }
             });
             from += 20;
@@ -201,13 +197,13 @@ public class ForumFragment extends Fragment implements Updateable, AbsListView.O
             // TextView textView = new TextView(DisplayActivity.this);
             final BUThread threadItem = threadlist.get(position);
             subjView.setText(threadItem.getSubject());
-            subjView.setTextSize(TypedValue.COMPLEX_UNIT_SP, BUApplication.settings.titletextsize);
+            subjView.setTextSize(TypedValue.COMPLEX_UNIT_SP, BUApp.settings.titletextsize);
             addinfoView.setText(threadItem.getAuthor());
-            addinfoView.setTextSize(TypedValue.COMPLEX_UNIT_SP, BUApplication.settings.titletextsize - 2);
-            repliesView.setText(threadItem.getReplies());
-            repliesView.setTextSize(TypedValue.COMPLEX_UNIT_SP, BUApplication.settings.titletextsize - 2);
-            viewsView.setText(threadItem.getViews());
-            viewsView.setTextSize(TypedValue.COMPLEX_UNIT_SP, BUApplication.settings.titletextsize - 2);
+            addinfoView.setTextSize(TypedValue.COMPLEX_UNIT_SP, BUApp.settings.titletextsize - 2);
+            repliesView.setText(threadItem.getRepliesDisplay());
+            repliesView.setTextSize(TypedValue.COMPLEX_UNIT_SP, BUApp.settings.titletextsize - 2);
+            viewsView.setText(threadItem.getViewsDisplay());
+            viewsView.setTextSize(TypedValue.COMPLEX_UNIT_SP, BUApp.settings.titletextsize - 2);
             view.setOnClickListener(new OnClickListener() {
 
                 @Override
@@ -215,7 +211,7 @@ public class ForumFragment extends Fragment implements Updateable, AbsListView.O
                     Intent intent = new Intent(getActivity(), ThreadActivity.class);
                     intent.putExtra(CommonIntents.EXTRA_TID, threadItem.getTid());
                     intent.putExtra(CommonIntents.EXTRA_THREAD_NAME, threadItem.getSubject());
-                    intent.putExtra(CommonIntents.EXTRA_REPIES, threadItem.getReplies());
+                    intent.putExtra(CommonIntents.EXTRA_REPIES, threadItem.getReplies()+1);
                     startActivity(intent);
                 }
             });

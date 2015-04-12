@@ -57,9 +57,9 @@ public class LoginActivity extends ActionBarActivity {
             @Override
             public void onCheckedChanged(RadioGroup arg0, int arg1) {
                 if (arg1 == R.id.radio_in) {
-                    BUApplication.settings.netType = Constants.BITNET;
+                    BUApp.settings.netType = Constants.BITNET;
                 } else if (arg1 == R.id.radio_out) {
-                    BUApplication.settings.netType = Constants.OUTNET;
+                    BUApp.settings.netType = Constants.OUTNET;
                 }
             }
         });
@@ -176,12 +176,12 @@ public class LoginActivity extends ActionBarActivity {
     }
 
     public void saveConfig() {
-        BUApplication.settings.readPreference(this);
+        BUApp.settings.readPreference(this);
         BUApi.saveUser(this);
     }
 
     public void readConfig() {
-        BUApplication.settings.readPreference(this);
+        BUApp.settings.readPreference(this);
         BUApi.init(this);
     }
 }

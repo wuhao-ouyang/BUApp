@@ -96,7 +96,7 @@ public class NewthreadActivity extends ActionBarActivity {
             messagebox.setError("内容长度不能小于5");
             return;
         }
-        if (BUApplication.settings.showSignature)
+        if (BUApp.settings.showSignature)
             message += getString(R.string.buapp_client_postfix);
         BUApi.postNewThread(fid, subject, message, mResponseListener, mErrorListener);
     }
@@ -106,7 +106,7 @@ public class NewthreadActivity extends ActionBarActivity {
             messagebox.setError("回复不能为空");
             return;
         }
-        if (BUApplication.settings.showSignature)
+        if (BUApp.settings.showSignature)
             message += getString(R.string.buapp_client_postfix);
         BUApi.postNewPost(tid, message, mResponseListener, mErrorListener);
     }

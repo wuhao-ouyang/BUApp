@@ -24,7 +24,7 @@
     <string name="title_activity_display">DisplayActivity</string>
     <string name="read_progress_message">读取中</string>
     <string name="title_activity_settings">设置</string>
-    <string name="buapp_client_postfix">\n\n发送自 [url=https://play.google.com/store/apps/details?id=martin.app.bitunion][b]BUApp Android[/b][/url]</string>
+    <string name="buapp_client_postfix">\n\n发送自 [url=https://play.google.com/store/apps/details?id=martin.app.bitunion][b]$device_name @BUApp[/b][/url]</string>
 
     <!-- Network response error -->
     <string name="network_unknown">网络异常</string>

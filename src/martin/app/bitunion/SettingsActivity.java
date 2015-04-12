@@ -69,7 +69,7 @@ public class SettingsActivity extends ActionBarActivity {
         referat = (CheckBox) findViewById(R.id.setting_refat);
         nettypeSwitch = (Switch) findViewById(R.id.netswitch);
 
-        nettypeSwitch.setChecked(BUApplication.settings.netType == 1);
+        nettypeSwitch.setChecked(BUApp.settings.netType == 1);
         titleSeekBar
                 .setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
@@ -84,13 +84,13 @@ public class SettingsActivity extends ActionBarActivity {
                     @Override
                     public void onProgressChanged(SeekBar seekBar,
                                                   int progress, boolean fromUser) {
-                        BUApplication.settings.titletextsize = progress + 10;
+                        BUApp.settings.titletextsize = progress + 10;
                         titleTextView.setText("帖子标题字体大小" +
-                                BUApplication.settings.titletextsize + "\t(推荐" + RECOMMENDTITESIZE + ")");
-                        titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, BUApplication.settings.titletextsize);
+                                BUApp.settings.titletextsize + "\t(推荐" + RECOMMENDTITESIZE + ")");
+                        titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, BUApp.settings.titletextsize);
                     }
                 });
-        titleSeekBar.setProgress(BUApplication.settings.titletextsize - 10);
+        titleSeekBar.setProgress(BUApp.settings.titletextsize - 10);
         // contentTextView.setText("帖子内容文本大小" + contenttextsize + "\t(推荐"+
         // RECOMMENDCONTENTSIZE +")");
         // contentTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
@@ -109,21 +109,21 @@ public class SettingsActivity extends ActionBarActivity {
                     @Override
                     public void onProgressChanged(SeekBar seekBar,
                                                   int progress, boolean fromUser) {
-                        BUApplication.settings.contenttextsize = progress + 10;
-                        contentTextView.setText("帖子内容字体大小" + BUApplication.settings.contenttextsize
+                        BUApp.settings.contenttextsize = progress + 10;
+                        contentTextView.setText("帖子内容字体大小" + BUApp.settings.contenttextsize
                                 + "\t(推荐" + RECOMMENDCONTENTSIZE + ")");
                         contentTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
-                                BUApplication.settings.contenttextsize);
+                                BUApp.settings.contenttextsize);
                     }
                 });
-        contentSeekBar.setProgress(BUApplication.settings.contenttextsize - 10);
+        contentSeekBar.setProgress(BUApp.settings.contenttextsize - 10);
         nettypeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 Log.i("SettingsActivity", "外网模式>>" + isChecked);
-                BUApplication.settings.netType = isChecked ? Constants.OUTNET : Constants.BITNET;
+                BUApp.settings.netType = isChecked ? Constants.OUTNET : Constants.BITNET;
             }
         });
 
@@ -133,34 +133,34 @@ public class SettingsActivity extends ActionBarActivity {
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 Log.i("SettingsActivity", "显示签名>>" + isChecked);
-                BUApplication.settings.showSignature = isChecked;
+                BUApp.settings.showSignature = isChecked;
             }
         });
-        showsig.setChecked(BUApplication.settings.showSignature);
+        showsig.setChecked(BUApp.settings.showSignature);
         showimg.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 Log.i("SettingsActivity", "显示图片>>" + isChecked);
-                BUApplication.settings.showImage = isChecked;
+                BUApp.settings.showImage = isChecked;
             }
         });
-        showimg.setChecked(BUApplication.settings.showImage);
+        showimg.setChecked(BUApp.settings.showImage);
         referat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 Log.i("SettingsActivity", "引用At>>" + isChecked);
-                BUApplication.settings.useReferAt = isChecked;
+                BUApp.settings.useReferAt = isChecked;
             }
         });
-        referat.setChecked(BUApplication.settings.useReferAt);
+        referat.setChecked(BUApp.settings.useReferAt);
     }
 
     protected void onDestroy() {
-        BUApplication.settings.writePreference(this);
+        BUApp.settings.writePreference(this);
         Log.i("SettingActivity", "Config Saved");
         super.onDestroy();
     }

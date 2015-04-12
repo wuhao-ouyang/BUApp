@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import martin.app.bitunion.fragment.ThreadFragment;
 import martin.app.bitunion.fragment.UserInfoDialogFragment;
 import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.util.Devices;
 import martin.app.bitunion.util.Settings;
 import martin.app.bitunion.util.ToastUtil;
 import martin.app.bitunion.util.Utils;
@@ -14,8 +15,6 @@ import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.widget.SwipeDetector;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -23,6 +22,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -36,23 +36,20 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
-public class ThreadActivity extends ActionBarActivity implements View.OnClickListener, ThreadFragment.PostActionListener {
+public class ThreadActivity extends ActionBarActivity implements View.OnClickListener, ThreadFragment.ThreadContentListener {
 
     private ThreadPagerAdapter mThreadAdapter;
 
     private ViewPager mViewPager;
     private PagerTitleStrip mPagerTitleStrip;
-    private LinearLayout replyContainer = null;
+    private ViewGroup replyContainer = null;
     private EditText replyMessage = null;
     private View mReplyBtn;
 
@@ -60,7 +57,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
     private String threadName;
 
     private ArrayList<Integer> postList = new ArrayList<Integer>(); // 所有回复列表
-    private int lastpage, replies; // 当前帖子总页数，总回复数
+    private int lastpage, replies = 1; // 当前帖子总页数，总回复数
     private int currentpage = 0; // 当前所在页数
 
     @Override
@@ -71,18 +68,15 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         Intent intent = getIntent();
         threadId = intent.getIntExtra(CommonIntents.EXTRA_TID, 0);
         threadName = intent.getStringExtra(CommonIntents.EXTRA_THREAD_NAME);
-        replies = Integer.parseInt(intent.getStringExtra(CommonIntents.EXTRA_REPIES)) + 1;
+        replies = intent.getIntExtra(CommonIntents.EXTRA_REPIES, 1);
+        onEndReached();
 
         if (savedInstanceState != null && !savedInstanceState.isEmpty()) {
             threadId = savedInstanceState.getInt("tid");
             threadName = savedInstanceState.getString("subject");
             replies = savedInstanceState.getInt("replies");
         }
-
-        if (replies % Settings.POSTS_PER_PAGE == 0)
-            lastpage = replies / Settings.POSTS_PER_PAGE - 1;
-        else
-            lastpage = replies / Settings.POSTS_PER_PAGE;
+        calculateTotalPage();
         Log.v("ThreadActivity", "lastpage>>>>>" + lastpage);
 
         // Setup the action bar.
@@ -90,12 +84,12 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         getSupportActionBar().setDisplayShowHomeEnabled(false);
 
         // Get reply View container and hide for current
-        replyContainer = (LinearLayout) findViewById(R.id.reply_layout);
+        replyContainer = (ViewGroup) findViewById(R.id.reply_layout);
         replyContainer.setVisibility(View.GONE);
         replyMessage = (EditText) replyContainer.findViewById(R.id.reply_message);
         // Button calls reply window to front
-        ImageButton replySubmit = (ImageButton) replyContainer.findViewById(R.id.reply_submit);
-        replySubmit.setOnClickListener(new MyReplySubmitListener());
+        View replySubmit = replyContainer.findViewById(R.id.reply_submit);
+        replySubmit.setOnClickListener(this);
         mReplyBtn = findViewById(R.id.imgVw_reply_btn);
         mReplyBtn.setOnClickListener(this);
         ImageButton advreply = (ImageButton) replyContainer.findViewById(R.id.reply_advanced);
@@ -112,10 +106,6 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
             }
         });
 
-        postList.add(0);
-        if (postList.size() <= lastpage)
-            postList.add(0);
-
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the application.
         mThreadAdapter = new ThreadPagerAdapter(getSupportFragmentManager());
@@ -128,6 +118,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
         int trigger = getResources().getDimensionPixelSize(R.dimen.swipe_trigger_limit);
         mViewPager.setOnTouchListener(new SwipeDetector(trigger, new MySwipeListener()));
+
     }
 
     @Override
@@ -156,7 +147,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                 mThreadAdapter.notifyRefresh(currentpage);
                 return true;
             case R.id.action_reply:
-                toogleReplyBox();
+                toggleReplyBox();
                 return true;
             case R.id.action_sharelink:
                 StringBuilder sb = new StringBuilder(threadName);
@@ -183,32 +174,61 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
             case R.id.imgVw_reply_btn:
                 mReplyBtn.setEnabled(false);
                 break;
+            case R.id.reply_submit:
+                final String message = replyMessage.getText().toString();
+                if (!message.isEmpty()) {
+                    final DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (which == DialogInterface.BUTTON_POSITIVE) {
+                                ToastUtil.showToast(R.string.message_sending);
+                                Log.v("", "Reply submitted>>" + message);
+                                StringBuilder finalMsg = new StringBuilder(message);
+                                if (BUApp.settings.showSignature)
+                                    finalMsg.append(getString(R.string.buapp_client_postfix).replace("$device_name", Devices.getDeviceName()));
+                                BUApi.postNewPost(threadId, finalMsg.toString(), new Response.Listener<JSONObject>() {
+                                    @Override
+                                    public void onResponse(JSONObject jsonObject) {
+                                        if (BUApi.getResult(jsonObject) == BUApi.Result.SUCCESS) {
+                                            ToastUtil.showToast(R.string.message_sent_success);
+                                            replyMessage.setText("");
+                                        } else {
+                                            // TODO need to handle error
+                                        }
+                                    }
+                                }, new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError volleyError) {
+                                        ToastUtil.showToast(R.string.network_unknown);
+                                    }
+                                });
+                            } else {
+
+                            }
+                        }
+                    };
+                    new AlertDialog.Builder(ThreadActivity.this)
+                            .setTitle(R.string.send_message_title)
+                            .setMessage(R.string.send_message_message)
+                            .setPositiveButton(R.string.dialog_button_confirm, clickListener)
+                            .setNegativeButton(R.string.dialog_button_cancel, clickListener)
+                            .create().show();
+                } else
+                    ToastUtil.showToast(R.string.message_cant_be_empty);
+                break;
         }
     }
 
-    private void toogleReplyBox() {
+    private void toggleReplyBox() {
         if (replyContainer.getVisibility() == View.GONE) {
             replyContainer.setVisibility(View.VISIBLE);
-            replyContainer.animate().translationYBy(-replyContainer.getHeight())
-                    .setDuration(500l)
-                    .start();
         } else if (replyContainer.getVisibility() == View.VISIBLE){
-            replyContainer.animate().translationYBy(replyContainer.getHeight())
-                    .setDuration(500l)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            replyContainer.setVisibility(View.GONE);
-                        }
-                    })
-                    .start();
+            replyContainer.setVisibility(View.GONE);
         }
     }
 
     @Override
     public void onQuoteClick(BUPost post) {
-
         replyMessage.setText(replyMessage.getText().toString() + post.toQuote());
         replyMessage.setSelection(replyMessage.getText().toString().length());
     }
@@ -217,15 +237,44 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
     public void onUserClick(int uid) {
         UserInfoDialogFragment infoDialog = new UserInfoDialogFragment();
         Bundle args = new Bundle();
-        args.putInt("uid", uid);
+        args.putInt(CommonIntents.EXTRA_UID, uid);
         infoDialog.setArguments(args);
         infoDialog.show(getSupportFragmentManager(), "Userinfo-" + uid);
     }
 
     @Override
+    public void onSubjectUpdated(@Nullable String subject) {
+        getSupportActionBar().setTitle(subject);
+    }
+
+    @Override
+    public void onEndReached() {
+        BUApi.checkTotalPosts(threadId, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                if (BUApi.getResult(response) == BUApi.Result.SUCCESS) {
+                    replies = response.optInt("tid_sum", replies);
+                    calculateTotalPage();
+                }
+            }
+        }, BUApi.sErrorListener);
+    }
+
+    private void calculateTotalPage() {
+        if (replies % Settings.POSTS_PER_PAGE == 0)
+            lastpage = replies / Settings.POSTS_PER_PAGE - 1;
+        else
+            lastpage = replies / Settings.POSTS_PER_PAGE;
+        while (postList.size() <= lastpage)
+            postList.add(0);
+        if (mThreadAdapter != null)
+            mThreadAdapter.notifyDataSetChanged();
+    }
+
+    @Override
     public void onBackPressed() {
         if (replyContainer.getVisibility() == View.VISIBLE) {
-            toogleReplyBox();
+            toggleReplyBox();
             return;
         } else
             super.onBackPressed();
@@ -253,7 +302,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
             } else if (!frag.isUpdating()){
                 frag.onRefresh();
             }
-            frag.setPostActionListener(ThreadActivity.this);
+            frag.setThreadContentListener(ThreadActivity.this);
             return frag;
         }
 
@@ -325,55 +374,6 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         @Override
         public void onPageSelected(int pos) {
             currentpage = pos;
-            while (pos > postList.size() - 2 && postList.size() <= lastpage)
-                postList.add(0);
-            mThreadAdapter.notifyDataSetChanged();
-        }
-    }
-
-    private class MyReplySubmitListener implements OnClickListener {
-
-        @Override
-        public void onClick(View v) {
-            final String message = replyMessage.getText().toString();
-            if (!message.isEmpty()) {
-                ToastUtil.showToast(R.string.message_sending);
-                final DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (which == DialogInterface.BUTTON_POSITIVE) {
-                            Log.i("MyReplySubmitListener", "Reply submitted>>" + message);
-                            StringBuilder finalMsg = new StringBuilder(message);
-                            if (BUApplication.settings.showSignature)
-                                finalMsg.append(getString(R.string.buapp_client_postfix));
-                            BUApi.postNewPost(threadId, finalMsg.toString(), new Response.Listener<JSONObject>() {
-                                @Override
-                                public void onResponse(JSONObject jsonObject) {
-                                    if (BUApi.getResult(jsonObject) == BUApi.Result.SUCCESS) {
-                                        replyMessage.setText("");
-                                    } else {
-                                        // TODO need to handle error
-                                    }
-                                }
-                            }, new Response.ErrorListener() {
-                                @Override
-                                public void onErrorResponse(VolleyError volleyError) {
-                                    ToastUtil.showToast(R.string.network_unknown);
-                                }
-                            });
-                        } else {
-
-                        }
-                    }
-                };
-                new AlertDialog.Builder(ThreadActivity.this)
-                        .setTitle(R.string.send_message_title)
-                        .setMessage(R.string.send_message_message)
-                        .setPositiveButton(R.string.dialog_button_confirm, clickListener)
-                        .setNegativeButton(R.string.dialog_button_cancel, clickListener)
-                        .create().show();
-            } else
-                ToastUtil.showToast(R.string.message_cant_be_empty);
         }
     }
 }

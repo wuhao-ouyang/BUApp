@@ -5,8 +5,8 @@ import org.json.JSONObject;
 import martin.app.bitunion.R;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.model.BUUser;
+import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.HtmlImageGetter;
-import martin.app.bitunion.util.VolleyImageLoaderFactory;
 
 import android.app.Dialog;
 import android.os.Bundle;
@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,10 +26,14 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.NetworkImageView;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 
 public class UserInfoDialogFragment extends DialogFragment {
 
-    private NetworkImageView mAvatar;
+    private ImageView mAvatar;
     private TextView mUsername;
     private TextView mGroup;
     private TextView mCredit;
@@ -50,7 +55,7 @@ public class UserInfoDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        uid = getArguments().getInt("uid");
+        uid = getArguments().getInt(CommonIntents.EXTRA_UID);
         setStyle(R.style.UserProfileDialog, 0);
     }
 
@@ -68,7 +73,7 @@ public class UserInfoDialogFragment extends DialogFragment {
         userinfoForm = (ScrollView) view.findViewById(R.id.userinfo_contentform);
         readingstatusForm = view.findViewById(R.id.userinfo_reading_status);
 
-        mAvatar = (NetworkImageView) view.findViewById(R.id.userinfo_avatar);
+        mAvatar = (ImageView) view.findViewById(R.id.userinfo_avatar);
         mUsername = (TextView) view.findViewById(R.id.userinfo_username);
         mGroup = (TextView) view.findViewById(R.id.userinfo_group);
         mCredit = (TextView) view.findViewById(R.id.userinfo_credit);
@@ -87,7 +92,18 @@ public class UserInfoDialogFragment extends DialogFragment {
     }
 
     public void setTextContent(BUUser info) {
-        mAvatar.setImageUrl(BUApi.getImageAbsoluteUrl(info.getAvatar()), VolleyImageLoaderFactory.getImageLoader(getActivity()));
+//        mAvatar.setImageUrl(BUApi.getImageAbsoluteUrl(info.getAvatar()), VolleyImageLoaderFactory.getImageLoader(getActivity()));
+        Glide.with(this).load(BUApi.getImageAbsoluteUrl(info.getAvatar()))
+                .into(new SimpleTarget<GlideDrawable>() {
+                    @Override
+                    public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                        mAvatar.setImageDrawable(resource);
+                        if (resource.isAnimated()) {
+                            resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
+                            resource.start();
+                        }
+                    }
+                });
         mUsername.setText(info.getUsername());
         mGroup.setText("用户组：" + info.getStatus());
         mCredit.setText("积分：" + info.getCredit());

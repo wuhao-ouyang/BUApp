@@ -32,9 +32,10 @@
         android:layout_alignParentRight="true"
         android:layout_marginBottom="20dp"
         android:layout_marginRight="20dp"
-        android:src="@drawable/ic_create_white_48dp"/>
+        android:src="@drawable/ic_create_white_48dp"
+        android:visibility="gone"/>
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/reply_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -42,24 +43,23 @@
         android:background="@android:color/black"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="4dp"
-        android:visibility="gone">
+        android:padding="4dp">
 
         <ImageButton
             android:id="@+id/reply_advanced"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.03"
             android:background="#000"
             android:padding="2sp"
             android:visibility="gone"/>
 
         <EditText
             android:id="@+id/reply_message"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"
-            android:layout_weight="0.7"
+            android:layout_toLeftOf="@+id/reply_submit"
             android:background="#fff"
             android:hint="请输入回复"
             android:imeActionLabel="回复"
@@ -71,10 +71,11 @@
             android:id="@+id/reply_submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.03"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
             android:background="@android:color/black"
-            android:padding="2sp"
             android:src="@drawable/ic_reply_white_48dp"/>
-    </LinearLayout>
+    </RelativeLayout>
 
 </RelativeLayout>

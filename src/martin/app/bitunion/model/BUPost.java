@@ -12,7 +12,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import martin.app.bitunion.BUApplication;
+import martin.app.bitunion.BUApp;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.Utils;
 
@@ -187,7 +187,7 @@ public class BUPost extends BUContent implements Parcelable {
             quotes.add(q);
             message = message.replace(m.group(0),
                     "<table width='90%' style='border:1px dashed #698fc7;font-size:"
-                            + BUApplication.settings.contenttextsize
+                            + BUApp.settings.contenttextsize
                             + "px;margin:5px;'><tr><td>" + q.toString()
                             + "</td></tr></table>");
 //			message = message.replace(m.group(0), "");
@@ -206,8 +206,7 @@ public class BUPost extends BUContent implements Parcelable {
      * 找到@标记，并将超链接去掉
      */
     private void parseAt() {
-        Pattern p = Pattern
-                .compile("<font color='Blue'>@<a href='/[^>]+'>([^\\s]+?)</a></font>");
+        Pattern p = Pattern.compile("<font color='Blue'>@<a href='/[^>]+'>([^\\s]+?)</a></font>");
         Matcher m = p.matcher(message);
         while (m.find()) {
             message = message.replace(m.group(0), "<font color='Blue'>@<u>"
@@ -216,15 +215,16 @@ public class BUPost extends BUContent implements Parcelable {
     }
 
     private void parseImage() {
-//		message = message.replace("src='..", "scr='" + BUApplication.settings.ROOTURL);
+//		message = message.replace("src='..", "scr='" + BUApp.settings.ROOTURL);
         // 处理图片标签
         Pattern p = Pattern.compile("<img src='([^>']+)'[^>]*(width>)?[^>]*'>");
         Matcher m = p.matcher(message);
         while (m.find()) {
-            String path = "<img src='" + parseLocalImage(m.group(1)) + "'>";
+            String url = parseLocalImage(m.group(1));
+            String path = "<span onclick=imageOnClick('"+url+"')><img src='" + url + "'></span>";
             Log.i("BUPost", "Post>>" + author);
             Log.i("BUPost", "Image Path>>>" + path);
-            if (BUApplication.settings.showImage)
+            if (BUApp.settings.showImage)
                 // 统一站内地址
                 path = BUApi.getImageAbsoluteUrl(path);
             else if (!path.contains("smilies_") && !path.contains("bz_"))
@@ -276,7 +276,7 @@ public class BUPost extends BUContent implements Parcelable {
             m.append("<a href='"+attUrl+"'>"+attachment.fileName+"</a>");
             m.append(" <i>" + attachment.size + "</i>");
             m.append("<br>");
-            if (attachment.fileType.startsWith("image/") && BUApplication.settings.showImage)
+            if (attachment.fileType.startsWith("image/") && BUApp.settings.showImage)
                 m.append("<span onclick=imageOnClick('" + attUrl+ "')><img src='" + attUrl + "'></span>");
             Log.v("Attachment", ">>" + attUrl);
         }
@@ -328,7 +328,7 @@ public class BUPost extends BUContent implements Parcelable {
         quote = Html.fromHtml(quote).toString();
         quote = "[quote=" + pid + "][b]" + getAuthor() + "[/b] "
                 + getDateline() + "\n" + quote + "[/quote]\n";
-        if (!BUApplication.settings.useReferAt)
+        if (!BUApp.settings.useReferAt)
             return quote;
         else
             return quote + "[@]" + getAuthor() + "[/@]\n";
@@ -342,7 +342,7 @@ public class BUPost extends BUContent implements Parcelable {
     public String getHtmlLayout(int count) {
         String htmlcontent;
         htmlcontent = "<p><div class='tdiv'>" +
-                "<table width='100%' style='background-color:#92ACD3;padding:2px 5px;font-size:" + BUApplication.settings.titletextsize + "px;'>" +
+                "<table width='100%' style='background-color:#92ACD3;padding:2px 5px;font-size:" + BUApp.settings.titletextsize + "px;'>" +
                 "<tr><td>#" + count + "&nbsp;<span onclick=authorOnClick(" + authorid + ")>" + getAuthor() +
                 "</span>&nbsp;&nbsp;&nbsp;<span onclick=referenceOnClick(" + count + ")><u>引用</u></span></td>" +
                 "<td style='text-align:right;'>" + getDateline() + "</td></tr></table>" +

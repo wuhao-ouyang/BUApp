@@ -1,35 +1,43 @@
 package martin.app.bitunion.fragment;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import martin.app.bitunion.BUApplication;
+import martin.app.bitunion.BUApp;
 import martin.app.bitunion.ImageViewerActivity;
 import martin.app.bitunion.R;
+import martin.app.bitunion.ThreadActivity;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.Settings;
 import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.util.DataParser;
+import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.widget.ObservableWebView;
 
 import org.json.JSONObject;
 
-import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -40,8 +48,7 @@ import com.android.volley.VolleyError;
  * A dummy fragment representing a section of the app, but that simply displays
  * dummy text.
  */
-@SuppressLint({ "JavascriptInterface", "SetJavaScriptEnabled" })
-public class ThreadFragment extends Fragment implements Updateable, ObservableWebView.OnScrollChangedCallback  {
+public class ThreadFragment extends Fragment implements Updateable, ObservableWebView.OnScrollChangedCallback {
     private static final String TAG = ThreadFragment.class.getSimpleName();
 
     public static final String ARG_THREAD_ID = "ThreadFragment.tid";
@@ -58,11 +65,13 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
 
     private int mReqCount;
 
-    private PostActionListener mPostActionListener;
+    private ThreadContentListener mThreadContentListener;
 
-    public interface PostActionListener {
-        void onQuoteClick(BUPost post);
+    public interface ThreadContentListener {
+        void onQuoteClick(@NonNull BUPost post);
         void onUserClick(int uid);
+        void onSubjectUpdated(@Nullable String subject);
+        void onEndReached();
     }
 
     @Override
@@ -112,6 +121,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         }
 
         String content = createHtmlCode();
+        mPageWebView.setWebViewClient(new ThreadWebViewClient());
         mPageWebView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         mPageWebView.getSettings().setJavaScriptEnabled(true);
         mPageWebView.addJavascriptInterface(new JSInterface(new JSHandler(getActivity())), JSInterface.class.getSimpleName());
@@ -126,8 +136,8 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         if (isUpdating())
             return;
         mReqCount = 0;
-        int from = mPageNum* Settings.POSTS_PER_PAGE;
-        int to = (mPageNum+1)* Settings.POSTS_PER_PAGE;
+        int from = mPageNum * Settings.POSTS_PER_PAGE;
+        int to = (mPageNum + 1) * Settings.POSTS_PER_PAGE;
         final ArrayList<BUPost> posts = new ArrayList<BUPost>(Settings.POSTS_PER_PAGE);
         while (from < to) {
             mReqCount++;
@@ -136,7 +146,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
                 public void onResponse(JSONObject response) {
                     mReqCount--;
                     if (BUApi.getResult(response) != BUApi.Result.SUCCESS) {
-                        Toast.makeText(BUApplication.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(BUApp.getInstance(), response.toString(), Toast.LENGTH_SHORT).show();
                     } else {
                         ArrayList<BUPost> tempList = DataParser.parsePostlist(response);
                         if (tempList != null)
@@ -152,7 +162,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
                 public void onErrorResponse(VolleyError error) {
                     mReqCount--;
                     notifyUpdated();
-                    Toast.makeText(BUApplication.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(BUApp.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
                 }
             });
             from += 20;
@@ -173,6 +183,10 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         String htmlcode = createHtmlCode();
         mPageWebView.loadDataWithBaseURL("file:///android_asset/", htmlcode, "text/html", "utf-8", null);
         Log.v(TAG, "fragment " + this.mPageNum + " updated");
+
+        if (mThreadContentListener != null && mPageNum == 0 && postlist.size() > 0) {
+            mThreadContentListener.onSubjectUpdated(postlist.get(0).getSubject());
+        }
     }
 
     @Override
@@ -183,17 +197,17 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             mRefreshLayout.setEnabled(false);
     }
 
-    private String createHtmlCode(){
+    private String createHtmlCode() {
         StringBuilder content = new StringBuilder("<!DOCTYPE ><html><head><title></title>" +
                 "<style type=\"text/css\">" +
                 "img{max-width: 100%; width:auto; height: auto;}" +
-                "body{background-color: #D8E2EF; color: #284264;font-size:" + BUApplication.settings.contenttextsize +"px;}" +
+                "body{background-color: #D8E2EF; color: #284264;font-size:" + BUApp.settings.contenttextsize + "px;}" +
                 "</style><script type='text/javascript'>" +
                 JSInterface.javaScript() +
                 "</script></head><body>");
 
         int len = postlist.size();
-        for (int i = 0; i < len; i++){
+        for (int i = 0; i < len; i++) {
             BUPost postItem = postlist.get(i);
             content.append(postItem.getHtmlLayout(POS_OFFSET + i));
         }
@@ -201,8 +215,53 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         return content.toString();
     }
 
-    public void setPostActionListener(PostActionListener l) {
-        mPostActionListener = l;
+    public void setThreadContentListener(ThreadContentListener l) {
+        mThreadContentListener = l;
+    }
+
+    /**
+     * Custom {@link WebViewClient} to handle url clicks
+     * Will intercept bitunion thread url and redirect to {@link ThreadActivity}
+     * For image links will try go to {@link ImageViewerActivity}
+     */
+    private static class ThreadWebViewClient extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            Context context = view.getContext();
+            Uri uri = Uri.parse(url);
+            if (Utils.isBitUnionUrl(url)) {
+                String tid = "";
+                String path = uri.getPath();
+                if (path.equalsIgnoreCase("/viewthread.php")) {
+                    if (uri.getQueryParameterNames().contains("tid"))
+                        tid = uri.getQueryParameter("tid");
+                } else {
+                    Pattern p = Pattern.compile("^/thread-([0-9]+)-.*\\.html$");
+                    Matcher m = p.matcher(path);
+                    if (m.find())
+                        tid = m.group(1);
+                }
+                try {
+                    Intent i = new Intent(context, ThreadActivity.class);
+                    i.putExtra(CommonIntents.EXTRA_TID, Integer.parseInt(tid));
+                    context.startActivity(i);
+                } catch (NumberFormatException e) {
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Log.d("WebViewClient", "bit path >> " + path);
+            } else {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.addCategory(Intent.CATEGORY_BROWSABLE);
+                i.setData(uri);
+                try {
+                    context.startActivity(i);
+                } catch (ActivityNotFoundException e) {
+                    Toast.makeText(context, "Cannot find a browser app!", Toast.LENGTH_SHORT).show();
+                }
+            }
+            return true;
+        }
     }
 
     private class JSHandler extends Handler {
@@ -215,15 +274,15 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         public void handleMessage(android.os.Message msg) {
             if (msg.what == 0) {
                 BUPost post = postlist.get(msg.arg1 - POS_OFFSET);
-                if (mPostActionListener != null)
-                    mPostActionListener.onQuoteClick(post);
+                if (mThreadContentListener != null)
+                    mThreadContentListener.onQuoteClick(post);
             }
             if (msg.what == 1) {
-                if (mPostActionListener != null)
-                    mPostActionListener.onUserClick(msg.arg1);
+                if (mThreadContentListener != null)
+                    mThreadContentListener.onUserClick(msg.arg1);
             }
         }
-    };
+    }
 
     private static class JSInterface {
 
@@ -235,15 +294,15 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
 
         private static final String javaScript() {
             return "function referenceOnClick(num){" +
-                    JSInterface.class.getSimpleName()+".referenceOnClick(num);}" +
+                    JSInterface.class.getSimpleName() + ".referenceOnClick(num);}" +
                     "function authorOnClick(uid){" +
-                    JSInterface.class.getSimpleName()+".authorOnClick(uid);}" +
+                    JSInterface.class.getSimpleName() + ".authorOnClick(uid);}" +
                     "function imageOnClick(url){" +
-                    JSInterface.class.getSimpleName()+".imageOnClick(url);}";
+                    JSInterface.class.getSimpleName() + ".imageOnClick(url);}";
         }
 
         @JavascriptInterface
-        public void referenceOnClick(int count){
+        public void referenceOnClick(int count) {
             handler.obtainMessage();
             Message msg = handler.obtainMessage();
             msg.what = 0;
@@ -253,7 +312,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         }
 
         @JavascriptInterface
-        public void authorOnClick(int uid){
+        public void authorOnClick(int uid) {
             handler.obtainMessage();
             Message msg = handler.obtainMessage();
             msg.what = 1;

@@ -119,7 +119,7 @@ public class BUThread extends BUContent implements Parcelable {
         return formattedDate;
     }
 
-    public String getViews() {
+    public String getViewsDisplay() {
         int n = views;
         if (n > 9999){
             return Integer.toString(n / 10000) + "." + Integer.toString(n % 10000 / 1000) + "万";
@@ -127,7 +127,7 @@ public class BUThread extends BUContent implements Parcelable {
             return Integer.toString(views);
     }
 
-    public String getReplies() {
+    public String getRepliesDisplay() {
         int n = replies;
         if (n > 9999){
             return Integer.toString(n / 1000) + "." + Integer.toString(n % 1000 / 100) + "万";
@@ -135,4 +135,7 @@ public class BUThread extends BUContent implements Parcelable {
             return Integer.toString(replies);
     }
 
+    public int getReplies() {
+        return replies;
+    }
 }

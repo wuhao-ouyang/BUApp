@@ -16,13 +16,15 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 
 import org.json.JSONObject;
 
 import martin.app.bitunion.model.BUUser;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.HtmlImageGetter;
-import martin.app.bitunion.util.VolleyImageLoaderFactory;
 
 public class MyinfoActivity extends ActionBarActivity implements DialogInterface.OnClickListener {
 
@@ -86,7 +88,16 @@ public class MyinfoActivity extends ActionBarActivity implements DialogInterface
                 .fitCenter()
                 .placeholder(R.drawable.noavatar)
                 .crossFade()
-                .into(mAvatar);
+                .into(new SimpleTarget<GlideDrawable>() {
+                    @Override
+                    public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                        mAvatar.setImageDrawable(resource);
+                        if (resource.isAnimated()) {
+                            resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
+                            resource.start();
+                        }
+                    }
+                });
 //        mAvatar.setImageUrl(, VolleyImageLoaderFactory.getImageLoader(getApplicationContext()));
         mUsername.setText(info.getUsername());
         mGroup.setText("用户组：" + info.getStatus());

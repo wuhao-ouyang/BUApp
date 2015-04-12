@@ -4,29 +4,38 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
-import martin.app.bitunion.BUApplication;
+import martin.app.bitunion.BUApp;
 import martin.app.bitunion.R;
 import martin.app.bitunion.model.BUUser;
 
@@ -74,8 +83,23 @@ public class BUApi {
         return mSession != null && !mSession.isEmpty();
     }
 
-    static String getSessionCookie() {
+    public static String getSessionCookie() {
         return "sid="+mSession;
+    }
+
+    public static void tryInsetCookie() {
+        final CookieManager cookieMngr = CookieManager.getInstance();
+        cookieMngr.setCookie(BUApi.getRootUrl(), BUApi.getSessionCookie());
+        new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                    cookieMngr.flush();
+                else {
+                    CookieSyncManager.getInstance().sync();
+                }
+            }
+        }.run();
     }
 
     /**
@@ -96,31 +120,21 @@ public class BUApi {
             public void onResponse(JSONObject response) {
                 switch (BUApi.getResult(response)) {
                     case FAILURE:
-                        Toast.makeText(BUApplication.getInstance(), R.string.login_fail, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(BUApp.getInstance(), R.string.login_fail, Toast.LENGTH_SHORT).show();
                         break;
                     case SUCCESS:
                         // Update session cookie
                         mSession = response.optString("session");
-                        final CookieManager cookieMngr = CookieManager.getInstance();
-                        cookieMngr.setCookie(BUApi.getRootUrl(), getSessionCookie());
-                        new Runnable(){
-                            @Override
-                            public void run() {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                                    cookieMngr.flush();
-                                else
-                                    CookieSyncManager.getInstance().sync();
-                            }
-                        }.run();
+                        tryInsetCookie();
                         VolleyImageLoaderFactory.flush();
-                        Log.v(TAG, "sid="+mSession);
+                        Log.v(TAG, "sid=" + mSession);
 
                         mUsername = username;
                         mPassword = password;
                         updateUser();
                         break;
                     case UNKNOWN:
-                        Toast.makeText(BUApplication.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(BUApp.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
                         break;
                 }
                 responseListener.onResponse(response);
@@ -149,7 +163,7 @@ public class BUApi {
                     mUsername = null;
                     mPassword = null;
                     mSession = null;
-                    saveUser(BUApplication.getInstance());
+                    saveUser(BUApp.getInstance());
                 }
                 responseListener.onResponse(response);
             }
@@ -173,7 +187,7 @@ public class BUApi {
         params.put("message", message);
         params.put("attachment", "0");
         appendUserCookie(params);
-        httpPost(path, params, 1, responseListener, errorListener);
+        httpPost(path, params, null, responseListener, errorListener);
     }
 
     /**
@@ -195,7 +209,7 @@ public class BUApi {
         params.put("message", message);
         params.put("attachment", "0");
         appendUserCookie(params);
-        httpPost(path, params, 1, responseListener, errorListener);
+        httpPost(path, params, null, responseListener, errorListener);
     }
 
     /**
@@ -268,12 +282,26 @@ public class BUApi {
         httpPost(path, params, 1, responseListener, errorListener);
     }
 
+    public static void checkTotalPosts(int tid,
+                                       Response.Listener<JSONObject> responseListener,
+                                       Response.ErrorListener errorListener) {
+        if (tid <= 0)
+            return;
+        String path = baseurl + "/bu_fid_tid.php";
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("tid", Integer.toString(tid));
+        appendUserCookie(params);
+        httpPost(path, params, responseListener, errorListener);
+    }
+
     public static void init(Context context) {
         SharedPreferences config = context.getSharedPreferences("config", Context.MODE_PRIVATE);
         mUsername = config.getString("username", null);
         mPassword = config.getString("password", null);
-        setNetType(BUApplication.settings.netType);
+        setNetType(BUApp.settings.netType);
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
+            CookieSyncManager.createInstance(context);
         mApiQueue = Volley.newRequestQueue(context);
         // Need to read database
         sLoggedinUser = null;
@@ -302,10 +330,10 @@ public class BUApi {
     }
 
     public static void clearUser() {
-        SharedPreferences config = BUApplication.getInstance()
+        SharedPreferences config = BUApp.getInstance()
                 .getSharedPreferences("config", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = config.edit();
-        BUApplication.settings.netType = Constants.OUTNET;
+        BUApp.settings.netType = Constants.OUTNET;
         editor.putInt("nettype", Constants.OUTNET);
         editor.putString("username", null);
         editor.putString("password", null);
@@ -363,13 +391,60 @@ public class BUApi {
             }, errorListener);
     }
 
+    /**
+     * Basic multipart request method to send multipart request
+     * @param path Api endpoint
+     * @param params String parameters, including message and session info
+     * @param attachment File attachment, can be null if there's nothing to send
+     */
+    private static void httpPost(final String path, final Map<String, String> params, @Nullable final File attachment,
+                                 final Response.Listener<JSONObject> responseListener,
+                                 final Response.ErrorListener errorListener) {
+        JSONObject postReq = new JSONObject();
+        try {
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                if (entry.getValue() == null)
+                    continue;
+                postReq.put(entry.getKey(), URLEncoder.encode(entry.getValue(), HTTP.UTF_8));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        // TODO attachment
+        HttpEntity entity = MultipartEntityBuilder.create().addTextBody("json", postReq.toString()).build();
+        Log.d(TAG, "BUILD " + path + " >> " + postReq.toString());
+        mApiQueue.add(new MultiPartRequest(path, entity, responseListener, errorListener) {
+            @Override
+            protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+                Log.d(TAG, path + " >> " + new String(response.data));
+                return super.parseNetworkResponse(response);
+            }
+
+            @Override
+            protected VolleyError parseNetworkError(VolleyError volleyError) {
+                Log.d(TAG, path + " >> " + new String(volleyError.networkResponse.data), volleyError);
+                return super.parseNetworkError(volleyError);
+            }
+        });
+    }
+
+    /**
+     * Basic http post method to request data
+     * @param path Api endpoint to get data
+     * @param params Map of parameters, will be encoded into URLEncode
+     */
     private static void httpPost(final String path, final Map<String, String> params,
                                  final Response.Listener<JSONObject> responseListener,
                                  final Response.ErrorListener errorListener) {
         JSONObject postReq = new JSONObject();
         try {
-            for (Map.Entry<String, String> entry : params.entrySet())
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                if (entry.getValue() == null)
+                    continue;
                 postReq.put(entry.getKey(), URLEncoder.encode(entry.getValue(), HTTP.UTF_8));
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
@@ -410,5 +485,48 @@ public class BUApi {
         path = path.replaceAll("^images/", rooturl + "/images/");
         path = path.replaceAll("^attachments/", rooturl + "/attachments/");
         return path;
+    }
+
+    static class MultiPartRequest extends Request<JSONObject> {
+        private final HttpEntity mEntity;
+        private final Response.Listener<JSONObject> mListener;
+
+        MultiPartRequest(String url, HttpEntity entity, Response.Listener<JSONObject> responseListener, Response.ErrorListener errorListener) {
+            super(Method.POST, url, errorListener);
+            mListener = responseListener;
+            mEntity = entity;
+        }
+
+        @Override
+        protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+            JSONObject jsonResponse = null;
+            try {
+                jsonResponse = new JSONObject(new String(response.data));
+            } catch (JSONException e) {
+                parseNetworkError(new VolleyError(e));
+            }
+            return Response.success(jsonResponse, getCacheEntry());
+        }
+
+        @Override
+        public String getBodyContentType() {
+            return mEntity.getContentType().getValue();
+        }
+
+        @Override
+        public byte[] getBody() throws AuthFailureError {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            try {
+                mEntity.writeTo(bos);
+            } catch (IOException e) {
+                VolleyLog.e("IOException writing to ByteArrayOutputStream");
+            }
+            return bos.toByteArray();
+        }
+
+        @Override
+        protected void deliverResponse(JSONObject response) {
+            mListener.onResponse(response);
+        }
     }
 }
