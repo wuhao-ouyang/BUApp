@@ -28,8 +28,8 @@
 }
 
 # Glide
--keepnames class * com.bumptech.glide.integration.volley.VolleyGlideModule
--keepnames class * martin.app.bitunion.util.SyncedVolleyGlideModule
+-keepnames class * extends com.bumptech.glide.integration.volley.VolleyGlideModule
+# -keepnames class * martin.app.bitunion.util.SyncedVolleyGlideModule
 
 # Apache Http
 -dontwarn org.apache.http.**
