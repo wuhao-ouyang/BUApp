@@ -191,6 +191,26 @@ public class BUApi {
     }
 
     /**
+     * Send post with attachment
+     * @param tid thread id
+     * @param message message to be sent
+     */
+    public static void postNewPost(int tid, String message, File attachment,
+                                   Response.Listener<JSONObject> responseListener,
+                                   Response.ErrorListener errorListener) {
+        if (tid <= 0 || message == null || message.isEmpty())
+            return;
+        String path = baseurl + "/bu_newpost.php";
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("action", "newreply");
+        params.put("tid", Integer.toString(tid));
+        params.put("message", message);
+        params.put("attachment", "1");
+        appendUserCookie(params);
+        httpPost(path, params, attachment, responseListener, errorListener);
+    }
+
+    /**
      * Post a new thread on specified forum
      * @param fid Forum id
      * @param title New thread subject
@@ -210,6 +230,28 @@ public class BUApi {
         params.put("attachment", "0");
         appendUserCookie(params);
         httpPost(path, params, null, responseListener, errorListener);
+    }
+
+    /**
+     * Post a new thread on specified forum with attachment
+     * @param fid Forum id
+     * @param title New thread subject
+     * @param message New thread message
+     */
+    public static void postNewThread(int fid, String title, String message, File attachment,
+                                     Response.Listener<JSONObject> responseListener,
+                                     Response.ErrorListener errorListener) {
+        if (fid < 0 || title == null || title.isEmpty() || message == null || message.isEmpty())
+            return;
+        String path = baseurl + "/bu_newpost.php";
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("action", "newthread");
+        params.put("fid", Integer.toString(fid));
+        params.put("subject", title);
+        params.put("message", message);
+        params.put("attachment", "1");
+        appendUserCookie(params);
+        httpPost(path, params, attachment, responseListener, errorListener);
     }
 
     /**
@@ -244,6 +286,17 @@ public class BUApi {
         params.put("queryusername", userName);
         appendUserCookie(params);
         httpPost(path, params, 1, responseListener, errorListener);
+    }
+
+    /**
+     * Get
+     */
+    public static void readHomeThreads(Response.Listener<JSONObject> responseListener,
+                                       Response.ErrorListener errorListener) {
+        String path = baseurl + "/bu_home.php";
+        Map<String, String> params = new HashMap<String, String>();
+        appendUserCookie(params);
+        httpPost(path, params, responseListener, errorListener);
     }
 
     /**
@@ -412,8 +465,12 @@ public class BUApi {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        // TODO attachment
-        HttpEntity entity = MultipartEntityBuilder.create().addTextBody("json", postReq.toString()).build();
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.addTextBody("json", postReq.toString());
+        if (attachment != null) {
+            builder.addBinaryBody("attach", attachment);
+        }
+        HttpEntity entity = builder.build();
         Log.d(TAG, "BUILD " + path + " >> " + postReq.toString());
         mApiQueue.add(new MultiPartRequest(path, entity, responseListener, errorListener) {
             @Override
