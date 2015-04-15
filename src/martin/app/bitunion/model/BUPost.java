@@ -122,7 +122,7 @@ public class BUPost extends BUContent implements Parcelable {
         uid = in.readInt();
         username = in.readString();
         avatar = in.readString();
-        if (in.readByte() != 0x01) {
+        if (in.readByte() != 0x00) {
             quotes = Arrays.asList((BUQuote[]) in.readParcelableArray(BUQuote.class.getClassLoader()));
         }
     }
