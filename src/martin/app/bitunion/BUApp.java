@@ -2,6 +2,8 @@ package martin.app.bitunion;
 
 import android.app.Application;
 
+import com.crittercism.app.Crittercism;
+
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.Settings;
 
@@ -16,6 +18,7 @@ public class BUApp extends Application {
         instance = this;
         super.onCreate();
 
+        Crittercism.initialize(this, "552b5d2b7365f84f7d3d6d8e");
         settings.readPreference(this);
         BUApi.init(this);
     }
