@@ -33,7 +33,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 
 import martin.app.bitunion.BUApp;
 import martin.app.bitunion.R;
@@ -60,6 +62,9 @@ public class BUApi {
     private static String baseurl;
 
     private static RequestQueue mApiQueue;
+    private static Queue<Map<String, String>> mRetryQueue = new LinkedList<Map<String, String>>();
+
+    private static boolean isRetrying;
 
     public enum Result {
         SUCCESS, // 返回数据成功，result字段为success
@@ -289,7 +294,7 @@ public class BUApi {
     }
 
     /**
-     * Get
+     * Get recent posts of all forums
      */
     public static void readHomeThreads(Response.Listener<JSONObject> responseListener,
                                        Response.ErrorListener errorListener) {
@@ -428,15 +433,29 @@ public class BUApi {
                             responseListener.onResponse(response);
                             break;
                         case FAILURE:
+                            if (isRetrying) {
+                                mRetryQueue.add(params);
+                                break;
+                            }
+                            isRetrying = true;
                             tryLogin(new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject response) {
+                                    isRetrying = false;
                                     if (getResult(response) == Result.SUCCESS) {
-                                        appendUserCookie(params);
-                                        httpPost(path, params, retryLimit - 1, responseListener, errorListener);
+                                        while (mRetryQueue.peek() != null) {
+                                            Map<String, String> params = mRetryQueue.poll();
+                                            appendUserCookie(params);
+                                            httpPost(path, params, responseListener, errorListener);
+                                        }
                                     }
                                 }
-                            }, errorListener);
+                            }, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    isRetrying = false;
+                                }
+                            });
                             break;
                         default:
                     }
