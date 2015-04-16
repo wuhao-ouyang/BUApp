@@ -18,9 +18,10 @@ public class BUApp extends Application {
         instance = this;
         super.onCreate();
 
-        Crittercism.initialize(this, "552b5d2b7365f84f7d3d6d8e");
         settings.readPreference(this);
         BUApi.init(this);
+        Crittercism.initialize(this, "552b5d2b7365f84f7d3d6d8e");
+        Crittercism.setOptOutStatus(settings.sendStat);
     }
 
     public static BUApp getInstance() {

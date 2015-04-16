@@ -144,6 +144,25 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true" />
         </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:text="发送错误报告"
+                android:textSize="16sp" />
+
+            <CheckBox
+                android:id="@+id/setting_sendStat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true" />
+        </RelativeLayout>
     </LinearLayout>
 
     <TextView
