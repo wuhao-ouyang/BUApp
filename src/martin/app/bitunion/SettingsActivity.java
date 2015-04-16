@@ -115,8 +115,6 @@ public class SettingsActivity extends ActionBarActivity implements CompoundButto
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (!fromUser)
-            return;
         switch (seekBar.getId()) {
             case R.id.seekbar_contenttextsize:
                 BUApp.settings.contenttextsize = progress + 10;
