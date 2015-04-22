@@ -304,10 +304,10 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onBackPressed() {
         long currentTime = System.currentTimeMillis();
-        if((currentTime-touchTime)>= Utils.EXIT_WAIT_TIME) {
+        if((currentTime-touchTime) >= Utils.EXIT_WAIT_TIME) {
             ToastUtil.showToast("再按一次退出程序");
             touchTime = currentTime;
-        }else {
+        } else {
             super.onBackPressed();
         }
     }

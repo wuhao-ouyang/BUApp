@@ -18,8 +18,6 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.crittercism.app.Crittercism;
-
 import java.io.IOException;
 
 import martin.app.bitunion.util.Constants;
@@ -92,7 +90,6 @@ public class SettingsActivity extends ActionBarActivity implements CompoundButto
     }
 
     protected void onDestroy() {
-        Crittercism.setOptOutStatus(BUApp.settings.sendStat);
         BUApp.settings.writePreference(this);
         Log.i("SettingActivity", "Config Saved");
         super.onDestroy();

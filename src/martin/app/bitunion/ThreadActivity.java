@@ -243,8 +243,8 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
     }
 
     @Override
-    public void onSubjectUpdated(@Nullable String subject) {
-        getSupportActionBar().setTitle(subject);
+    public void onSubjectUpdated(@Nullable BUPost subject) {
+        getSupportActionBar().setTitle(subject.getSubject());
     }
 
     @Override

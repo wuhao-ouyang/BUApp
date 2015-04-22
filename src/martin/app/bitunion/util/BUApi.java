@@ -42,7 +42,7 @@ import martin.app.bitunion.R;
 import martin.app.bitunion.model.BUUser;
 
 /**
- * Api methods communicating with server, using {@link Volley} as network
+ * Api methods communicating with server, using {@link Volley} as communication frame
  * @see <a href="http://out.bitunion.org/viewthread.php?tid=10471436">Bitunion Api Documentation</a>
  */
 public class BUApi {
@@ -94,7 +94,7 @@ public class BUApi {
 
     public static void tryInsetCookie() {
         final CookieManager cookieMngr = CookieManager.getInstance();
-        cookieMngr.setCookie(BUApi.getRootUrl(), BUApi.getSessionCookie());
+        cookieMngr.setCookie(domain, BUApi.getSessionCookie());
         new Runnable() {
             @Override
             public void run() {
@@ -112,7 +112,7 @@ public class BUApi {
      */
     public static void tryLogin(final String username, final String password,
                                 @NonNull final Response.Listener<JSONObject> responseListener,
-                                @NonNull Response.ErrorListener errorListener) {
+                                @NonNull final Response.ErrorListener errorListener) {
         if (username == null || password == null)
             return;
         String path = baseurl + "/bu_logging.php";
@@ -120,9 +120,11 @@ public class BUApi {
         params.put("action", "login");
         params.put("username", username);
         params.put("password", password);
+        isRetrying = true;
         httpPost(path, params, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                isRetrying = false;
                 switch (BUApi.getResult(response)) {
                     case FAILURE:
                         Toast.makeText(BUApp.getInstance(), R.string.login_fail, Toast.LENGTH_SHORT).show();
@@ -144,7 +146,13 @@ public class BUApi {
                 }
                 responseListener.onResponse(response);
             }
-        }, errorListener);
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                isRetrying = false;
+                errorListener.onErrorResponse(error);
+            }
+        });
     }
 
     public static void tryLogin(@NonNull Response.Listener<JSONObject> responseListener,
@@ -432,16 +440,15 @@ public class BUApi {
                         case SUCCESS:
                             responseListener.onResponse(response);
                             break;
+                        default:
                         case FAILURE:
                             if (isRetrying) {
                                 mRetryQueue.add(params);
                                 break;
                             }
-                            isRetrying = true;
                             tryLogin(new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject response) {
-                                    isRetrying = false;
                                     if (getResult(response) == Result.SUCCESS) {
                                         while (mRetryQueue.peek() != null) {
                                             Map<String, String> params = mRetryQueue.poll();
@@ -450,14 +457,8 @@ public class BUApi {
                                         }
                                     }
                                 }
-                            }, new Response.ErrorListener() {
-                                @Override
-                                public void onErrorResponse(VolleyError error) {
-                                    isRetrying = false;
-                                }
-                            });
+                            }, errorListener);
                             break;
-                        default:
                     }
                 }
             }, errorListener);

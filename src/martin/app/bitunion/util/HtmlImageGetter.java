@@ -15,10 +15,12 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.Target;
 
 import java.io.InputStream;
 
 import martin.app.bitunion.R;
+import martin.app.bitunion.widget.UrlDrawable;
 
 public class HtmlImageGetter implements Html.ImageGetter {
 
@@ -34,10 +36,42 @@ public class HtmlImageGetter implements Html.ImageGetter {
     public Drawable getDrawable(String imgUrl) {
         imgUrl = BUApi.getImageAbsoluteUrl(imgUrl);
         UrlImageDownloader urlDrawable = new UrlImageDownloader(mContext.getResources(), imgUrl);
+//        UrlDrawable urlDrawable = new UrlDrawable();
         urlDrawable.drawable = mContext.getResources().getDrawable(R.drawable.ic_image_white_48dp);
+//        Glide.with(mContext).load(imgUrl).into(new GlideImageListener(mContainer, urlDrawable));
         VolleyImageLoaderFactory.getImageLoader(mContext).get(imgUrl, new VolleyImageListener(mContainer, urlDrawable));
         return urlDrawable;
     }
+
+//    private static class GlideImageListener extends SimpleTarget<GlideDrawable> {
+//        private UrlDrawable urlDrawable;
+//        private TextView container;
+//
+//        private GlideImageListener(TextView textView, UrlDrawable drawable) {
+//            urlDrawable = drawable;
+//            container = textView;
+//        }
+//
+//        @Override
+//        public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+//            int width = resource.getIntrinsicWidth();
+//            int height = resource.getIntrinsicHeight();
+//
+//            int newWidth = width;
+//            int newHeight = height;
+//
+//            if (width > container.getWidth()) {
+//                newWidth = container.getWidth();
+//                newHeight = (newWidth * height) / width;
+//            }
+//
+//            resource.setBounds(0, 0, newWidth, newHeight);
+//            urlDrawable.setBounds(0, 0, newWidth, newHeight);
+//            urlDrawable.drawable = resource;
+//
+//            container.invalidate();
+//        }
+//    }
 
     private static class VolleyImageListener implements ImageLoader.ImageListener {
         private UrlImageDownloader urlImageDownloader;
@@ -83,16 +117,6 @@ public class HtmlImageGetter implements Html.ImageGetter {
         public Drawable drawable;
 
         /**
-         * Create a drawable by decoding a bitmap from the given input stream.
-         *
-         * @param res
-         * @param is
-         */
-        public UrlImageDownloader(Resources res, InputStream is) {
-            super(res, is);
-        }
-
-        /**
          * Create a drawable by opening a given file path and decoding the bitmap.
          *
          * @param res
@@ -101,17 +125,6 @@ public class HtmlImageGetter implements Html.ImageGetter {
         public UrlImageDownloader(Resources res, String filepath) {
             super(res, filepath);
             drawable = new BitmapDrawable(res, filepath);
-        }
-
-        /**
-         * Create drawable from a bitmap, setting initial target density based on
-         * the display metrics of the resources.
-         *
-         * @param res
-         * @param bitmap
-         */
-        public UrlImageDownloader(Resources res, Bitmap bitmap) {
-            super(res, bitmap);
         }
 
         @Override

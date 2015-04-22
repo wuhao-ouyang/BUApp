@@ -1,27 +1,11 @@
 package martin.app.bitunion.fragment;
 
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import martin.app.bitunion.BUApp;
-import martin.app.bitunion.ImageViewerActivity;
-import martin.app.bitunion.R;
-import martin.app.bitunion.ThreadActivity;
-import martin.app.bitunion.util.BUApi;
-import martin.app.bitunion.util.CommonIntents;
-import martin.app.bitunion.util.Settings;
-import martin.app.bitunion.model.BUPost;
-import martin.app.bitunion.util.DataParser;
-import martin.app.bitunion.util.Utils;
-import martin.app.bitunion.widget.ObservableWebView;
-
-import org.json.JSONObject;
-
+import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -34,6 +18,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -43,6 +29,26 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import martin.app.bitunion.BUApp;
+import martin.app.bitunion.ImageViewerActivity;
+import martin.app.bitunion.R;
+import martin.app.bitunion.ThreadActivity;
+import martin.app.bitunion.model.BUPost;
+import martin.app.bitunion.util.BUApi;
+import martin.app.bitunion.util.CommonIntents;
+import martin.app.bitunion.util.DataParser;
+import martin.app.bitunion.util.Settings;
+import martin.app.bitunion.util.Utils;
+import martin.app.bitunion.widget.ObservableWebView;
 
 /**
  * A dummy fragment representing a section of the app, but that simply displays
@@ -70,7 +76,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
     public interface ThreadContentListener {
         void onQuoteClick(@NonNull BUPost post);
         void onUserClick(int uid);
-        void onSubjectUpdated(@Nullable String subject);
+        void onSubjectUpdated(@Nullable BUPost subject);
         void onEndReached();
     }
 
@@ -108,7 +114,6 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         super.onViewCreated(view, savedInstanceState);
         mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.lyt_refresh_frame);
         mRefreshLayout.setOnRefreshListener(this);
-        mRefreshLayout.setEnabled(false);
         mPageWebView = (ObservableWebView) view.findViewById(R.id.webView_posts);
         mPageWebView.setOnScrollChangedCallback(this);
         mSpinner = (ProgressBar) view.findViewById(R.id.progressBar);
@@ -121,11 +126,14 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         }
 
         String content = createHtmlCode();
+//        mPageWebView.setWebChromeClient(new ThreadWebChromeClient());
         mPageWebView.setWebViewClient(new ThreadWebViewClient());
         mPageWebView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         mPageWebView.getSettings().setJavaScriptEnabled(true);
         mPageWebView.addJavascriptInterface(new JSInterface(new JSHandler(getActivity())), JSInterface.class.getSimpleName());
-        mPageWebView.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
+//        mReqCount++;
+//        mPageWebView.loadUrl(BUApi.getRootUrl() + "/viewthread.php?tid=" + mTid);
+//        mPageWebView.loadDataWithBaseURL(BUApi.getRootUrl(), content, "text/html", "utf-8", null);
         Log.i(TAG, "WebView created!>>" + mPageNum + ", Posts >>" + postlist.size());
 
         onRefresh();
@@ -181,11 +189,11 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         mPageWebView.setVisibility(View.VISIBLE);
 
         String htmlcode = createHtmlCode();
-        mPageWebView.loadDataWithBaseURL("file:///android_asset/", htmlcode, "text/html", "utf-8", null);
+        mPageWebView.loadDataWithBaseURL(BUApi.getRootUrl(), htmlcode, "text/html", "utf-8", null);
         Log.v(TAG, "fragment " + this.mPageNum + " updated");
 
         if (mThreadContentListener != null && mPageNum == 0 && postlist.size() > 0) {
-            mThreadContentListener.onSubjectUpdated(postlist.get(0).getSubject());
+            mThreadContentListener.onSubjectUpdated(postlist.get(0));
         }
     }
 
@@ -219,28 +227,52 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         mThreadContentListener = l;
     }
 
+    private class ThreadWebChromeClient extends WebChromeClient {
+        @Override
+        public void onProgressChanged(WebView view, int newProgress) {
+            if (isUpdating())
+                return;
+            if (newProgress == 100) {
+                mRefreshLayout.setRefreshing(false);
+                mSpinner.setVisibility(View.GONE);
+                mPageWebView.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
     /**
      * Custom {@link WebViewClient} to handle url clicks
      * Will intercept bitunion thread url and redirect to {@link ThreadActivity}
      * For image links will try go to {@link ImageViewerActivity}
      */
     private static class ThreadWebViewClient extends WebViewClient {
+
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            boolean isHandled = false;
             Context context = view.getContext();
             Uri uri = Uri.parse(url);
+
+            String tid = "";
+            String path = "";
             if (Utils.isBitUnionUrl(url)) {
-                String tid = "";
-                String path = uri.getPath();
+                path = uri.getPath();
+                Log.d("WebViewClient", "bit path >> " + path);
                 if (path.equalsIgnoreCase("/viewthread.php")) {
-                    if (uri.getQueryParameterNames().contains("tid"))
+                    if (uri.getQueryParameterNames().contains("tid")) {
                         tid = uri.getQueryParameter("tid");
+                        isHandled = true;
+                    }
                 } else {
                     Pattern p = Pattern.compile("^/thread-([0-9]+)-.*\\.html$");
                     Matcher m = p.matcher(path);
-                    if (m.find())
+                    if (m.find()) {
                         tid = m.group(1);
+                        isHandled = true;
+                    }
                 }
+            }
+            if (isHandled) {
                 try {
                     Intent i = new Intent(context, ThreadActivity.class);
                     i.putExtra(CommonIntents.EXTRA_TID, Integer.parseInt(tid));
@@ -249,8 +281,8 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                Log.d("WebViewClient", "bit path >> " + path);
             } else {
+                Log.d("WebViewClient", "url >> " + url);
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.addCategory(Intent.CATEGORY_BROWSABLE);
                 i.setData(uri);

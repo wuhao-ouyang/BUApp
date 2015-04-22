@@ -238,7 +238,8 @@ public class BUPost extends BUContent implements Parcelable {
         Pattern p = Pattern.compile("\\.\\./images/(smilies|bz)/(.+?)\\.gif$");
         Matcher m = p.matcher(imgUrl);
         if (m.find()) {
-            imgUrl = m.group(1) + "_" + m.group(2)+".gif";
+            // Use local assets for emotions
+            imgUrl = "file:///android_asset/" + m.group(1) + "_" + m.group(2)+".gif";
             Log.d("BUPost", "local emotion >> " + imgUrl);
         }
         return imgUrl;
