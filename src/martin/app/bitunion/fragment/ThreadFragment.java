@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -125,8 +126,6 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             mSpinner.setVisibility(View.GONE);
         }
 
-        String content = createHtmlCode();
-//        mPageWebView.setWebChromeClient(new ThreadWebChromeClient());
         mPageWebView.setWebViewClient(new ThreadWebViewClient());
         mPageWebView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         mPageWebView.getSettings().setJavaScriptEnabled(true);
@@ -206,10 +205,16 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
     }
 
     private String createHtmlCode() {
+        // Get background color from resources and
+        Resources res = getResources();
+        String colorBgDark = Integer.toHexString(res.getColor(R.color.blue_light) & 0x00ffffff);
+        String colorBgLight = Integer.toHexString(res.getColor(R.color.blue_text_bg_light) & 0x00ffffff);
         StringBuilder content = new StringBuilder("<!DOCTYPE ><html><head><title></title>" +
                 "<style type=\"text/css\">" +
-                "img{max-width: 100%; width:auto; height: auto;}" +
-                "body{background-color: #D8E2EF; color: #284264;font-size:" + BUApp.settings.contenttextsize + "px;}" +
+                "img{max-width:100%; width:auto; height:auto;}" +
+                "body{margin:0px; padding:0px; background-color:#" + colorBgLight + "; color:#284264; font-size:" + BUApp.settings.contenttextsize + "px;}" +
+                "div.tdiv{background-color:#" + colorBgDark + "; padding:2px 5px; font-size:" + BUApp.settings.contenttextsize + "px;}" +
+                "div.mdiv{padding:8px; word-break:break-all;}" +
                 "</style><script type='text/javascript'>" +
                 JSInterface.javaScript() +
                 "</script></head><body>");
@@ -225,19 +230,6 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
 
     public void setThreadContentListener(ThreadContentListener l) {
         mThreadContentListener = l;
-    }
-
-    private class ThreadWebChromeClient extends WebChromeClient {
-        @Override
-        public void onProgressChanged(WebView view, int newProgress) {
-            if (isUpdating())
-                return;
-            if (newProgress == 100) {
-                mRefreshLayout.setRefreshing(false);
-                mSpinner.setVisibility(View.GONE);
-                mPageWebView.setVisibility(View.VISIBLE);
-            }
-        }
     }
 
     /**

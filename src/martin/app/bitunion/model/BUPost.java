@@ -343,12 +343,11 @@ public class BUPost extends BUContent implements Parcelable {
     public String getHtmlLayout(int count) {
         String htmlcontent;
         htmlcontent = "<p><div class='tdiv'>" +
-                "<table width='100%' style='background-color:#92ACD3;padding:2px 5px;font-size:" + BUApp.settings.titletextsize + "px;'>" +
-                "<tr><td>#" + count + "&nbsp;<span onclick=authorOnClick(" + authorid + ")>" + getAuthor() +
+                "<table width='100%'><tr><td>#" + count + "&nbsp;<span onclick=authorOnClick(" + authorid + ")>" + getAuthor() +
                 "</span>&nbsp;&nbsp;&nbsp;<span onclick=referenceOnClick(" + count + ")><u>引用</u></span></td>" +
                 "<td style='text-align:right;'>" + getDateline() + "</td></tr></table>" +
                 "</div>" +
-                "<div class='mdiv' width='100%' style='padding:5px;word-break:break-all;'>" +
+                "<div class='mdiv' width='100%'>" +
                 getMessage() + "</div></p>";
         return htmlcontent;
     }

@@ -69,12 +69,14 @@
 
         <ImageButton
             android:id="@+id/reply_submit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:padding="4dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginLeft="5dp"
             android:background="@android:color/black"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_reply_white_48dp"/>
     </RelativeLayout>
 

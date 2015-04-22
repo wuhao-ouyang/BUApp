@@ -229,6 +229,8 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
 
     @Override
     public void onQuoteClick(BUPost post) {
+        if (replyContainer.getVisibility() == View.GONE)
+            replyContainer.setVisibility(View.VISIBLE);
         replyMessage.setText(replyMessage.getText().toString() + post.toQuote());
         replyMessage.setSelection(replyMessage.getText().toString().length());
     }

@@ -21,7 +21,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONException;
@@ -62,7 +61,7 @@ public class BUApi {
     private static String baseurl;
 
     private static RequestQueue mApiQueue;
-    private static Queue<Map<String, String>> mRetryQueue = new LinkedList<Map<String, String>>();
+    private static Queue<ApiRequest> mRetryQueue = new LinkedList<ApiRequest>();
 
     private static boolean isRetrying;
 
@@ -71,6 +70,13 @@ public class BUApi {
         FAILURE, // 返回数据失败，result字段为failure
         NETWRONG, // 没有返回数据
         UNKNOWN;
+    }
+
+    private static class ApiRequest {
+        String endpoint;
+        Map<String, String> params;
+        Response.Listener<JSONObject> responseListener;
+        Response.ErrorListener errorListener;
     }
 
     public static Response.ErrorListener sErrorListener = new Response.ErrorListener() {
@@ -442,18 +448,22 @@ public class BUApi {
                             break;
                         default:
                         case FAILURE:
-                            if (isRetrying) {
-                                mRetryQueue.add(params);
+                            ApiRequest request = new ApiRequest();
+                            request.endpoint = path;
+                            request.params = params;
+                            request.responseListener = responseListener;
+                            request.errorListener = errorListener;
+                            mRetryQueue.add(request);
+                            if (isRetrying)
                                 break;
-                            }
                             tryLogin(new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject response) {
                                     if (getResult(response) == Result.SUCCESS) {
                                         while (mRetryQueue.peek() != null) {
-                                            Map<String, String> params = mRetryQueue.poll();
-                                            appendUserCookie(params);
-                                            httpPost(path, params, responseListener, errorListener);
+                                            ApiRequest request = mRetryQueue.poll();
+                                            appendUserCookie(request.params);
+                                            httpPost(request.endpoint, request.params, request.responseListener, request.errorListener);
                                         }
                                     }
                                 }
