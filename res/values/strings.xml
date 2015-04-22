@@ -54,4 +54,6 @@
     <string name="message_cant_be_empty">回复不能为空</string>
     <string name="swipe_right_go_back">再次右滑返回</string>
 
+    <string name="title_activity_recent_list">最新帖子</string>
+
 </resources>

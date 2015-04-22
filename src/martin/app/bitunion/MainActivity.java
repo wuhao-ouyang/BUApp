@@ -247,7 +247,6 @@ public class MainActivity extends ActionBarActivity {
                 childViewHolder.childTitle.setTextSize(20);
             childViewHolder.childTitle.setText(fArrayList.get(groupPos).get(childPos).getName());
             final BUForum forum = fArrayList.get(groupPos).get(childPos);
-            // 注册OnClick事件，触摸点击转至DisplayActivity
             childViewHolder.childTitle.setOnClickListener(new OnClickListener() {
 
                 @Override
@@ -255,19 +254,17 @@ public class MainActivity extends ActionBarActivity {
                 public void onClick(View v) {
                     if (BUApi.isUserLoggedin()) {
                         if (forum.getFid() == -1) {
-                            // TODO 最新帖子
-                            ToastUtil.showToast("功能暂时无法使用");
-                            return;
-                        }
-                        if (forum.getFid() == -2) {
+                            Intent intent = new Intent(MainActivity.this, RecentListActivity.class);
+                            startActivity(intent);
+                        } else if (forum.getFid() == -2) {
                             // TODO 收藏夹
                             ToastUtil.showToast("功能暂时无法使用");
-                            return;
+                        } else {
+                            Intent intent = new Intent(MainActivity.this, DisplayActivity.class);
+                            intent.putExtra(CommonIntents.EXTRA_FID, forum.getFid());
+                            intent.putExtra(CommonIntents.EXTRA_FORUM_NAME, forum.getName());
+                            startActivity(intent);
                         }
-                        Intent intent = new Intent(MainActivity.this, DisplayActivity.class);
-                        intent.putExtra(CommonIntents.EXTRA_FID, forum.getFid());
-                        intent.putExtra(CommonIntents.EXTRA_FORUM_NAME, forum.getName());
-                        startActivity(intent);
                     } else
                         ToastUtil.showToast("请先登录");
                 }

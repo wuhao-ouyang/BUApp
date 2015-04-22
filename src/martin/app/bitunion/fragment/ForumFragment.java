@@ -92,7 +92,7 @@ public class ForumFragment extends Fragment implements Updateable, AbsListView.O
             mListView.setVisibility(View.VISIBLE);
         }
 
-        mAdapter = new ThreadsListAdapter(getActivity(), R.layout.singlethreaditem);
+        mAdapter = new ThreadsListAdapter(getActivity(), R.layout.single_thread_item);
         mListView.setAdapter(mAdapter);
         mListView.setOnScrollListener(this);
         onRefresh();
@@ -128,6 +128,8 @@ public class ForumFragment extends Fragment implements Updateable, AbsListView.O
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
+                    if (!isAdded() && isDetached())
+                        return;
                     mReqCount--;
                     notifyUpdated();
                     Toast.makeText(BUApp.getInstance(), R.string.network_unknown, Toast.LENGTH_SHORT).show();
@@ -182,7 +184,7 @@ public class ForumFragment extends Fragment implements Updateable, AbsListView.O
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = convertView;
             if (view == null)
-                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.singlethreaditem, null);
+                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_thread_item, null);
             TextView subjView = (TextView) view
                     .findViewById(R.id.thread_subject);
             TextView addinfoView = (TextView) view

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/blue_text_bg_dark"
+    android:baselineAligned="false"
+    android:paddingLeft="5dp"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp">
+
+
+    <TextView
+        android:id="@+id/thread_subject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/thread_replies"
+        android:text="subject to be shown here\nsub"
+        android:textColor="@color/blue_text"
+        android:textSize="14sp">
+    </TextView>
+
+    <TextView
+        android:id="@+id/additional_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/thread_views"
+        android:paddingRight="5dp"
+        android:text="author"
+        android:textColor="@color/blue_text"
+        android:textSize="12sp">
+    </TextView>
+
+    <TextView
+        android:id="@+id/thread_replies"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:gravity="center_horizontal"
+        android:text="12"
+        android:textColor="@color/blue_text"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/thread_views"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/thread_replies"
+        android:gravity="center_horizontal"
+        android:text="55.5k"
+        android:textColor="@color/blue_text"
+        android:textSize="12sp"/>
+</RelativeLayout>

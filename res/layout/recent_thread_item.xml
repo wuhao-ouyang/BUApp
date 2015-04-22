@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="2dp"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
+    android:paddingTop="2dp">
+
+    <RelativeLayout
+        android:id="@+id/lyt_basic_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/txtVw_thread_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(test) test title"
+            android:textColor="@color/blue_text"/>
+
+        <TextView
+            android:id="@+id/txtVw_forum_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/txtVw_thread_title"
+            android:text="灌水乐园"
+            android:textColor="@color/blue_text"
+            android:textSize="12sp"/>
+
+        <TextView
+            android:id="@+id/txtVw_author_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/txtVw_thread_title"
+            android:text="login"
+            android:textColor="@color/blue_text"
+            android:textSize="12sp"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/lyt_detail_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:rotationX="90"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/txtVw_last_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="(test) just some text to test\ntest\ntest"
+            android:textColor="@color/blue_text"/>
+
+        <TextView
+            android:id="@+id/txtVw_last_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/txtVw_last_message"
+            android:text="2015-04-01"
+            android:textColor="@color/blue_text"/>
+
+        <TextView
+            android:id="@+id/txtVw_last_author"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txtVw_last_message"
+            android:text="最后回复： login"
+            android:textColor="@color/blue_text"/>
+    </RelativeLayout>
+
+</FrameLayout>

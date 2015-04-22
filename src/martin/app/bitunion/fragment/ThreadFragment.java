@@ -61,6 +61,9 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
     public static final String ARG_THREAD_ID = "ThreadFragment.tid";
     public static final String ARG_PAGE_NUMBER = "ThreadFragment.page";
 
+    private static String COLOR_BG_DARK;
+    private static String COLOR_BG_LIGHT;
+
     private int POS_OFFSET;
     private int mTid;
     private int mPageNum;
@@ -103,6 +106,10 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             mPageNum = getArguments().getInt(ARG_PAGE_NUMBER);
             POS_OFFSET = mPageNum * Settings.POSTS_PER_PAGE + 1;
         }
+
+        Resources res = getResources();
+        COLOR_BG_DARK = Integer.toHexString(res.getColor(R.color.blue_light) & 0x00ffffff);
+        COLOR_BG_LIGHT = Integer.toHexString(res.getColor(R.color.blue_text_bg_light) & 0x00ffffff);
     }
 
     @Override
@@ -206,14 +213,12 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
 
     private String createHtmlCode() {
         // Get background color from resources and
-        Resources res = getResources();
-        String colorBgDark = Integer.toHexString(res.getColor(R.color.blue_light) & 0x00ffffff);
-        String colorBgLight = Integer.toHexString(res.getColor(R.color.blue_text_bg_light) & 0x00ffffff);
+
         StringBuilder content = new StringBuilder("<!DOCTYPE ><html><head><title></title>" +
                 "<style type=\"text/css\">" +
                 "img{max-width:100%; width:auto; height:auto;}" +
-                "body{margin:0px; padding:0px; background-color:#" + colorBgLight + "; color:#284264; font-size:" + BUApp.settings.contenttextsize + "px;}" +
-                "div.tdiv{background-color:#" + colorBgDark + "; padding:2px 5px; font-size:" + BUApp.settings.contenttextsize + "px;}" +
+                "body{margin:0px; padding:0px; background-color:#" + COLOR_BG_LIGHT + "; color:#284264; font-size:" + BUApp.settings.contenttextsize + "px;}" +
+                "div.tdiv{background-color:#" + COLOR_BG_DARK + "; padding:2px 5px; font-size:" + BUApp.settings.contenttextsize + "px;}" +
                 "div.mdiv{padding:8px; word-break:break-all;}" +
                 "</style><script type='text/javascript'>" +
                 JSInterface.javaScript() +
