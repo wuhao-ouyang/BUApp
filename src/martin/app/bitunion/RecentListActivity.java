@@ -35,6 +35,8 @@ import martin.app.bitunion.model.RecentThread;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.ToastUtil;
+import martin.app.bitunion.util.Utils;
+import martin.app.bitunion.widget.SwipeDetector;
 
 
 public class RecentListActivity extends ActionBarActivity implements SwipeRefreshLayout.OnRefreshListener {
@@ -63,6 +65,9 @@ public class RecentListActivity extends ActionBarActivity implements SwipeRefres
 
         mSpinner = findViewById(R.id.progressBar);
         mRefreshLyt = (SwipeRefreshLayout) findViewById(R.id.lyt_refresh_frame);
+        mRefreshLyt.setOnRefreshListener(this);
+        int trigger = getResources().getDimensionPixelSize(R.dimen.swipe_trigger_limit);
+        mRefreshLyt.setOnTouchListener(new SwipeDetector(trigger, new MySwipeListener()));
         mRecyclerVw = (RecyclerView) findViewById(R.id.listview);
         mRecyclerVw.setLayoutManager(new LinearLayoutManager(this));
         mAdapter = new RecentListAdapter();
@@ -128,6 +133,25 @@ public class RecentListActivity extends ActionBarActivity implements SwipeRefres
                 break;
         }
         return true;
+    }
+
+    private long lastswipetime = 0;
+    /**
+     * Listener to swipe activity. Double one-direction swiping will kill
+     * current activity thus lead to upper level of this application.
+     */
+    private class MySwipeListener implements SwipeDetector.SwipeListener {
+
+        @Override
+        public void onSwiped(int swipeAction) {
+            if (swipeAction == SwipeDetector.SWIPE_RIGHT) {
+                if ((System.currentTimeMillis() - lastswipetime) >= Utils.EXIT_WAIT_TIME) {
+                    ToastUtil.showToast(R.string.swipe_right_go_back);
+                    lastswipetime = System.currentTimeMillis();
+                } else
+                    finish();
+            }
+        }
     }
 
     private RecyclerView.OnScrollListener mScrollListener = new OnScrollListener() {
