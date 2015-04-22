@@ -152,9 +152,8 @@ public class RecentListActivity extends ActionBarActivity implements SwipeRefres
         }
 
         @Override
-        public void onBindViewHolder(VH holder, int position) {
-            RecentThread item = mThreadList.get(position);
-            holder.item = item;
+        public void onBindViewHolder(final VH holder, final int position) {
+            final RecentThread item = mThreadList.get(position);
             if (position % 2 == 0)
                 holder.itemView.setBackgroundResource(R.drawable.ripple_text_bg_dark);
             else
@@ -168,6 +167,29 @@ public class RecentListActivity extends ActionBarActivity implements SwipeRefres
 
             boolean isExpanded = mExpandTable.get(position);
             holder.setExpanded(isExpanded);
+
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(v.getContext(), ThreadActivity.class);
+                    intent.putExtra(CommonIntents.EXTRA_TID, item.tid);
+                    intent.putExtra(CommonIntents.EXTRA_THREAD_NAME, item.title);
+                    intent.putExtra(CommonIntents.EXTRA_REPIES, item.replies + 1);
+                    v.getContext().startActivity(intent);
+                }
+            });
+            holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    boolean expand = !mExpandTable.get(position);
+                    mExpandTable.put(position, expand);
+                    if (!expand)
+                        holder.flipLayout(holder.basicLyt, holder.detailLyt);
+                    else
+                        holder.flipLayout(holder.detailLyt, holder.basicLyt);
+                    return true;
+                }
+            });
         }
 
         @Override
@@ -176,10 +198,7 @@ public class RecentListActivity extends ActionBarActivity implements SwipeRefres
         }
     }
 
-    private static class VH extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
-        boolean isExpanded;
-        RecentThread item;
-
+    private static class VH extends RecyclerView.ViewHolder {
         ViewGroup basicLyt;
         ViewGroup detailLyt;
 
@@ -193,8 +212,6 @@ public class RecentListActivity extends ActionBarActivity implements SwipeRefres
 
         VH(View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
-            itemView.setOnLongClickListener(this);
             basicLyt = (ViewGroup) itemView.findViewById(R.id.lyt_basic_info);
             detailLyt = (ViewGroup) itemView.findViewById(R.id.lyt_detail_info);
             title = (TextView) itemView.findViewById(R.id.txtVw_thread_title);
@@ -203,16 +220,15 @@ public class RecentListActivity extends ActionBarActivity implements SwipeRefres
             lastAuthor = (TextView) itemView.findViewById(R.id.txtVw_last_author);
             lastTime = (TextView) itemView.findViewById(R.id.txtVw_last_time);
             lastMessage = (TextView) itemView.findViewById(R.id.txtVw_last_message);
-
-            setExpanded(false);
         }
 
         private void setExpanded(boolean expand) {
-            isExpanded = expand;
-            basicLyt.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
-            detailLyt.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
-            basicLyt.setRotationX(isExpanded ? 90f:0f);
-            detailLyt.setRotationX(isExpanded ? 0f:90f);
+            basicLyt.setVisibility(expand ? View.GONE : View.VISIBLE);
+            detailLyt.setVisibility(expand ? View.VISIBLE : View.GONE);
+            basicLyt.setRotationX(expand ? 90f : 0f);
+            detailLyt.setRotationX(expand ? 0f : 90f);
+            basicLyt.setAlpha(1f);
+            detailLyt.setAlpha(1f);
         }
 
         private void flipLayout(final View tobeIn, final View tobeOut) {
@@ -243,28 +259,7 @@ public class RecentListActivity extends ActionBarActivity implements SwipeRefres
             });
             set.play(out).before(in);
             set.start();
-        }
 
-        @Override
-        public void onClick(View v) {
-            if (item == null)
-                return;
-            Intent intent = new Intent(v.getContext(), ThreadActivity.class);
-            intent.putExtra(CommonIntents.EXTRA_TID, item.tid);
-            intent.putExtra(CommonIntents.EXTRA_THREAD_NAME, item.title);
-            intent.putExtra(CommonIntents.EXTRA_REPIES, item.replies+1);
-            v.getContext().startActivity(intent);
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            isExpanded = !isExpanded;
-            if (isExpanded) {
-                flipLayout(detailLyt, basicLyt);
-            } else {
-                flipLayout(basicLyt, detailLyt);
-            }
-            return true;
         }
     }
 }

@@ -511,7 +511,12 @@ public class BUApi {
 
             @Override
             protected VolleyError parseNetworkError(VolleyError volleyError) {
-                Log.d(TAG, path + " >> " + new String(volleyError.networkResponse.data), volleyError);
+                try {
+                    Log.e(TAG, path + " >> " + volleyError.networkResponse.statusCode, volleyError);
+                    Log.e(TAG, path + " >> " + new String(volleyError.networkResponse.data));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 return super.parseNetworkError(volleyError);
             }
         });
@@ -547,7 +552,12 @@ public class BUApi {
 
             @Override
             protected VolleyError parseNetworkError(VolleyError volleyError) {
-                Log.d(TAG, path + " >> " + new String(volleyError.networkResponse.data), volleyError);
+                try {
+                    Log.e(TAG, path + " >> " + volleyError.networkResponse.statusCode, volleyError);
+                    Log.e(TAG, path + " >> " + new String(volleyError.networkResponse.data));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 return super.parseNetworkError(volleyError);
             }
         });
