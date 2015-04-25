@@ -224,7 +224,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         else
             mRefreshLayout.setEnabled(false);
         int trigger = (int)(view.getContentHeight() * view.getScale()) - view.getHeight()-1;
-        if (t >= trigger && mLastTs >= REFRESH_LIMIT) {
+        if (t >= trigger && System.currentTimeMillis() - mLastTs >= REFRESH_LIMIT) {
             Log.i(TAG, "fetch more >> " + mPageNum);
             onRefresh();
         }
