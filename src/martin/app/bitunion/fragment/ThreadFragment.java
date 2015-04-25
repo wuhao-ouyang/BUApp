@@ -5,6 +5,8 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.DataSetObservable;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -36,6 +39,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +55,7 @@ import martin.app.bitunion.util.DataParser;
 import martin.app.bitunion.util.Settings;
 import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.widget.ObservableWebView;
+import martin.app.bitunion.widget.WebListAdapter;
 
 /**
  * A dummy fragment representing a section of the app, but that simply displays
@@ -68,12 +74,15 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
     private int mTid;
     private int mPageNum;
     private ArrayList<BUPost> postlist = new ArrayList<BUPost>();
+    private PostListAdapter mAdapter;
 
     private SwipeRefreshLayout mRefreshLayout;
     private ObservableWebView mPageWebView = null;
     private ProgressBar mSpinner;
 
     private int mReqCount;
+    private long mLastTs;
+    private static final long REFRESH_LIMIT = 30 * 1000l;
 
     private ThreadContentListener mThreadContentListener;
 
@@ -106,6 +115,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             mPageNum = getArguments().getInt(ARG_PAGE_NUMBER);
             POS_OFFSET = mPageNum * Settings.POSTS_PER_PAGE + 1;
         }
+        mAdapter = new PostListAdapter();
 
         Resources res = getResources();
         COLOR_BG_DARK = Integer.toHexString(res.getColor(R.color.blue_light) & 0x00ffffff);
@@ -137,6 +147,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         mPageWebView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         mPageWebView.getSettings().setJavaScriptEnabled(true);
         mPageWebView.addJavascriptInterface(new JSInterface(new JSHandler(getActivity())), JSInterface.class.getSimpleName());
+        mPageWebView.setAdapter(mAdapter);
 //        mReqCount++;
 //        mPageWebView.loadUrl(BUApi.getRootUrl() + "/viewthread.php?tid=" + mTid);
 //        mPageWebView.loadDataWithBaseURL(BUApi.getRootUrl(), content, "text/html", "utf-8", null);
@@ -149,6 +160,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
     public void onRefresh() {
         if (isUpdating())
             return;
+        mRefreshLayout.setRefreshing(true);
         mReqCount = 0;
         int from = mPageNum * Settings.POSTS_PER_PAGE;
         int to = (mPageNum + 1) * Settings.POSTS_PER_PAGE;
@@ -190,12 +202,14 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
 
     @Override
     public void notifyUpdated() {
+        mLastTs = System.currentTimeMillis();
         mRefreshLayout.setRefreshing(false);
         mSpinner.setVisibility(View.GONE);
         mPageWebView.setVisibility(View.VISIBLE);
 
         String htmlcode = createHtmlCode();
-        mPageWebView.loadDataWithBaseURL(BUApi.getRootUrl(), htmlcode, "text/html", "utf-8", null);
+        mAdapter.notifyDataSetChanged();
+//        mPageWebView.loadDataWithBaseURL(BUApi.getRootUrl(), htmlcode, "text/html", "utf-8", null);
         Log.v(TAG, "fragment " + this.mPageNum + " updated");
 
         if (mThreadContentListener != null && mPageNum == 0 && postlist.size() > 0) {
@@ -205,10 +219,15 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
 
     @Override
     public void onScroll(WebView view, int l, int t) {
-        if (view.getScrollY() == 0)
+        if (t == 0)
             mRefreshLayout.setEnabled(true);
         else
             mRefreshLayout.setEnabled(false);
+        int trigger = (int)(view.getContentHeight() * view.getScale()) - view.getHeight()-1;
+        if (t >= trigger && mLastTs >= REFRESH_LIMIT) {
+            Log.i(TAG, "fetch more >> " + mPageNum);
+            onRefresh();
+        }
     }
 
     private String createHtmlCode() {
@@ -243,7 +262,6 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
      * For image links will try go to {@link ImageViewerActivity}
      */
     private static class ThreadWebViewClient extends WebViewClient {
-
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             boolean isHandled = false;
@@ -290,6 +308,36 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
                 }
             }
             return true;
+        }
+    }
+
+    private class PostListAdapter extends WebListAdapter {
+        @Override
+        public String getBaseUrl() {
+            return BUApi.getRootUrl();
+        }
+
+        @Override
+        public String getCSS() {
+            return "img{max-width:100%; width:auto; height:auto;}" +
+                    "body{margin:0px; padding:0px; background-color:#" + COLOR_BG_LIGHT + "; color:#284264; font-size:" + BUApp.settings.contenttextsize + "px;}" +
+                    "div.tdiv{background-color:#" + COLOR_BG_DARK + "; padding:2px 5px; font-size:" + BUApp.settings.contenttextsize + "px;}" +
+                    "div.mdiv{padding:8px; word-break:break-all;}";
+        }
+
+        @Override
+        public String getJavaScript() {
+            return JSInterface.javaScript();
+        }
+
+        @Override
+        public String getHtml(int pos) {
+            return postlist.get(pos).getHtmlLayout(POS_OFFSET + pos);
+        }
+
+        @Override
+        public int getCount() {
+            return postlist.size();
         }
     }
 

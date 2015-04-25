@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import martin.app.bitunion.BUApp;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.Utils;
+import martin.app.bitunion.widget.WebListAdapter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +25,7 @@ import android.os.Parcelable;
 import android.text.Html;
 import android.util.Log;
 
-public class BUPost extends BUContent implements Parcelable {
+public class BUPost extends BUContent implements Parcelable, WebListAdapter.HtmlListItem {
     private static final String TAG = BUPost.class.getSimpleName();
 
     private int pid;
@@ -337,9 +338,10 @@ public class BUPost extends BUContent implements Parcelable {
 
     /**
      * Change HTML message returned from server to application style.
-     *
+     * @param count position in the list
      * @return HTML text for layout
      */
+    @Override
     public String getHtmlLayout(int count) {
         String htmlcontent;
         htmlcontent = "<p><div class='tdiv'>" +

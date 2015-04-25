@@ -1,10 +1,31 @@
 package martin.app.bitunion.widget;
 
 import android.content.Context;
+import android.database.DataSetObserver;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.webkit.ConsoleMessage;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
+import martin.app.bitunion.BUApp;
+
 public class ObservableWebView extends WebView {
+    private WebListAdapter mAdapter;
+    private DataSetObserver mDataSetObserver;
+
+    private class AdapterDataSetObserver extends DataSetObserver {
+        @Override
+        public void onChanged() {
+            refreshContent();
+        }
+
+        @Override
+        public void onInvalidated() {
+            reloadContent();
+        }
+    }
+
     private OnScrollChangedCallback mOnScrollChangedCallback;
 
     public ObservableWebView(final Context context) {
@@ -43,5 +64,68 @@ public class ObservableWebView extends WebView {
          * @param t Current vertical scroll origin
          */
         void onScroll(WebView view, int l, int t);
+    }
+
+    /**
+     * Bind {@link WebListAdapter} to this webview
+     * @param adapter
+     */
+    public void setAdapter(WebListAdapter adapter) {
+        if (mAdapter == adapter)
+            return;
+        if (mAdapter != null && mDataSetObserver != null)
+            mAdapter.unregisterDataSetObserver(mDataSetObserver);
+        mAdapter = adapter;
+        if (mAdapter != null) {
+            mDataSetObserver = new AdapterDataSetObserver();
+            mAdapter.registerDataSetObserver(mDataSetObserver);
+        }
+        reloadContent();
+    }
+
+    private void reloadContent() {
+        if (mAdapter == null)
+            return;
+        // Set console debugger
+        setWebChromeClient(new ThreadWebChromeClient());
+        StringBuilder content = new StringBuilder("<!DOCTYPE ><html><head><title></title>" +
+                "<style type=\"text/css\">" +
+                (mAdapter == null ? "" : mAdapter.getCSS()) +
+                "</style><script type='text/javascript'>" +
+                (mAdapter == null ? "" : mAdapter.getJavaScript()) +
+                "</script></head><body>");
+        loadDataWithBaseURL(mAdapter.getBaseUrl(), content.toString(), "text/html", "utf-8", null);
+    }
+
+    private void refreshContent() {
+        int len = mAdapter.getCount();
+        for (int i = 0; i < len; i++)
+            runJavascriptUpdate(i, mAdapter.getHtml(i).replace("'", "\\'"));
+    }
+
+    private static final String HTML_ROW_CLASS = "ContentRow";
+
+    private void runJavascriptUpdate(int pos, String rowHtml) {
+        StringBuilder jsBuilder = new StringBuilder("javascript:");
+        jsBuilder.append("var rows = document.body.getElementsByClassName('" + HTML_ROW_CLASS + "');\n" +
+                "if (rows[" + pos + "] == null){" +
+                "newrow = document.createElement('div');" +
+                "newrow.setAttribute('class', '" + HTML_ROW_CLASS + "');" +
+                "newrow.innerHTML = '" + rowHtml + "';" +
+                "document.body.appendChild(newrow);" +
+                "console.log('row: "+pos+" inserted!')" +
+                "}else{" +
+                "rows[" + pos + "].innerHTML = '" + rowHtml + "';" +
+                "console.log('row: "+pos+" updated!')" +
+                "}");
+        loadUrl(jsBuilder.toString());
+    }
+
+    private static class ThreadWebChromeClient extends WebChromeClient {
+        @Override
+        public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+            Log.d("JavascriptConsole", consoleMessage.lineNumber() + ": " + consoleMessage.message());
+            return super.onConsoleMessage(consoleMessage);
+        }
     }
 }
