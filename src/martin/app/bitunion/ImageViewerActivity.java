@@ -81,7 +81,7 @@ public class ImageViewerActivity extends ActionBarActivity {
                 mime[0] = "text/plain";
                 ClipData clip = new ClipData("图片链接", mime, cliptext);
                 clipboard.setPrimaryClip(clip);
-                ToastUtil.showToast(R.string.thread_url_copied);
+                ToastUtil.showToast(R.string.image_url_copied);
                 return true;
         }
         return false;

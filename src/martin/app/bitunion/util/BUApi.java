@@ -505,7 +505,7 @@ public class BUApi {
         mApiQueue.add(new MultiPartRequest(path, entity, responseListener, errorListener) {
             @Override
             protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-                Log.d(TAG, path + " >> " + new String(response.data));
+                Log.v(TAG, path + " >> " + new String(response.data));
                 return super.parseNetworkResponse(response);
             }
 
@@ -546,7 +546,7 @@ public class BUApi {
         mApiQueue.add(new JsonObjectRequest(Request.Method.POST, path, postReq, responseListener, errorListener) {
             @Override
             protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-                Log.d(TAG, path + " >> " + new String(response.data));
+                Log.v(TAG, path + " >> " + new String(response.data));
                 return super.parseNetworkResponse(response);
             }
 

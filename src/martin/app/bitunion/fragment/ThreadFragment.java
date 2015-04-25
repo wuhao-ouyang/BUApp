@@ -74,7 +74,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
     private int mTid;
     private int mPageNum;
     private ArrayList<BUPost> postlist = new ArrayList<BUPost>();
-    private PostListAdapter mAdapter;
+    private PostListAdapter mAdapter = new PostListAdapter();
 
     private SwipeRefreshLayout mRefreshLayout;
     private ObservableWebView mPageWebView = null;
@@ -115,7 +115,6 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             mPageNum = getArguments().getInt(ARG_PAGE_NUMBER);
             POS_OFFSET = mPageNum * Settings.POSTS_PER_PAGE + 1;
         }
-        mAdapter = new PostListAdapter();
 
         Resources res = getResources();
         COLOR_BG_DARK = Integer.toHexString(res.getColor(R.color.blue_light) & 0x00ffffff);
@@ -130,6 +129,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.lyt_refresh_frame);
         mRefreshLayout.setOnRefreshListener(this);
         mPageWebView = (ObservableWebView) view.findViewById(R.id.webView_posts);
@@ -138,6 +138,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         if (postlist == null || postlist.isEmpty()) {
             mPageWebView.setVisibility(View.GONE);
             mSpinner.setVisibility(View.VISIBLE);
+            onRefresh();
         } else {
             mPageWebView.setVisibility(View.VISIBLE);
             mSpinner.setVisibility(View.GONE);
@@ -148,12 +149,10 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         mPageWebView.getSettings().setJavaScriptEnabled(true);
         mPageWebView.addJavascriptInterface(new JSInterface(new JSHandler(getActivity())), JSInterface.class.getSimpleName());
         mPageWebView.setAdapter(mAdapter);
-//        mReqCount++;
-//        mPageWebView.loadUrl(BUApi.getRootUrl() + "/viewthread.php?tid=" + mTid);
-//        mPageWebView.loadDataWithBaseURL(BUApi.getRootUrl(), content, "text/html", "utf-8", null);
+        // This is just intended for reloading, adapter seems have some problem with access to local assets
+        String htmlcode = createHtmlCode();
+        mPageWebView.loadDataWithBaseURL(BUApi.getRootUrl(), htmlcode, "text/html", "utf-8", null);
         Log.i(TAG, "WebView created!>>" + mPageNum + ", Posts >>" + postlist.size());
-
-        onRefresh();
     }
 
     @Override
@@ -206,9 +205,8 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         mRefreshLayout.setRefreshing(false);
         mSpinner.setVisibility(View.GONE);
         mPageWebView.setVisibility(View.VISIBLE);
-
-        String htmlcode = createHtmlCode();
         mAdapter.notifyDataSetChanged();
+//        String htmlcode = createHtmlCode();
 //        mPageWebView.loadDataWithBaseURL(BUApi.getRootUrl(), htmlcode, "text/html", "utf-8", null);
         Log.v(TAG, "fragment " + this.mPageNum + " updated");
 

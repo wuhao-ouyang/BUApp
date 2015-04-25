@@ -15,63 +15,72 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.target.Target;
-
-import java.io.InputStream;
 
 import martin.app.bitunion.R;
 import martin.app.bitunion.widget.UrlDrawable;
 
 public class HtmlImageGetter implements Html.ImageGetter {
+    public static final int VOLLEY = 0;
+    public static final int GLIDE = 1;
 
+    private int mode;
     private Context mContext;
     private TextView mContainer;
 
     public HtmlImageGetter(Context c, TextView view) {
+        this(c, view, VOLLEY);
+    }
+
+    public HtmlImageGetter(Context c, TextView view, int mode) {
         mContext = c;
         mContainer = view;
+        this.mode = mode;
     }
 
     @Override
     public Drawable getDrawable(String imgUrl) {
         imgUrl = BUApi.getImageAbsoluteUrl(imgUrl);
-        UrlImageDownloader urlDrawable = new UrlImageDownloader(mContext.getResources(), imgUrl);
-//        UrlDrawable urlDrawable = new UrlDrawable();
-        urlDrawable.drawable = mContext.getResources().getDrawable(R.drawable.ic_image_white_48dp);
-//        Glide.with(mContext).load(imgUrl).into(new GlideImageListener(mContainer, urlDrawable));
-        VolleyImageLoaderFactory.getImageLoader(mContext).get(imgUrl, new VolleyImageListener(mContainer, urlDrawable));
-        return urlDrawable;
+        if (mode == GLIDE) {
+            UrlDrawable urlDrawable = new UrlDrawable();
+            Glide.with(mContext).load(imgUrl).into(new GlideImageListener(mContainer, urlDrawable));
+            return urlDrawable;
+        } else {
+            UrlImageDownloader urlDrawable = new UrlImageDownloader(mContext.getResources(), imgUrl);
+            urlDrawable.drawable = mContext.getResources().getDrawable(R.drawable.ic_image_white_48dp);
+            VolleyImageLoaderFactory.getImageLoader(mContext).get(imgUrl, new VolleyImageListener(mContainer, urlDrawable));
+            return urlDrawable;
+        }
     }
 
-//    private static class GlideImageListener extends SimpleTarget<GlideDrawable> {
-//        private UrlDrawable urlDrawable;
-//        private TextView container;
-//
-//        private GlideImageListener(TextView textView, UrlDrawable drawable) {
-//            urlDrawable = drawable;
-//            container = textView;
-//        }
-//
-//        @Override
-//        public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
-//            int width = resource.getIntrinsicWidth();
-//            int height = resource.getIntrinsicHeight();
-//
-//            int newWidth = width;
-//            int newHeight = height;
-//
-//            if (width > container.getWidth()) {
-//                newWidth = container.getWidth();
-//                newHeight = (newWidth * height) / width;
-//            }
-//
-//            resource.setBounds(0, 0, newWidth, newHeight);
-//            urlDrawable.setBounds(0, 0, newWidth, newHeight);
-//            urlDrawable.drawable = resource;
-//
-//            container.invalidate();
-//        }
-//    }
+    private static class GlideImageListener extends SimpleTarget<GlideDrawable> {
+        private UrlDrawable urlDrawable;
+        private TextView container;
+
+        private GlideImageListener(TextView textView, UrlDrawable drawable) {
+            urlDrawable = drawable;
+            container = textView;
+        }
+
+        @Override
+        public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+            int width = resource.getIntrinsicWidth();
+            int height = resource.getIntrinsicHeight();
+
+            int newWidth = width;
+            int newHeight = height;
+
+            if (width > container.getWidth()) {
+                newWidth = container.getWidth();
+                newHeight = (newWidth * height) / width;
+            }
+
+            resource.setBounds(0, 0, newWidth, newHeight);
+            urlDrawable.setBounds(0, 0, newWidth, newHeight);
+            urlDrawable.drawable = resource;
+
+            container.invalidate();
+        }
+    }
 
     private static class VolleyImageListener implements ImageLoader.ImageListener {
         private UrlImageDownloader urlImageDownloader;

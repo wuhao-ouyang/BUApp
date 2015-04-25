@@ -223,8 +223,8 @@ public class BUPost extends BUContent implements Parcelable, WebListAdapter.Html
         while (m.find()) {
             String url = parseLocalImage(m.group(1));
             String path = "<span onclick=imageOnClick('"+url+"')><img src='" + url + "'></span>";
-            Log.i("BUPost", "Post>>" + author);
-            Log.i("BUPost", "Image Path>>>" + path);
+            Log.v("BUPost", "Post>>" + author);
+            Log.v("BUPost", "Image Path>>>" + path);
             if (BUApp.settings.showImage)
                 // 统一站内地址
                 path = BUApi.getImageAbsoluteUrl(path);

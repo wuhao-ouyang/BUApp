@@ -80,14 +80,14 @@ public class ObservableWebView extends WebView {
             mDataSetObserver = new AdapterDataSetObserver();
             mAdapter.registerDataSetObserver(mDataSetObserver);
         }
-        reloadContent();
+//        reloadContent();
     }
 
     private void reloadContent() {
         if (mAdapter == null)
             return;
         // Set console debugger
-        setWebChromeClient(new ThreadWebChromeClient());
+        setWebChromeClient(new WebChromeClient());
         StringBuilder content = new StringBuilder("<!DOCTYPE ><html><head><title></title>" +
                 "<style type=\"text/css\">" +
                 (mAdapter == null ? "" : mAdapter.getCSS()) +
@@ -95,37 +95,33 @@ public class ObservableWebView extends WebView {
                 (mAdapter == null ? "" : mAdapter.getJavaScript()) +
                 "</script></head><body>");
         loadDataWithBaseURL(mAdapter.getBaseUrl(), content.toString(), "text/html", "utf-8", null);
+//        refreshContent();
     }
 
     private void refreshContent() {
         int len = mAdapter.getCount();
         for (int i = 0; i < len; i++)
             runJavascriptUpdate(i, mAdapter.getHtml(i).replace("'", "\\'"));
+        Log.i("Javascript", "content refreshed >> " + len);
     }
 
     private static final String HTML_ROW_CLASS = "ContentRow";
 
     private void runJavascriptUpdate(int pos, String rowHtml) {
-        StringBuilder jsBuilder = new StringBuilder("javascript:");
+        StringBuilder jsBuilder = new StringBuilder("javascript:(function myfunction(){");
         jsBuilder.append("var rows = document.body.getElementsByClassName('" + HTML_ROW_CLASS + "');\n" +
                 "if (rows[" + pos + "] == null){" +
                 "newrow = document.createElement('div');" +
                 "newrow.setAttribute('class', '" + HTML_ROW_CLASS + "');" +
                 "newrow.innerHTML = '" + rowHtml + "';" +
                 "document.body.appendChild(newrow);" +
-                "console.log('row: "+pos+" inserted!')" +
+//                "console.log('row: "+pos+" inserted!');" +
                 "}else{" +
                 "rows[" + pos + "].innerHTML = '" + rowHtml + "';" +
-                "console.log('row: "+pos+" updated!')" +
-                "}");
+                "console.log('row: " + pos + " updated!');" +
+                "}})()");
+//        loadDataWithBaseURL(mAdapter.getBaseUrl(), jsBuilder.toString(), "text/javascript", "utf-8", null);
         loadUrl(jsBuilder.toString());
     }
 
-    private static class ThreadWebChromeClient extends WebChromeClient {
-        @Override
-        public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-            Log.d("JavascriptConsole", consoleMessage.lineNumber() + ": " + consoleMessage.message());
-            return super.onConsoleMessage(consoleMessage);
-        }
-    }
 }

@@ -1,6 +1,7 @@
 package martin.app.bitunion.widget;
 
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -21,7 +22,6 @@ public class SwipeDetector implements View.OnTouchListener {
     public SwipeDetector(int triggerLimit, SwipeListener l) {
         trigger = triggerLimit;
         swipeListener = l;
-
         startX = -1;
     }
 

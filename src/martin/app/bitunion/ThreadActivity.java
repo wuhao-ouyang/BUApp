@@ -147,7 +147,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                 mThreadAdapter.notifyRefresh(currentpage);
                 return true;
             case R.id.action_reply:
-                toggleReplyBox();
+                toggleReplyBox(!isReplyBoxShowing());
                 return true;
             case R.id.action_sharelink:
                 StringBuilder sb = new StringBuilder(threadName);
@@ -219,10 +219,14 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         }
     }
 
-    private void toggleReplyBox() {
-        if (replyContainer.getVisibility() == View.GONE) {
+    private boolean isReplyBoxShowing() {
+        return replyContainer.getVisibility() == View.VISIBLE;
+    }
+
+    private void toggleReplyBox(boolean show) {
+        if (show) {
             replyContainer.setVisibility(View.VISIBLE);
-        } else if (replyContainer.getVisibility() == View.VISIBLE){
+        } else {
             replyContainer.setVisibility(View.GONE);
         }
     }
@@ -275,8 +279,8 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
 
     @Override
     public void onBackPressed() {
-        if (replyContainer.getVisibility() == View.VISIBLE) {
-            toggleReplyBox();
+        if (isReplyBoxShowing()) {
+            toggleReplyBox(false);
             return;
         } else
             super.onBackPressed();
