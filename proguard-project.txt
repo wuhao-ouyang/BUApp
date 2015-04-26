@@ -31,14 +31,15 @@
 -keep class * extends com.bumptech.glide.integration.volley.VolleyGlideModule
 -keep class martin.app.bitunion.util.SyncedVolleyGlideModule
 
-# Crittercism
--keep public class com.crittercism.**
--keepclassmembers public class com.crittercism.* {
-    *;
-}
-
 # Apache Http
+-keep class org.apache.http.** { *; }
 -dontwarn org.apache.http.**
+
+# Tika
+-keep class org.apache.tika.** { *; }
+# Tika's optional deps
+-dontwarn aQute.**
+-dontwarn org.osgi.**
 
 # models
 -keep public class martin.app.bitunion.model.** {
