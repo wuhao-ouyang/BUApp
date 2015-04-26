@@ -2,15 +2,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto" >
 
     <item
-        android:id="@+id/action_refresh"
-        android:icon="@drawable/ic_refresh_white_48dp"
-        app:showAsAction="collapseActionView"
-        android:title="@string/menu_action_refresh"/>
-
-    <item
         android:id="@+id/action_newthread"
         android:icon="@drawable/ic_create_white_48dp"
         app:showAsAction="collapseActionView"
         android:title="@string/menu_action_post"/>
+
+    <item
+        android:id="@+id/action_refresh"
+        android:icon="@drawable/ic_refresh_white_48dp"
+        app:showAsAction="collapseActionView"
+        android:title="@string/menu_action_refresh"/>
 
 </menu>
