@@ -54,10 +54,11 @@ dependencies {
     compile 'com.android.support:support-v4:22.0.0'
     compile 'com.android.support:recyclerview-v7:22.0.0'
     compile 'com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.6.2'
-    compile "com.android.support:appcompat-v7:22.0.0"
+    compile 'com.android.support:appcompat-v7:22.0.0'
     compile 'com.mcxiaoke.volley:library:1.0.5'
     compile 'com.github.bumptech.glide:volley-integration:1.2.2'
     compile 'com.github.bumptech.glide:glide:3.5.2'
+    compile 'org.apache.tika:tika-core:1.4'
     compile 'org.apache.httpcomponents:httpcore:4.3.+'
     compile 'org.apache.httpcomponents:httpclient:4.3.+'
     compile 'org.apache.httpcomponents:httpmime:4.3.+'

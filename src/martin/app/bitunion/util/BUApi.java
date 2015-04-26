@@ -10,13 +10,11 @@ import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -26,9 +24,7 @@ import org.apache.http.protocol.HTTP;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -190,22 +186,12 @@ public class BUApi {
     }
 
     /**
-     * Send post without attachment
-     * @param tid thread id
-     * @param message message to be sent
-     */
-    public static void postNewPost(int tid, String message,
-                                   Response.Listener<JSONObject> responseListener,
-                                   Response.ErrorListener errorListener) {
-        postNewPost(tid, message, null, responseListener, errorListener);
-    }
-
-    /**
      * Send post with attachment
      * @param tid thread id
      * @param message message to be sent
      */
-    public static void postNewPost(int tid, String message, File attachment,
+    public static void postNewPost(int tid, String message,
+                                   @Nullable File attachment, @Nullable UploadProgressListener progressListener,
                                    Response.Listener<JSONObject> responseListener,
                                    Response.ErrorListener errorListener) {
         if (tid <= 0 || message == null || message.isEmpty())
@@ -217,7 +203,10 @@ public class BUApi {
         params.put("message", message);
         params.put("attachment", attachment==null ? "0":"1");
         appendUserCookie(params);
-        httpPost(path, params, attachment, responseListener, errorListener);
+        if (attachment == null)
+            httpPostMultipart(path, params, responseListener, errorListener);
+        else
+            new MultipartAsynTask(path, params, attachment, progressListener, responseListener, errorListener).execute();
     }
 
     /**
@@ -226,7 +215,8 @@ public class BUApi {
      * @param title New thread subject
      * @param message New thread message
      */
-    public static void postNewThread(int fid, String title, String message, File attachment,
+    public static void postNewThread(int fid, String title, String message,
+                                     @Nullable File attachment, @Nullable UploadProgressListener progressListener,
                                      Response.Listener<JSONObject> responseListener,
                                      Response.ErrorListener errorListener) {
         if (fid < 0 || title == null || title.isEmpty() || message == null || message.isEmpty())
@@ -239,7 +229,10 @@ public class BUApi {
         params.put("message", message);
         params.put("attachment", attachment==null ? "0":"1");
         appendUserCookie(params);
-        httpPost(path, params, attachment, responseListener, errorListener);
+        if (attachment == null)
+            httpPostMultipart(path, params, responseListener, errorListener);
+        else
+            new MultipartAsynTask(path, params, attachment, progressListener, responseListener, errorListener).execute();
     }
 
     /**
@@ -447,11 +440,10 @@ public class BUApi {
      * Basic multipart request method to send multipart request
      * @param path Api endpoint
      * @param params String parameters, including message and session info
-     * @param attachment File attachment, can be null if there's nothing to send
      */
-    private static void httpPost(final String path, final Map<String, String> params, @Nullable final File attachment,
-                                 final Response.Listener<JSONObject> responseListener,
-                                 final Response.ErrorListener errorListener) {
+    private static void httpPostMultipart(final String path, final Map<String, String> params,
+                                          final Response.Listener<JSONObject> responseListener,
+                                          final Response.ErrorListener errorListener) {
         JSONObject postReq = new JSONObject();
         try {
             for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -466,9 +458,6 @@ public class BUApi {
         }
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.addTextBody("json", postReq.toString());
-        if (attachment != null) {
-            builder.addBinaryBody("attach", attachment);
-        }
         HttpEntity entity = builder.build();
         Log.d(TAG, "BUILD " + path + " >> " + postReq.toString());
         mApiQueue.add(new MultiPartRequest(path, entity, responseListener, errorListener) {
@@ -553,46 +542,4 @@ public class BUApi {
         return path;
     }
 
-    static class MultiPartRequest extends Request<JSONObject> {
-        private final HttpEntity mEntity;
-        private final Response.Listener<JSONObject> mListener;
-
-        MultiPartRequest(String url, HttpEntity entity, Response.Listener<JSONObject> responseListener, Response.ErrorListener errorListener) {
-            super(Method.POST, url, errorListener);
-            mListener = responseListener;
-            mEntity = entity;
-        }
-
-        @Override
-        protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-            JSONObject jsonResponse = null;
-            try {
-                jsonResponse = new JSONObject(new String(response.data));
-            } catch (JSONException e) {
-                parseNetworkError(new VolleyError(e));
-            }
-            return Response.success(jsonResponse, getCacheEntry());
-        }
-
-        @Override
-        public String getBodyContentType() {
-            return mEntity.getContentType().getValue();
-        }
-
-        @Override
-        public byte[] getBody() throws AuthFailureError {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            try {
-                mEntity.writeTo(bos);
-            } catch (IOException e) {
-                VolleyLog.e("IOException writing to ByteArrayOutputStream");
-            }
-            return bos.toByteArray();
-        }
-
-        @Override
-        protected void deliverResponse(JSONObject response) {
-            mListener.onResponse(response);
-        }
-    }
 }

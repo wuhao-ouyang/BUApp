@@ -1,10 +1,11 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/blue_text_bg_light"
-                android:padding="5dp"
-                tools:context=".NewthreadActivity">
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue_text_bg_light"
+    android:padding="5dp"
+    tools:context=".NewthreadActivity">
 
     <EditText
         android:id="@+id/newthread_subject"
@@ -19,21 +20,36 @@
         android:id="@+id/newthread_message"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/txtVw_attach_descr"
+        android:layout_above="@+id/lyt_attach_descr"
         android:layout_below="@+id/newthread_subject"
         android:background="@drawable/selector_bg_edittext"
         android:gravity="top"
         android:hint="内容"
         android:padding="8dp"/>
 
-    <TextView
-        android:id="@+id/txtVw_attach_descr"
+    <FrameLayout
+        android:id="@+id/lyt_attach_descr"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/lyt_btn_container"
-        android:padding="5dp"
-        android:textSize="16sp"
-        android:visibility="gone"/>
+        android:layout_margin="5dp"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:max="100"
+            android:progress="50"
+            android:progressDrawable="@drawable/progress_file"/>
+        <TextView
+            android:id="@+id/txtVw_attach_descr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:textSize="16sp"/>
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/lyt_btn_container"
@@ -50,7 +66,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
+            android:background="@drawable/ripple_image_button_bg"
             android:src="@drawable/ic_delete_grey600_36dp"
             android:text="清除附件"/>
 
@@ -59,7 +75,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
+            android:background="@drawable/ripple_image_button_bg"
             android:src="@drawable/ic_photo_grey600_36dp"
             android:text="插入图片"/>
 
@@ -68,7 +84,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
+            android:background="@drawable/ripple_image_button_bg"
             android:src="@drawable/ic_photo_camera_grey600_36dp"
             android:text="插入照片"/>
 
@@ -77,7 +93,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
+            android:background="@drawable/ripple_image_button_bg"
             android:src="@drawable/ic_attach_file_grey600_36dp"
             android:text="插入文档"/>
     </LinearLayout>

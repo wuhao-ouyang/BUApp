@@ -12,7 +12,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.Response;
@@ -27,10 +29,12 @@ import java.util.Date;
 
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.CommonIntents;
+import martin.app.bitunion.util.Devices;
 import martin.app.bitunion.util.ToastUtil;
+import martin.app.bitunion.util.UploadProgressListener;
 import martin.app.bitunion.util.Utils;
 
-public class NewthreadActivity extends ActionBarActivity implements View.OnClickListener, TextWatcher {
+public class NewthreadActivity extends ActionBarActivity implements View.OnClickListener, TextWatcher, UploadProgressListener {
     public static final String ACTION_NEW_POST = "NewthreadActivity.ACTION_NEW_POST";
     public static final String ACTION_NEW_THREAD = "NewthreadActivity.ACTION_NEW_THREAD";
 
@@ -41,7 +45,9 @@ public class NewthreadActivity extends ActionBarActivity implements View.OnClick
     private EditText mSubET;
     private EditText mMsgET;
     private MenuItem mSendIc;
+    private ViewGroup mAttachLyt;
     private TextView mAttachTV;
+    private ProgressBar mProgress;
     private View mClearBtn;
     private View mImageBtn;
     private View mPhotoBtn;
@@ -59,33 +65,25 @@ public class NewthreadActivity extends ActionBarActivity implements View.OnClick
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_newthread);
 
-        // Show the Up button in the action bar.
-        setupActionBar();
-
         // Init views and buttons
         mSubET = (EditText) findViewById(R.id.newthread_subject);
         mMsgET = (EditText) findViewById(R.id.newthread_message);
-        mSubET.addTextChangedListener(this);
-        mMsgET.addTextChangedListener(this);
+        mAttachLyt = (ViewGroup) findViewById(R.id.lyt_attach_descr);
         mAttachTV = (TextView) findViewById(R.id.txtVw_attach_descr);
+        mProgress = (ProgressBar) findViewById(R.id.progressBar);
         mClearBtn = findViewById(R.id.newthread_clear);
         mImageBtn = findViewById(R.id.newthread_image);
         mPhotoBtn = findViewById(R.id.newthread_photo);
         mFileBtn = findViewById(R.id.newthread_file);
-        mClearBtn.setOnClickListener(this);
-        mImageBtn.setOnClickListener(this);
-        mPhotoBtn.setOnClickListener(this);
-        mFileBtn.setOnClickListener(this);
 
         // Parse parameters sent by parent activity
         Intent intent = getIntent();
         action = intent.getStringExtra(CommonIntents.EXTRA_ACTION);
-        Log.v("NewthreadActivity", "action>>" + action);
+        Log.v("NewthreadActivity", "action >> " + action);
         if (action.equals(ACTION_NEW_THREAD)) {
             fid = intent.getIntExtra(CommonIntents.EXTRA_FID, 0);
             title = intent.getStringExtra(CommonIntents.EXTRA_FORUM_NAME) + " - 发新话题";
-        }
-        if (action.equals(ACTION_NEW_POST)) {
+        } else if (action.equals(ACTION_NEW_POST)) {
             mSubET.setEnabled(false);
             tid = intent.getIntExtra(CommonIntents.EXTRA_TID, 0);
             String m = intent.getStringExtra(CommonIntents.EXTRA_MESSAGE);
@@ -93,6 +91,16 @@ public class NewthreadActivity extends ActionBarActivity implements View.OnClick
             mMsgET.setSelection(mMsgET.getText().toString().length());
             title = "tid=" + tid + " - 高级回复";
         }
+        // Show the Up button in the action bar.
+        setupActionBar();
+
+        // Set up listeners
+        mSubET.addTextChangedListener(this);
+        mMsgET.addTextChangedListener(this);
+        mClearBtn.setOnClickListener(this);
+        mImageBtn.setOnClickListener(this);
+        mPhotoBtn.setOnClickListener(this);
+        mFileBtn.setOnClickListener(this);
     }
 
     @Override
@@ -105,12 +113,13 @@ public class NewthreadActivity extends ActionBarActivity implements View.OnClick
 
     @Override
     public void afterTextChanged(Editable s) {
-        if (action == ACTION_NEW_POST) {
+        if (mSendIc == null)
+            return;
+        if (ACTION_NEW_POST.equals(action)) {
             mSendIc.setEnabled(!mMsgET.getText().toString().trim().isEmpty());
-        } else if (action == ACTION_NEW_THREAD) {
+        } else if (ACTION_NEW_THREAD.equals(action)) {
             mSendIc.setEnabled(!mSubET.getText().toString().isEmpty() && !mMsgET.getText().toString().trim().isEmpty());
         }
-        Log.d("wuhao", "enabled >> " + mSendIc.isEnabled());
     }
 
     private void sendMessage(String subject, String message) {
@@ -119,14 +128,23 @@ public class NewthreadActivity extends ActionBarActivity implements View.OnClick
             return;
         }
         if (BUApp.settings.showSignature)
-            message += getString(R.string.buapp_client_postfix);
-        BUApi.postNewThread(fid, subject, message, mAttachFile, mResponseListener, mErrorListener);
+            message += getString(R.string.buapp_client_postfix).replace("$device_name", Devices.getDeviceName());
+        mSendIc.setEnabled(false);
+        ToastUtil.showToast(R.string.message_sending);
+        BUApi.postNewThread(fid, subject, message, mAttachFile, this, mResponseListener, mErrorListener);
     }
 
     private void sendMessage(String message) {
         if (BUApp.settings.showSignature)
-            message += getString(R.string.buapp_client_postfix);
-        BUApi.postNewPost(tid, message, mAttachFile, mResponseListener, mErrorListener);
+            message += getString(R.string.buapp_client_postfix).replace("$device_name", Devices.getDeviceName());
+        mSendIc.setEnabled(false);
+        ToastUtil.showToast(R.string.message_sending);
+        BUApi.postNewPost(tid, message, mAttachFile, this, mResponseListener, mErrorListener);
+    }
+
+    @Override
+    public void onProgressUpdate(int progress) {
+        mProgress.setProgress(progress);
     }
 
     @Override
@@ -177,7 +195,8 @@ public class NewthreadActivity extends ActionBarActivity implements View.OnClick
         attBuilder.append("\t");
         attBuilder.append(Utils.getReadableFileSize(mAttachFile.length()));
         mAttachTV.setText(attBuilder);
-        mAttachTV.setVisibility(View.VISIBLE);
+        mProgress.setProgress(0);
+        mAttachLyt.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -185,7 +204,7 @@ public class NewthreadActivity extends ActionBarActivity implements View.OnClick
         switch (v.getId()) {
             case R.id.newthread_clear:
                 mAttachTV.setText("");
-                mAttachTV.setVisibility(View.GONE);
+                mAttachLyt.setVisibility(View.GONE);
                 mAttachFile = null;
                 break;
 
@@ -242,7 +261,7 @@ public class NewthreadActivity extends ActionBarActivity implements View.OnClick
                 finish();
                 break;
             case R.id.action_send:
-                if (action == ACTION_NEW_THREAD)
+                if (ACTION_NEW_THREAD.equals(action))
                     sendMessage(mSubET.getText().toString(), mMsgET.getText().toString());
                 else
                     sendMessage(mMsgET.getText().toString());

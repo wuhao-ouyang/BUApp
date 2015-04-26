@@ -153,6 +153,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
             case R.id.action_reply:
                 Intent intent = new Intent(this, NewthreadActivity.class);
                 intent.putExtra(CommonIntents.EXTRA_ACTION, NewthreadActivity.ACTION_NEW_POST);
+                intent.putExtra(CommonIntents.EXTRA_TID, threadId);
                 intent.putExtra(CommonIntents.EXTRA_MESSAGE, mReplyET.getText().toString());
                 startActivity(intent);
                 return true;
@@ -193,7 +194,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                                 StringBuilder finalMsg = new StringBuilder(message);
                                 if (BUApp.settings.showSignature)
                                     finalMsg.append(getString(R.string.buapp_client_postfix).replace("$device_name", Devices.getDeviceName()));
-                                BUApi.postNewPost(threadId, finalMsg.toString(), new Response.Listener<JSONObject>() {
+                                BUApi.postNewPost(threadId, finalMsg.toString(), null, null, new Response.Listener<JSONObject>() {
                                     @Override
                                     public void onResponse(JSONObject jsonObject) {
                                         if (BUApi.getResult(jsonObject) == BUApi.Result.SUCCESS) {
@@ -315,15 +316,6 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
             postList.add(0);
         if (mThreadAdapter != null)
             mThreadAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (isReplyBoxShowing()) {
-            toggleReplyBox(false);
-            return;
-        } else
-            super.onBackPressed();
     }
 
     public class ThreadPagerAdapter extends FragmentStatePagerAdapter {

@@ -48,12 +48,14 @@ public class BUPost extends BUContent implements Parcelable, WebListAdapter.Html
     public static class Attachment {
         public final String fileName;
         public final String fileType;
+        public final boolean isImage;
         public final String size;
         public final String url;
         public final int downloads;
-        public Attachment(String name, String type, String size, String url, int dwn) {
+        public Attachment(String name, String type, boolean image, String size, String url, int dwn) {
             fileName = name;
             fileType = type;
+            isImage = image;
             this.size = size;
             this.url = url;
             downloads = dwn;
@@ -82,6 +84,7 @@ public class BUPost extends BUContent implements Parcelable, WebListAdapter.Html
             dest.writeByte((byte) 0x01);
             dest.writeString(attachment.fileName);
             dest.writeString(attachment.fileType);
+            dest.writeByte((byte) (attachment.isImage ? 0x01:0x00));
             dest.writeString(attachment.size);
             dest.writeString(attachment.url);
             dest.writeInt(attachment.downloads);
@@ -115,10 +118,11 @@ public class BUPost extends BUContent implements Parcelable, WebListAdapter.Html
         if (in.readByte() == 0x01) {
             String name = in.readString();
             String type = in.readString();
+            boolean isImage = in.readByte() != 0x00;
             String size = in.readString();
             String url = in.readString();
             int dwn = in.readInt();
-            attachment = new Attachment(name, type, size, url, dwn);
+            attachment = new Attachment(name, type, isImage, size, url, dwn);
         }
         uid = in.readInt();
         username = in.readString();
@@ -158,6 +162,7 @@ public class BUPost extends BUContent implements Parcelable, WebListAdapter.Html
                 attachment = new Attachment(
                         URLDecoder.decode(jsonObject.optString("filename", ""), "utf-8"),
                         URLDecoder.decode(jsonObject.optString("filetype", ""), "utf-8"),
+                        jsonObject.optInt("attachimg") != 0,
                         URLDecoder.decode(jsonObject.optString("attachsize", ""), "utf-8"),
                         URLDecoder.decode(jsonObject.optString("attachment", ""), "utf-8"),
                         jsonObject.optInt("downloads", 0));
@@ -278,9 +283,9 @@ public class BUPost extends BUContent implements Parcelable, WebListAdapter.Html
             m.append("<a href='"+attUrl+"'>"+attachment.fileName+"</a>");
             m.append(" <i>" + attachment.size + "</i>");
             m.append("<br>");
-            if (attachment.fileType.startsWith("image/") && BUApp.settings.showImage)
+            if (attachment.isImage && BUApp.settings.showImage)
                 m.append("<span onclick=imageOnClick('" + attUrl+ "')><img src='" + attUrl + "'></span>");
-            Log.v("Attachment", ">>" + attUrl);
+            Log.v("Attachment", attUrl);
         }
         return m.toString();
     }
