@@ -1,54 +1,85 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/blue_text_bg_light"
-    android:orientation="vertical"
-    android:paddingLeft="5dp"
-    android:paddingRight="5dp"
-    android:paddingTop="5dp"
-    tools:context=".NewthreadActivity" >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/blue_text_bg_light"
+                android:padding="5dp"
+                tools:context=".NewthreadActivity">
 
     <EditText
         android:id="@+id/newthread_subject"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:layout_weight="0.02"
         android:background="@drawable/selector_bg_edittext"
         android:hint="主题"
-        android:padding="5dp" />
+        android:padding="8dp"/>
 
     <EditText
         android:id="@+id/newthread_message"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.95"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/txtVw_attach_descr"
+        android:layout_below="@+id/newthread_subject"
         android:background="@drawable/selector_bg_edittext"
         android:gravity="top"
         android:hint="内容"
-        android:padding="5dp" />
+        android:padding="8dp"/>
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/txtVw_attach_descr"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="fill_horizontal"
-        android:layout_weight="0.02"
-        android:orientation="horizontal" >
+        android:layout_above="@+id/lyt_btn_container"
+        android:padding="5dp"
+        android:textSize="16sp"
+        android:visibility="gone"/>
 
-        <Button
+    <LinearLayout
+        android:id="@+id/lyt_btn_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="fill_horizontal"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:orientation="horizontal">
+
+        <ImageButton
             android:id="@+id/newthread_clear"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="清空" />
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_delete_grey600_36dp"
+            android:text="清除附件"/>
 
-        <Button
-            android:id="@+id/newthread_send"
+        <ImageButton
+            android:id="@+id/newthread_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="发送" />
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_photo_grey600_36dp"
+            android:text="插入图片"/>
+
+        <ImageButton
+            android:id="@+id/newthread_photo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_photo_camera_grey600_36dp"
+            android:text="插入照片"/>
+
+        <ImageButton
+            android:id="@+id/newthread_file"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_attach_file_grey600_36dp"
+            android:text="插入文档"/>
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

@@ -197,16 +197,7 @@ public class BUApi {
     public static void postNewPost(int tid, String message,
                                    Response.Listener<JSONObject> responseListener,
                                    Response.ErrorListener errorListener) {
-        if (tid <= 0 || message == null || message.isEmpty())
-            return;
-        String path = baseurl + "/bu_newpost.php";
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("action", "newreply");
-        params.put("tid", Integer.toString(tid));
-        params.put("message", message);
-        params.put("attachment", "0");
-        appendUserCookie(params);
-        httpPost(path, params, null, responseListener, errorListener);
+        postNewPost(tid, message, null, responseListener, errorListener);
     }
 
     /**
@@ -224,31 +215,9 @@ public class BUApi {
         params.put("action", "newreply");
         params.put("tid", Integer.toString(tid));
         params.put("message", message);
-        params.put("attachment", "1");
+        params.put("attachment", attachment==null ? "0":"1");
         appendUserCookie(params);
         httpPost(path, params, attachment, responseListener, errorListener);
-    }
-
-    /**
-     * Post a new thread on specified forum
-     * @param fid Forum id
-     * @param title New thread subject
-     * @param message New thread message
-     */
-    public static void postNewThread(int fid, String title, String message,
-                                     Response.Listener<JSONObject> responseListener,
-                                     Response.ErrorListener errorListener) {
-        if (fid < 0 || title == null || title.isEmpty() || message == null || message.isEmpty())
-            return;
-        String path = baseurl + "/bu_newpost.php";
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("action", "newthread");
-        params.put("fid", Integer.toString(fid));
-        params.put("subject", title);
-        params.put("message", message);
-        params.put("attachment", "0");
-        appendUserCookie(params);
-        httpPost(path, params, null, responseListener, errorListener);
     }
 
     /**
@@ -268,7 +237,7 @@ public class BUApi {
         params.put("fid", Integer.toString(fid));
         params.put("subject", title);
         params.put("message", message);
-        params.put("attachment", "1");
+        params.put("attachment", attachment==null ? "0":"1");
         appendUserCookie(params);
         httpPost(path, params, attachment, responseListener, errorListener);
     }

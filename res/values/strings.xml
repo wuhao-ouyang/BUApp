@@ -54,6 +54,10 @@
     <string name="image_url_copied">链接已经复制进剪切板</string>
     <string name="message_cant_be_empty">回复不能为空</string>
     <string name="swipe_right_go_back">再次右滑返回</string>
+    <string name="image_attach_fail">无法获取图片</string>
+    <string name="image_attached">成功添加图片</string>
+    <string name="file_attach_fail">无法获取文件</string>
+    <string name="file_attached">成功添加文件</string>
 
     <string name="title_activity_recent_list">最新帖子</string>
 

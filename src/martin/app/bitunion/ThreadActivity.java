@@ -15,6 +15,9 @@ import martin.app.bitunion.model.BUPost;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.widget.SwipeDetector;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -49,8 +52,8 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
 
     private ViewPager mViewPager;
     private PagerTitleStrip mPagerTitleStrip;
-    private ViewGroup replyContainer = null;
-    private EditText replyMessage = null;
+    private ViewGroup mReplyContainer = null;
+    private EditText mReplyET = null;
     private View mReplyBtn;
 
     private int threadId;
@@ -84,15 +87,16 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
         getSupportActionBar().setDisplayShowHomeEnabled(false);
 
         // Get reply View container and hide for current
-        replyContainer = (ViewGroup) findViewById(R.id.reply_layout);
-        replyContainer.setVisibility(View.GONE);
-        replyMessage = (EditText) replyContainer.findViewById(R.id.reply_message);
+        mReplyContainer = (ViewGroup) findViewById(R.id.reply_layout);
+        mReplyContainer.setTranslationY(mReplyContainer.getHeight());
+        mReplyContainer.setVisibility(View.GONE);
+        mReplyET = (EditText) mReplyContainer.findViewById(R.id.reply_message);
         // Button calls reply window to front
-        View replySubmit = replyContainer.findViewById(R.id.reply_submit);
+        View replySubmit = mReplyContainer.findViewById(R.id.reply_submit);
         replySubmit.setOnClickListener(this);
         mReplyBtn = findViewById(R.id.imgVw_reply_btn);
         mReplyBtn.setOnClickListener(this);
-        ImageButton advreply = (ImageButton) replyContainer.findViewById(R.id.reply_advanced);
+        ImageButton advreply = (ImageButton) mReplyContainer.findViewById(R.id.reply_advanced);
         advreply.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -100,7 +104,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                 Intent intent = new Intent(ThreadActivity.this, NewthreadActivity.class);
                 intent.putExtra(CommonIntents.EXTRA_ACTION, NewthreadActivity.ACTION_NEW_POST);
                 intent.putExtra(CommonIntents.EXTRA_TID, threadId);
-                intent.putExtra(CommonIntents.EXTRA_MESSAGE, replyMessage.getText().toString());
+                intent.putExtra(CommonIntents.EXTRA_MESSAGE, mReplyET.getText().toString());
                 startActivity(intent);
 
             }
@@ -147,7 +151,10 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                 mThreadAdapter.notifyRefresh(currentpage);
                 return true;
             case R.id.action_reply:
-                toggleReplyBox(!isReplyBoxShowing());
+                Intent intent = new Intent(this, NewthreadActivity.class);
+                intent.putExtra(CommonIntents.EXTRA_ACTION, NewthreadActivity.ACTION_NEW_POST);
+                intent.putExtra(CommonIntents.EXTRA_MESSAGE, mReplyET.getText().toString());
+                startActivity(intent);
                 return true;
             case R.id.action_sharelink:
                 StringBuilder sb = new StringBuilder(threadName);
@@ -175,7 +182,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                 mReplyBtn.setEnabled(false);
                 break;
             case R.id.reply_submit:
-                final String message = replyMessage.getText().toString();
+                final String message = mReplyET.getText().toString();
                 if (!message.isEmpty()) {
                     final DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
                         @Override
@@ -191,7 +198,7 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                                     public void onResponse(JSONObject jsonObject) {
                                         if (BUApi.getResult(jsonObject) == BUApi.Result.SUCCESS) {
                                             ToastUtil.showToast(R.string.message_sent_success);
-                                            replyMessage.setText("");
+                                            mReplyET.setText("");
                                         } else {
                                             // TODO need to handle error
                                         }
@@ -220,23 +227,51 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
     }
 
     private boolean isReplyBoxShowing() {
-        return replyContainer.getVisibility() == View.VISIBLE;
+        return mReplyContainer.getVisibility() == View.VISIBLE;
     }
 
+    private boolean isAnimating;
     private void toggleReplyBox(boolean show) {
-        if (show) {
-            replyContainer.setVisibility(View.VISIBLE);
-        } else {
-            replyContainer.setVisibility(View.GONE);
+        if (isReplyBoxShowing() == show || isAnimating)
+            return;
+        synchronized (mReplyContainer) {
+            isAnimating = true;
+            if (show) {
+                Animator anim = ObjectAnimator.ofFloat(mReplyContainer, View.TRANSLATION_Y, mReplyContainer.getHeight(), 0f)
+                        .setDuration(250l);
+                anim.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        mReplyContainer.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        isAnimating = false;
+                    }
+                });
+                anim.start();
+            } else {
+                Animator anim = ObjectAnimator.ofFloat(mReplyContainer, View.TRANSLATION_Y, 0f, mReplyContainer.getHeight())
+                        .setDuration(250l);
+                anim.addListener(new AnimatorListenerAdapter() {
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mReplyContainer.setVisibility(View.GONE);
+                        isAnimating = false;
+                    }
+                });
+                anim.start();
+            }
         }
     }
 
     @Override
     public void onQuoteClick(BUPost post) {
-        if (replyContainer.getVisibility() == View.GONE)
-            replyContainer.setVisibility(View.VISIBLE);
-        replyMessage.setText(replyMessage.getText().toString() + post.toQuote());
-        replyMessage.setSelection(replyMessage.getText().toString().length());
+        toggleReplyBox(true);
+        mReplyET.setText(mReplyET.getText().toString() + post.toQuote());
+        mReplyET.setSelection(mReplyET.getText().toString().length());
     }
 
     @Override
@@ -264,6 +299,11 @@ public class ThreadActivity extends ActionBarActivity implements View.OnClickLis
                 }
             }
         }, BUApi.sErrorListener);
+    }
+
+    @Override
+    public void onScroll(boolean down) {
+        toggleReplyBox(!down);
     }
 
     private void calculateTotalPage() {

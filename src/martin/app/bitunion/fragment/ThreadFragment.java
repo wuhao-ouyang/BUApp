@@ -82,6 +82,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
 
     private int mReqCount;
     private long mLastTs;
+    private int mLastY;
     private static final long REFRESH_LIMIT = 30 * 1000l;
 
     private ThreadContentListener mThreadContentListener;
@@ -91,6 +92,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         void onUserClick(int uid);
         void onSubjectUpdated(@Nullable BUPost subject);
         void onEndReached();
+        void onScroll(boolean down);
     }
 
     @Override
@@ -223,9 +225,12 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             mRefreshLayout.setEnabled(false);
         int trigger = (int)(view.getContentHeight() * view.getScale()) - view.getHeight()-1;
         if (postlist.size() < Settings.POSTS_PER_PAGE && t >= trigger && System.currentTimeMillis() - mLastTs >= REFRESH_LIMIT) {
+            mThreadContentListener.onEndReached();
             Log.i(TAG, "fetch more >> " + mPageNum);
             onRefresh();
         }
+        mThreadContentListener.onScroll(t - mLastY > 0);
+        mLastY = t;
     }
 
     private String createHtmlCode() {
