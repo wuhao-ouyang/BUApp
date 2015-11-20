@@ -24,7 +24,7 @@ import martin.app.bitunion.util.ToastUtil;
 import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.widget.SwipeDetector;
 
-public class DisplayActivity extends ActionBarActivity {
+public class DisplayActivity extends BaseContentActivity {
 
     private ThreadsPagerAdapter mPagerAdapter;
     private List<Integer> mPageList;

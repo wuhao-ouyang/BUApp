@@ -19,7 +19,7 @@ import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.ToastUtil;
 import martin.app.bitunion.widget.PhotoView;
 
-public class ImageViewerActivity extends ActionBarActivity {
+public class ImageViewerActivity extends BaseContentActivity {
 
     private String mImageUrl;
 

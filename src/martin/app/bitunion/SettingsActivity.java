@@ -23,7 +23,7 @@ import java.io.IOException;
 import martin.app.bitunion.util.Constants;
 import martin.app.bitunion.util.Utils;
 
-public class SettingsActivity extends ActionBarActivity implements CompoundButton.OnCheckedChangeListener, SeekBar.OnSeekBarChangeListener {
+public class SettingsActivity extends BaseContentActivity implements CompoundButton.OnCheckedChangeListener, SeekBar.OnSeekBarChangeListener {
 
     private TextView titleTextView;
     private SeekBar titleSeekBar;

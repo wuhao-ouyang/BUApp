@@ -33,7 +33,7 @@ import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.ToastUtil;
 import martin.app.bitunion.util.Utils;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends BaseContentActivity {
 
     // Actionbar menu instance
     private Menu mOptionMenu;

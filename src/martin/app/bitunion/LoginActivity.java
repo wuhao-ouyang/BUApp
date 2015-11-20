@@ -26,7 +26,7 @@ import com.android.volley.VolleyError;
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
-public class LoginActivity extends ActionBarActivity {
+public class LoginActivity extends BaseContentActivity {
 
     // Values for username and password at the time of the login attempt.
     private String mUsername;

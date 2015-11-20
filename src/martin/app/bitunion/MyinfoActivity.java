@@ -26,7 +26,7 @@ import martin.app.bitunion.model.BUUser;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.HtmlImageGetter;
 
-public class MyinfoActivity extends ActionBarActivity implements DialogInterface.OnClickListener {
+public class MyinfoActivity extends BaseContentActivity implements DialogInterface.OnClickListener {
 
     private ImageView mAvatar;
     private TextView mUsername;

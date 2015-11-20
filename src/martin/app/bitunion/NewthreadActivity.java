@@ -34,7 +34,7 @@ import martin.app.bitunion.util.ToastUtil;
 import martin.app.bitunion.util.UploadProgressListener;
 import martin.app.bitunion.util.Utils;
 
-public class NewthreadActivity extends ActionBarActivity implements View.OnClickListener, TextWatcher, UploadProgressListener {
+public class NewthreadActivity extends BaseContentActivity implements View.OnClickListener, TextWatcher, UploadProgressListener {
     public static final String ACTION_NEW_POST = "NewthreadActivity.ACTION_NEW_POST";
     public static final String ACTION_NEW_THREAD = "NewthreadActivity.ACTION_NEW_THREAD";
 

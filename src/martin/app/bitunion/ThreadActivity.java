@@ -46,7 +46,7 @@ import android.widget.ImageButton;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
-public class ThreadActivity extends ActionBarActivity implements View.OnClickListener, ThreadFragment.ThreadContentListener {
+public class ThreadActivity extends BaseContentActivity implements View.OnClickListener, ThreadFragment.ThreadContentListener {
 
     private ThreadPagerAdapter mThreadAdapter;
 

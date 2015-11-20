@@ -37,7 +37,7 @@ import martin.app.bitunion.util.Utils;
 import martin.app.bitunion.widget.SwipeDetector;
 
 
-public class RecentListActivity extends ActionBarActivity implements SwipeRefreshLayout.OnRefreshListener {
+public class RecentListActivity extends BaseContentActivity implements SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = RecentListActivity.class.getSimpleName();
 
     private List<RecentThread> mThreadList;
