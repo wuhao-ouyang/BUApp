@@ -27,7 +27,7 @@ import martin.app.bitunion.widget.SwipeDetector;
 public class DisplayActivity extends BaseContentActivity {
 
     private ThreadsPagerAdapter mPagerAdapter;
-    private List<Integer> mPageList;
+    private int mTotalPage;
     // MyPagerAdapter mPagerAdapter;
 
     /**
@@ -61,17 +61,13 @@ public class DisplayActivity extends BaseContentActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(false);
 
-        // Pre read 2 pages
-        mPageList = new ArrayList<Integer>();
-        mPageList.add(0);
-        mPageList.add(0);
+        // Pre read 3 pages
+        mTotalPage = 3;
         mPagerAdapter = new ThreadsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
         mPagerTitleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip);
-        mPagerTitleStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-        mPagerTitleStrip.setBackgroundResource(R.color.blue_dark);
         // mPagerTabStrip = (PagerTabStrip) findViewById(R.id.pager_tab_strip);
         mViewPager.setAdapter(mPagerAdapter);
         mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
@@ -131,7 +127,7 @@ public class DisplayActivity extends BaseContentActivity {
         public Fragment getItem(int position) {
 //			Log.v("adapter", "getItem>>"+position);
             Bundle args = new Bundle();
-            if (mPageList.get(position) != null) {
+            if (position < mTotalPage) {
                 args.putInt(ForumFragment.ARG_PAGE, position);
                 args.putInt(ForumFragment.ARG_FID, forumId);
             }
@@ -147,7 +143,7 @@ public class DisplayActivity extends BaseContentActivity {
 
         @Override
         public int getCount() {
-            return mPageList.size();
+            return mTotalPage;
         }
 
         @Override
@@ -205,9 +201,13 @@ public class DisplayActivity extends BaseContentActivity {
         @Override
         public void onPageSelected(int position) {
             currentpage = position;
-            while (position > mPageList.size() - 2)
-                mPageList.add(0);
-            mPagerAdapter.notifyDataSetChanged();
+            boolean added = false;
+            while (mTotalPage - position < 2) {
+                mTotalPage++;added = true;
+            }
+            if (added) {
+                mPagerAdapter.notifyDataSetChanged();
+            }
         }
     }
 }

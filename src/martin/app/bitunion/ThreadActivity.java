@@ -117,7 +117,6 @@ public class ThreadActivity extends BaseContentActivity implements View.OnClickL
         // Setup the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.viewpager_thread);
         mPagerTitleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip_thread);
-        mPagerTitleStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         mViewPager.setAdapter(mThreadAdapter);
         mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
         int trigger = getResources().getDimensionPixelSize(R.dimen.swipe_trigger_limit);
