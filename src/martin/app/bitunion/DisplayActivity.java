@@ -34,7 +34,6 @@ public class DisplayActivity extends BaseContentActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
-    private PagerTitleStrip mPagerTitleStrip;
     private int currentpage = 0;
 
     // ReadPageTask mReadPageTask;
@@ -54,10 +53,11 @@ public class DisplayActivity extends BaseContentActivity {
         if (savedInstanceState != null && !savedInstanceState.isEmpty()) {
             forumId = savedInstanceState.getInt("fid");
             forumName = savedInstanceState.getString("name");
+            forumName = forumName.replace("--", "");
         }
 
         // Show the Up button in the action bar.
-        getSupportActionBar().setTitle(forumName.replace("-- ", ""));
+        getSupportActionBar().setTitle(String.format("%s %d", forumName, currentpage+1));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(false);
 
@@ -67,10 +67,9 @@ public class DisplayActivity extends BaseContentActivity {
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
-        mPagerTitleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip);
         // mPagerTabStrip = (PagerTabStrip) findViewById(R.id.pager_tab_strip);
         mViewPager.setAdapter(mPagerAdapter);
-        mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
+        mViewPager.addOnPageChangeListener(new MyOnPageChangeListener());
         int trigger = getResources().getDimensionPixelSize(R.dimen.swipe_trigger_limit);
         mViewPager.setOnTouchListener(new SwipeDetector(trigger, new MySwipeListener()));
 
@@ -201,6 +200,7 @@ public class DisplayActivity extends BaseContentActivity {
         @Override
         public void onPageSelected(int position) {
             currentpage = position;
+            getSupportActionBar().setTitle(String.format("%s %d", forumName, currentpage+1));
             boolean added = false;
             while (mTotalPage - position < 2) {
                 mTotalPage++;added = true;

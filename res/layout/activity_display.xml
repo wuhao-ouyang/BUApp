@@ -13,17 +13,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/blue_text_bg_light" >
-
-        <android.support.v4.view.PagerTitleStrip
-            android:id="@+id/pager_title_strip"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:background="@color/blue_dark"
-            android:paddingBottom="4dp"
-            android:paddingTop="4dp"
-            android:textColor="@android:color/primary_text_dark"
-            android:textSize="12sp"/>
     </android.support.v4.view.ViewPager>
 
 </LinearLayout>

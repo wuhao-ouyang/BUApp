@@ -80,7 +80,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         void onUserClick(int uid);
         void onSubjectUpdated(@Nullable BUPost subject);
         void onEndReached();
-        void onScroll(boolean down);
+        void onScroll(int offset);
     }
 
     @Override
@@ -121,6 +121,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
         super.onViewCreated(view, savedInstanceState);
 
         mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.lyt_refresh_frame);
+        mRefreshLayout.setColorSchemeResources(R.color.blue_dark);
         mRefreshLayout.setOnRefreshListener(this);
         mPageWebView = (ObservableWebView) view.findViewById(R.id.webView_posts);
         mPageWebView.setOnScrollChangedCallback(this);
@@ -217,7 +218,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             Log.i(TAG, "fetch more >> " + mPageNum);
             onRefresh();
         }
-        mThreadContentListener.onScroll(t - mLastY > 0);
+        mThreadContentListener.onScroll(t - mLastY);
         mLastY = t;
     }
 
@@ -231,7 +232,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
                 "div.tdiv{background-color:#" + COLOR_BG_DARK + "; padding:2px 5px; font-size:" + BUApp.settings.contenttextsize + "px;}" +
                 "div.mdiv{padding:8px; word-break:break-all;}" +
                 "</style><script type='text/javascript'>" +
-                JSInterface.javaScript() +
+                JSInterface.JAVASCRIPT +
                 "</script></head><body>");
 
         int len = postlist.size();
@@ -318,7 +319,7 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
 
         @Override
         public String getJavaScript() {
-            return JSInterface.javaScript();
+            return JSInterface.JAVASCRIPT;
         }
 
         @Override
@@ -360,14 +361,12 @@ public class ThreadFragment extends Fragment implements Updateable, ObservableWe
             handler = h;
         }
 
-        private static final String javaScript() {
-            return "function referenceOnClick(num){" +
+        private static final String JAVASCRIPT = "function referenceOnClick(num){" +
                     JSInterface.class.getSimpleName() + ".referenceOnClick(num);}" +
                     "function authorOnClick(uid){" +
                     JSInterface.class.getSimpleName() + ".authorOnClick(uid);}" +
                     "function imageOnClick(url){" +
                     JSInterface.class.getSimpleName() + ".imageOnClick(url);}";
-        }
 
         @JavascriptInterface
         public void referenceOnClick(int count) {

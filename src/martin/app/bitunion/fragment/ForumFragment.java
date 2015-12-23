@@ -81,9 +81,10 @@ public class ForumFragment extends Fragment implements Updateable, AbsListView.O
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.lyt_refresh_frame);
+        mRefreshLayout.setColorSchemeResources(R.color.blue_dark);
+        mRefreshLayout.setOnRefreshListener(this);
         mListView = (ListView) view.findViewById(R.id.forum_listview);
         mSpinner = (ProgressBar) view.findViewById(R.id.progressBar);
-        mRefreshLayout.setOnRefreshListener(this);
         if (threadlist == null || threadlist.isEmpty()) {
             mSpinner.setVisibility(View.VISIBLE);
             mListView.setVisibility(View.GONE);

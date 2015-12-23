@@ -51,7 +51,6 @@ public class ThreadActivity extends BaseContentActivity implements View.OnClickL
     private ThreadPagerAdapter mThreadAdapter;
 
     private ViewPager mViewPager;
-    private PagerTitleStrip mPagerTitleStrip;
     private ViewGroup mReplyContainer = null;
     private EditText mReplyET = null;
     private View mReplyBtn;
@@ -59,7 +58,7 @@ public class ThreadActivity extends BaseContentActivity implements View.OnClickL
     private int threadId;
     private String threadName;
 
-    private ArrayList<Integer> postList = new ArrayList<Integer>(); // 所有回复列表
+    private int totalPage; // 所有回复列表
     private int lastpage, replies = 1; // 当前帖子总页数，总回复数
     private int currentpage = 0; // 当前所在页数
 
@@ -83,7 +82,7 @@ public class ThreadActivity extends BaseContentActivity implements View.OnClickL
         Log.v("ThreadActivity", "lastpage>>>>>" + lastpage);
 
         // Setup the action bar.
-        getSupportActionBar().setTitle(threadName);
+        getSupportActionBar().setTitle(String.format("%s %d", threadName, currentpage+1));
         getSupportActionBar().setDisplayShowHomeEnabled(false);
 
         // Get reply View container and hide for current
@@ -116,9 +115,8 @@ public class ThreadActivity extends BaseContentActivity implements View.OnClickL
 
         // Setup the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.viewpager_thread);
-        mPagerTitleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip_thread);
         mViewPager.setAdapter(mThreadAdapter);
-        mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
+        mViewPager.addOnPageChangeListener(new MyOnPageChangeListener());
         int trigger = getResources().getDimensionPixelSize(R.dimen.swipe_trigger_limit);
         mViewPager.setOnTouchListener(new SwipeDetector(trigger, new MySwipeListener()));
 
@@ -285,7 +283,8 @@ public class ThreadActivity extends BaseContentActivity implements View.OnClickL
 
     @Override
     public void onSubjectUpdated(@Nullable BUPost subject) {
-        getSupportActionBar().setTitle(subject.getSubject());
+        threadName = subject.getSubject();
+        getSupportActionBar().setTitle(String.format("%s %d", threadName, currentpage+1));
     }
 
     @Override
@@ -302,8 +301,9 @@ public class ThreadActivity extends BaseContentActivity implements View.OnClickL
     }
 
     @Override
-    public void onScroll(boolean down) {
-        toggleReplyBox(!down);
+    public void onScroll(int offset) {
+        if (Math.abs(offset) > 10)
+            toggleReplyBox(offset < 0);
     }
 
     private void calculateTotalPage() {
@@ -311,8 +311,8 @@ public class ThreadActivity extends BaseContentActivity implements View.OnClickL
             lastpage = replies / Settings.POSTS_PER_PAGE - 1;
         else
             lastpage = replies / Settings.POSTS_PER_PAGE;
-        while (postList.size() <= lastpage)
-            postList.add(0);
+        while (totalPage <= lastpage)
+            totalPage++;
         if (mThreadAdapter != null)
             mThreadAdapter.notifyDataSetChanged();
     }
@@ -345,7 +345,7 @@ public class ThreadActivity extends BaseContentActivity implements View.OnClickL
 
         @Override
         public int getCount() {
-            return postList.size();
+            return totalPage;
         }
 
         @Override
@@ -411,6 +411,7 @@ public class ThreadActivity extends BaseContentActivity implements View.OnClickL
         @Override
         public void onPageSelected(int pos) {
             currentpage = pos;
+            getSupportActionBar().setTitle(String.format("%s %d", threadName, currentpage+1));
         }
     }
 }
