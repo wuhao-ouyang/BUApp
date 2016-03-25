@@ -192,7 +192,7 @@ public class NewthreadActivity extends BaseContentActivity implements View.OnCli
     private void showAttachDetail() {
         StringBuilder attBuilder = new StringBuilder();
         attBuilder.append(mAttachFile.getName());
-        attBuilder.append("\t");
+        attBuilder.append("\t\t");
         attBuilder.append(Utils.getReadableFileSize(mAttachFile.length()));
         mAttachTV.setText(attBuilder);
         mProgress.setProgress(0);

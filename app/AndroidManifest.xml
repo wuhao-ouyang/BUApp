@@ -60,7 +60,8 @@
         </activity>
         <activity
             android:name="martin.app.bitunion.NewthreadActivity"
-            android:parentActivityName="martin.app.bitunion.DisplayActivity">
+            android:parentActivityName="martin.app.bitunion.DisplayActivity"
+            android:windowSoftInputMode="adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="martin.app.bitunion.DisplayActivity"/>
