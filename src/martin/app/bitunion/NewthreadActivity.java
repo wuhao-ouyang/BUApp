@@ -228,8 +228,8 @@ public class NewthreadActivity extends BaseContentActivity implements View.OnCli
                     startActivityForResult(photoIntent, REQCODE_PHOTO);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    break;
                 }
+                break;
 
             case R.id.newthread_file:
                 Intent fileIntent = new Intent(Intent.ACTION_GET_CONTENT);
