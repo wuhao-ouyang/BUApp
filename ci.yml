@@ -1,5 +1,5 @@
 - name: "Run test suite"
-  uses: msfjarvis/setup-android@1.0
+  uses: msfjarvis/setup-android@0.2
   with:
     entrypoint: ./gradlew
     args: test
