@@ -1,0 +1,16 @@
+name: Android CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: "Run test suite"
+      uses: msfjarvis/setup-android@1.0
+      with:
+        entrypoint: ./gradlew
+        args: test
