@@ -1,12 +1,5 @@
-workflow "Testing" {
-  on = "push"
-  resolves = [
-    "Unit tests",
-  ]
-}
-
-action "Unit tests" {
-  uses = "Raul6469/android-gradle-action@master"
-  secrets = ["ANDROID_LICENCE"]
-  args = "test"
-}
+- name: "Run test suite"
+  uses: msfjarvis/setup-android@1.0
+  with:
+    entrypoint: ./gradlew
+    args: test
