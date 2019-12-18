@@ -4,6 +4,11 @@ import java.util.ArrayList;
 
 import org.json.JSONObject;
 
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 import martin.app.bitunion.fragment.ThreadFragment;
 import martin.app.bitunion.fragment.UserInfoDialogFragment;
 import martin.app.bitunion.util.BUApi;
@@ -25,14 +30,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerTitleStrip;
-import android.support.v4.view.ViewPager;
-import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
@@ -398,7 +395,7 @@ public class ThreadActivity extends BaseContentActivity implements View.OnClickL
      * Listen to the {@link ViewPager}, pre-load pages will be useful next to
      * current view.
      */
-    private class MyOnPageChangeListener implements OnPageChangeListener {
+    private class MyOnPageChangeListener implements ViewPager.OnPageChangeListener {
 
         @Override
         public void onPageScrollStateChanged(int state) {

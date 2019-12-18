@@ -3,8 +3,8 @@ package martin.app.bitunion;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
@@ -16,12 +16,14 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.load.resource.gif.GifDrawable;
+import com.bumptech.glide.request.target.DrawableImageViewTarget;
+import com.bumptech.glide.request.transition.Transition;
 
 import org.json.JSONObject;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import martin.app.bitunion.model.BUUser;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.HtmlImageGetter;
@@ -87,15 +89,14 @@ public class MyinfoActivity extends BaseContentActivity implements DialogInterfa
         Glide.with(this).load(BUApi.getImageAbsoluteUrl(info.getAvatar()))
                 .fitCenter()
                 .placeholder(R.drawable.noavatar)
-                .crossFade()
-                .into(new SimpleTarget<GlideDrawable>() {
+                .into(new DrawableImageViewTarget(mAvatar) {
                     @Override
-                    public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
-                        mAvatar.setImageDrawable(resource);
-                        if (resource.isAnimated()) {
-                            resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
-                            resource.start();
+                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                        if (resource instanceof GifDrawable) {
+                            ((GifDrawable) resource).setLoopCount(GifDrawable.LOOP_FOREVER);
+                            ((GifDrawable) resource).start();
                         }
+                        super.onResourceReady(resource, transition);
                     }
                 });
 //        mAvatar.setImageUrl(, VolleyImageLoaderFactory.getImageLoader(getApplicationContext()));

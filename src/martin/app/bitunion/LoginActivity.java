@@ -10,7 +10,6 @@ import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;

@@ -2,13 +2,6 @@ package martin.app.bitunion;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerTitleStrip;
-import android.support.v4.view.ViewPager;
-import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.support.v7.app.ActionBarActivity;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -18,6 +11,10 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 import martin.app.bitunion.fragment.ForumFragment;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.ToastUtil;
@@ -187,7 +184,7 @@ public class DisplayActivity extends BaseContentActivity {
         }
     }
 
-    private class MyOnPageChangeListener implements OnPageChangeListener {
+    private class MyOnPageChangeListener implements ViewPager.OnPageChangeListener {
 
         @Override
         public void onPageScrollStateChanged(int state) {

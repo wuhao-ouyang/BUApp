@@ -5,12 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,6 +24,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import martin.app.bitunion.model.RecentThread;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.CommonIntents;
@@ -152,7 +150,7 @@ public class RecentListActivity extends BaseContentActivity implements SwipeRefr
         }
     }
 
-    private RecyclerView.OnScrollListener mScrollListener = new OnScrollListener() {
+    private RecyclerView.OnScrollListener mScrollListener = new RecyclerView.OnScrollListener() {
         private int totalY;
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {

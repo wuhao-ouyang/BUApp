@@ -7,13 +7,17 @@ import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.integration.volley.VolleyRequestFactory;
 import com.bumptech.glide.integration.volley.VolleyRequestFuture;
 import com.bumptech.glide.integration.volley.VolleyStreamFetcher;
-import com.bumptech.glide.load.data.DataFetcher;
-import com.bumptech.glide.load.model.GenericLoaderFactory;
+import com.bumptech.glide.load.Options;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.ModelLoader;
 import com.bumptech.glide.load.model.ModelLoaderFactory;
+import com.bumptech.glide.load.model.MultiModelLoaderFactory;
+import com.bumptech.glide.signature.ObjectKey;
 
 import java.io.InputStream;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * A simple model loader for fetching media over http/https using Volley.
@@ -62,8 +66,9 @@ public class SyncedVolleyUrlLoader implements ModelLoader<GlideUrl, InputStream>
             this.requestQueue = requestQueue;
         }
 
+        @NonNull
         @Override
-        public ModelLoader<GlideUrl, InputStream> build(Context context, GenericLoaderFactory factories) {
+        public ModelLoader<GlideUrl, InputStream> build(@NonNull MultiModelLoaderFactory multiFactory) {
             return new SyncedVolleyUrlLoader(requestQueue, requestFactory);
         }
 
@@ -85,9 +90,15 @@ public class SyncedVolleyUrlLoader implements ModelLoader<GlideUrl, InputStream>
         this.requestFactory = requestFactory;
     }
 
+    @Nullable
     @Override
-    public DataFetcher<InputStream> getResourceFetcher(GlideUrl url, int width, int height) {
-        return new VolleyStreamFetcher(
-                requestQueue, url, new VolleyRequestFuture<InputStream>(), requestFactory);
+    public LoadData<InputStream> buildLoadData(@NonNull GlideUrl url, int width, int height, @NonNull Options options) {
+        return new LoadData<InputStream>(new ObjectKey(url), new VolleyStreamFetcher(
+            requestQueue, url, new VolleyRequestFuture<InputStream>(), requestFactory));
+    }
+
+    @Override
+    public boolean handles(@NonNull GlideUrl glideUrl) {
+        return true;
     }
 }

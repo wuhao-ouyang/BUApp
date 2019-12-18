@@ -3,18 +3,19 @@ package martin.app.bitunion;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.PersistableBundle;
-import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.ToastUtil;
 import martin.app.bitunion.widget.PhotoView;
@@ -48,15 +49,14 @@ public class ImageViewerActivity extends BaseContentActivity {
         photoView.enableImageTransforms(true);
 
         Glide.with(this).load(mImageUrl)
-                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .into(new SimpleTarget<GlideDrawable>() {
+                .into(new SimpleTarget<Drawable>() {
                     @Override
-                    public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
                         photoView.bindDrawable(resource);
                         // Show gif
-                        if (resource.isAnimated()) {
-                            resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
-                            resource.start();
+                        if (resource instanceof GifDrawable) {
+                            ((GifDrawable) resource).setLoopCount(GifDrawable.LOOP_FOREVER);
+                            ((GifDrawable) resource).start();
                         }
                     }
                 });
