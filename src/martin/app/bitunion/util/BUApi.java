@@ -3,8 +3,6 @@ package martin.app.bitunion.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -32,6 +30,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import martin.app.bitunion.BUApp;
 import martin.app.bitunion.R;
 import martin.app.bitunion.model.BUUser;

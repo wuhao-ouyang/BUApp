@@ -1,6 +1,11 @@
 name: Android CI
 
-on: [push]
+on: 
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
@@ -8,6 +13,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Build with Gradle
       run: ./gradlew test

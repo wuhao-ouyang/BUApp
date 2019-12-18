@@ -2,6 +2,9 @@ package martin.app.bitunion.fragment;
 
 import org.json.JSONObject;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import martin.app.bitunion.R;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.model.BUUser;
@@ -9,9 +12,8 @@ import martin.app.bitunion.util.CommonIntents;
 import martin.app.bitunion.util.HtmlImageGetter;
 
 import android.app.Dialog;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -26,9 +28,9 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.load.resource.gif.GifDrawable;
+import com.bumptech.glide.request.target.DrawableImageViewTarget;
+import com.bumptech.glide.request.transition.Transition;
 
 public class UserInfoDialogFragment extends DialogFragment {
 
@@ -55,7 +57,7 @@ public class UserInfoDialogFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         uid = getArguments().getInt(CommonIntents.EXTRA_UID);
-        setStyle(R.style.UserProfileDialog, 0);
+        setStyle(STYLE_NORMAL, R.style.UserProfileDialog);
     }
 
     @NonNull
@@ -97,14 +99,14 @@ public class UserInfoDialogFragment extends DialogFragment {
     public void setTextContent(BUUser info) {
 //        mAvatar.setImageUrl(BUApi.getImageAbsoluteUrl(info.getAvatar()), VolleyImageLoaderFactory.getImageLoader(getActivity()));
         Glide.with(this).load(BUApi.getImageAbsoluteUrl(info.getAvatar()))
-                .into(new SimpleTarget<GlideDrawable>() {
+                .into(new DrawableImageViewTarget(mAvatar) {
                     @Override
-                    public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
-                        mAvatar.setImageDrawable(resource);
-                        if (resource.isAnimated()) {
-                            resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
-                            resource.start();
+                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                        if (resource instanceof GifDrawable) {
+                            ((GifDrawable) resource).setLoopCount(GifDrawable.LOOP_FOREVER);
+                            ((GifDrawable) resource).start();
                         }
+                        super.onResourceReady(resource, transition);
                     }
                 });
         mUsername.setText(info.getUsername());

@@ -11,6 +11,6 @@ import java.io.InputStream;
 public class SyncedVolleyGlideModule extends VolleyGlideModule {
     @Override
     public void registerComponents(Context context, Glide glide) {
-        glide.register(GlideUrl.class, InputStream.class, new SyncedVolleyUrlLoader.Factory(context));
+        glide.getRegistry().append(GlideUrl.class, InputStream.class, new SyncedVolleyUrlLoader.Factory(context));
     }
 }

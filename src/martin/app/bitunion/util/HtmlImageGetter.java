@@ -12,12 +12,14 @@ import android.widget.TextView;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
 
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.graphics.drawable.DrawableWrapper;
 import martin.app.bitunion.R;
-import martin.app.bitunion.widget.UrlDrawable;
 
 public class HtmlImageGetter implements Html.ImageGetter {
     public static final int VOLLEY = 0;
@@ -41,9 +43,9 @@ public class HtmlImageGetter implements Html.ImageGetter {
     public Drawable getDrawable(String imgUrl) {
         imgUrl = BUApi.getImageAbsoluteUrl(imgUrl);
         if (mode == GLIDE) {
-            UrlDrawable urlDrawable = new UrlDrawable();
-            Glide.with(mContext).load(imgUrl).into(new GlideImageListener(mContainer, urlDrawable));
-            return urlDrawable;
+            DrawableWrapper drawableWrapper = new DrawableWrapper(null);
+            Glide.with(mContext).load(imgUrl).into(new GlideImageListener(mContainer, drawableWrapper));
+            return drawableWrapper;
         } else {
             UrlImageDownloader urlDrawable = new UrlImageDownloader(mContext.getResources(), imgUrl);
             urlDrawable.drawable = mContext.getResources().getDrawable(R.drawable.ic_image_white_48dp);
@@ -52,17 +54,17 @@ public class HtmlImageGetter implements Html.ImageGetter {
         }
     }
 
-    private static class GlideImageListener extends SimpleTarget<GlideDrawable> {
-        private UrlDrawable urlDrawable;
+    private static class GlideImageListener extends SimpleTarget<Drawable> {
+        private DrawableWrapper drawableWrapper;
         private TextView container;
 
-        private GlideImageListener(TextView textView, UrlDrawable drawable) {
-            urlDrawable = drawable;
+        private GlideImageListener(TextView textView, DrawableWrapper drawable) {
+            drawableWrapper = drawable;
             container = textView;
         }
 
         @Override
-        public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+        public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
             int width = resource.getIntrinsicWidth();
             int height = resource.getIntrinsicHeight();
 
@@ -75,8 +77,8 @@ public class HtmlImageGetter implements Html.ImageGetter {
             }
 
             resource.setBounds(0, 0, newWidth, newHeight);
-            urlDrawable.setBounds(0, 0, newWidth, newHeight);
-            urlDrawable.drawable = resource;
+            drawableWrapper.setBounds(0, 0, newWidth, newHeight);
+            drawableWrapper.setWrappedDrawable(resource);
 
             container.invalidate();
         }

@@ -2,9 +2,6 @@ package martin.app.bitunion;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +24,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import martin.app.bitunion.model.BUForum;
 import martin.app.bitunion.util.BUApi;
 import martin.app.bitunion.util.CommonIntents;

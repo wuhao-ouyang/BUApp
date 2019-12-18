@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
     useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         applicationId "martin.app.bitunion"
         minSdkVersion 14
-        targetSdkVersion 23
+        targetSdkVersion 26
     }
 
     dexOptions{
@@ -52,16 +52,16 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:23.1.1'
-    compile 'com.android.support:recyclerview-v7:23.1.1'
-    compile 'com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.8.5'
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:design:23.1.1'
-    compile 'com.mcxiaoke.volley:library:1.0.5'
-    compile 'com.github.bumptech.glide:volley-integration:1.2.2'
-    compile 'com.github.bumptech.glide:glide:3.5.2'
-    compile 'org.apache.tika:tika-core:1.4'
-    compile 'org.apache.httpcomponents:httpcore:4.3.+'
-    compile 'org.apache.httpcomponents:httpclient:4.3.+'
-    compile 'org.apache.httpcomponents:httpmime:4.3.+'
+    api 'androidx.legacy:legacy-support-v4:1.0.0'
+    api 'androidx.recyclerview:recyclerview:1.1.0'
+    api 'com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.8.5'
+    api 'androidx.appcompat:appcompat:1.1.0'
+    api 'com.google.android.material:material:1.0.0'
+    api 'com.mcxiaoke.volley:library:1.0.8'
+    api 'com.github.bumptech.glide:volley-integration:1.5.0'
+    api 'com.github.bumptech.glide:glide:4.10.0'
+    api 'org.apache.tika:tika-core:1.4'
+    api 'org.apache.httpcomponents:httpcore:4.3.+'
+//    api 'org.apache.httpcomponents:httpclient:4.3.+'
+    api 'org.apache.httpcomponents:httpmime:4.3.+'
 }
